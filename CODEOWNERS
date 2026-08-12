@@ -1,0 +1,5 @@
+# The ledger domain holds the money rules. Changes there need a second pair of
+# eyes from whoever owns settlement, not just any approver.
+/src/domain/    @FlashyLabs/ledger-owners
+/src/ports/     @FlashyLabs/ledger-owners
+*               @FlashyLabs/engineering
