@@ -33,6 +33,57 @@ jobs:
       - name: Build
         run: npm run build
 
+  conformance:
+    name: Conformance against MongoDB
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      # A SINGLE-NODE REPLICA SET, not a standalone mongod.
+      #
+      # Sessions — and therefore multi-document transactions — require a
+      # replica set. A standalone would pass every test in the conformance
+      # suite except the transfer ones, which is exactly the failure this job
+      # exists to catch: a transfer that writes a debit and loses its credit.
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1}).ok' || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # The service container starts a plain mongod, so the replica set has to
+      # be initiated here. rs.initiate() is idempotent enough to tolerate a
+      # re-run; the wait loop is what makes this reliable rather than racy.
+      - name: Initiate the replica set
+        run: |
+          docker exec "$(docker ps -q --filter ancestor=mongo:7)" \
+            mongosh --quiet --eval 'try { rs.initiate() } catch (e) { print(e.message) }'
+          for i in $(seq 1 30); do
+            if docker exec "$(docker ps -q --filter ancestor=mongo:7)" \
+                 mongosh --quiet --eval 'db.hello().isWritablePrimary' | grep -q true; then
+              echo "replica set is primary"; exit 0
+            fi
+            sleep 2
+          done
+          echo "replica set never became primary"; exit 1
+
+      - name: Conformance suite
+        run: npx vitest run tests/conformance.test.ts
+        env:
+          MONGO_URL: mongodb://localhost:27017/?directConnection=true
+
   audit:
     name: Dependency audit
     runs-on: ubuntu-latest

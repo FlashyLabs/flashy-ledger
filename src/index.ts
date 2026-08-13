@@ -58,3 +58,5 @@ export type { AppendResult, LedgerStore, TransactionalLedgerStore } from './port
 export { isTransactional } from './ports/store.js'
 
 export { InMemoryLedgerStore } from './adapters/memory.js'
+export { MongoLedgerStore } from './adapters/mongo.js'
+export type { MongoLedgerStoreOptions } from './adapters/mongo.js'
