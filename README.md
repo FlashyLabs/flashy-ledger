@@ -135,3 +135,21 @@ not invent a rate.
 Pre-1.0. The entry format and hash input are not yet frozen — changing either
 invalidates existing chains, so both will be locked before the first production
 write. See `docs/adr/` for the decisions behind the design.
+
+## The mongodb peer dependency
+
+`mongodb` is an **optional** peer, accepted at `^6.21.0 || ^7.0.0`.
+
+Optional because the domain — `post`, `postTransfer`, `hashEntry`,
+`verifyChain`, the money helpers — imports no driver at all. A consumer that
+only needs the rules, or that brings its own storage, should not be made to
+install a database driver to get them. ClaimYour.Gold is exactly that consumer
+today: it computes hash chains with this package and writes through Prisma.
+
+The range spans both majors because the adapters use only driver APIs that did
+not change between them: `collection`, `createIndex`, `insertOne`, `findOne`,
+`find`/`sort`/`limit`/`toArray`, `startSession`, `withTransaction`,
+`endSession`. Pinning to v6 forced consumers on v7 into `--legacy-peer-deps`,
+which silences every peer conflict in the tree rather than the one that was
+actually understood.
+
