@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "rootDir": "src",
+    "outDir": "dist-cjs",
+    // The source is written as ESM with .js specifiers, which NodeNext
+    // resolution requires. CommonJS here rewrites those to require() calls.
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "declaration": false,
+    "declarationMap": false,
+    "verbatimModuleSyntax": false
+  },
+  "include": ["src/**/*.ts"]
+}
