@@ -82,6 +82,19 @@ function doc(over: Partial<FakeDoc> = {}): FakeDoc {
   }
 }
 
+/**
+ * First element, or a failure that names the reason.
+ *
+ * `noUncheckedIndexedAccess` types every index access as possibly undefined,
+ * which is correct — and destructuring in a test hides that behind an
+ * assertion failure on a property of undefined. This turns it into a message
+ * that says what actually went wrong.
+ */
+function only<T>(items: readonly T[]): T {
+  if (items.length !== 1) throw new Error(`expected exactly one entry, got ${items.length}`)
+  return items[0] as T
+}
+
 describe('GoldLedgerReader', () => {
   it('reports an empty state for an identity with no entries', async () => {
     const r = new GoldLedgerReader(fakeDb([]))
@@ -117,7 +130,7 @@ describe('GoldLedgerReader', () => {
     const r = new GoldLedgerReader(
       fakeDb([doc({ amount: -5, entryType: 'SPEND_WAGER', balanceAfter: 5 })]),
     )
-    const [entry] = await r.readEntries('cust1', 'asset_fg')
+    const entry = only(await r.readEntries('cust1', 'asset_fg'))
 
     expect(entry.kind).toBe('SPEND')
     expect(entry.amount).toBe(-500)
@@ -128,13 +141,13 @@ describe('GoldLedgerReader', () => {
 
   it('carries the source through as type and id', async () => {
     const r = new GoldLedgerReader(fakeDb([doc({ sourceType: 'duel', sourceId: 'd7' })]))
-    const [entry] = await r.readEntries('cust1', 'asset_fg')
+    const entry = only(await r.readEntries('cust1', 'asset_fg'))
     expect(entry.source).toEqual({ type: 'duel', id: 'd7' })
   })
 
   it('omits the source id when there is none', async () => {
     const r = new GoldLedgerReader(fakeDb([doc({ sourceId: null })]))
-    const [entry] = await r.readEntries('cust1', 'asset_fg')
+    const entry = only(await r.readEntries('cust1', 'asset_fg'))
     expect(entry.source).toEqual({ type: 'quest' })
   })
 
