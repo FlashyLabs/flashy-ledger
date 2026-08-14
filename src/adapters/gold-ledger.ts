@@ -1,5 +1,6 @@
 import type { Collection, Db, ObjectId } from 'mongodb'
-import type { Entry, EntryKind, EntrySource } from '../domain/entry.js'
+import type { ChainVerdict, Entry, EntryKind, EntrySource } from '../domain/entry.js'
+import { verifyChain } from '../domain/entry.js'
 import type { LedgerState } from '../domain/post.js'
 import { ZERO, minor, type Minor } from '../domain/money.js'
 
@@ -34,9 +35,13 @@ import { ZERO, minor, type Minor } from '../domain/money.js'
  *
  * ON `headHash`
  * ─────────────
- * Always null. Pre-cutover rows have no chain, and inventing a hash here would
- * be worse than admitting there isn't one: it would look like tamper-evidence
- * to every caller while proving nothing at all.
+ * Null for an identity whose newest entry predates the cutover, and the real
+ * head hash once one has been chained. Inventing a hash for an unchained row
+ * would be worse than admitting there isn't one — it would look like
+ * tamper-evidence to every caller while proving nothing at all. Withholding a
+ * hash that does exist is the opposite error and just as expensive: a caller
+ * that posts from a null head starts a second chain alongside the live one,
+ * and the fork stays invisible until someone tries to verify.
  */
 
 /** The shape of a `gold_ledger` document, as ClaimYour.Gold writes it. */
@@ -57,6 +62,15 @@ interface GoldLedgerDoc {
   description?: string | null
   metadata?: Record<string, unknown> | null
   createdAt: Date
+  /**
+   * Chain fields, written by ClaimYour.Gold's `postEntry` from the cutover
+   * onward and absent on everything older. Optional in the type because the
+   * collection genuinely holds both shapes — years of unchained rows, then
+   * chained ones — and making them required here would be a claim about the
+   * data that is not true.
+   */
+  previousHash?: string | null
+  hash?: string | null
 }
 
 interface WalletDoc {
@@ -89,6 +103,32 @@ export interface GoldLedgerStoreOptions {
  */
 function toKind(amount: number): EntryKind {
   return amount >= 0 ? 'EARN' : 'SPEND'
+}
+
+/**
+ * Was this entry written after the chain-forward cutover?
+ *
+ * The distinction is the whole point of chaining forward rather than migrating:
+ * both kinds of row are legitimate, and only one of them carries a guarantee.
+ * Callers that report on the ledger need to be able to tell them apart without
+ * knowing a date.
+ */
+export function isChained(entry: Entry): boolean {
+  return entry.hash !== ''
+}
+
+/** What `auditChain` found for one identity's holding. */
+export interface ChainAudit {
+  /**
+   * Verdict over the chained entries alone. Pre-cutover rows are excluded
+   * rather than failed: they were never chained, so reporting them as broken
+   * would make every real break impossible to see.
+   */
+  readonly verdict: ChainVerdict
+  readonly chainedEntries: number
+  readonly unchainedEntries: number
+  /** When this identity's chain begins. Null if it has not started. */
+  readonly chainedFrom: Date | null
 }
 
 export class GoldLedgerReader {
@@ -131,9 +171,11 @@ export class GoldLedgerReader {
       source,
       idempotencyKey: doc.idempotencyKey,
       occurredAt: doc.createdAt,
-      // Pre-cutover rows are unchained, and saying so is the honest answer.
-      previousHash: null,
-      hash: '',
+      // Chained rows carry their real links. Pre-cutover rows are unchained,
+      // and the empty hash says so — `Entry.hash` is a string, so there is no
+      // null to return, and an empty one is the value `isChained` tests for.
+      previousHash: doc.previousHash ?? null,
+      hash: doc.hash ?? '',
       metadata: {
         // Kept so nothing is lost in translation: the stored entry type is
         // richer than the domain's EARN/SPEND and callers may want it.
@@ -163,7 +205,11 @@ export class GoldLedgerReader {
 
     return {
       balance: this.toMinorUnits(head.balanceAfter),
-      headHash: null,
+      // Null when the newest entry predates the cutover — that identity's
+      // chain has not started, and the next entry posted for it becomes the
+      // first link. Exactly the rule ClaimYour.Gold's postEntry applies when
+      // it reads its own head, and the two must agree or they fork.
+      headHash: head.hash ?? null,
     }
   }
 
@@ -198,6 +244,47 @@ export class GoldLedgerReader {
       .toArray()
 
     return docs.map((d) => this.fromDoc(d))
+  }
+
+  /**
+   * Verify the chained part of one identity's history.
+   *
+   * Chaining forward buys nothing until something checks the chain, and until
+   * this existed nothing could: the reader discarded the hash fields, so every
+   * entry came back looking unchained no matter how it was written.
+   *
+   * Only the chained suffix is verified. A chain-forward ledger holds two
+   * populations of row, and running `verifyChain` across both reports every
+   * pre-cutover entry as a break — which is not a finding, it is the design,
+   * and it would bury the one break that matters. The counts are returned
+   * alongside so a caller can say how much of the history is actually covered
+   * rather than implying all of it is.
+   *
+   * A gap in the middle — an unchained row appearing after chained ones — is
+   * left to fail the verdict rather than being filtered away. That ordering
+   * cannot happen if `postEntry` is the only writer, so if it appears, a
+   * second writer exists and that is precisely what needs surfacing.
+   */
+  async auditChain(identityId: string, assetId: string): Promise<ChainAudit> {
+    const all = await this.readEntries(identityId, assetId)
+    const firstChained = all.findIndex(isChained)
+
+    if (firstChained === -1) {
+      return {
+        verdict: { valid: true, problems: [] },
+        chainedEntries: 0,
+        unchainedEntries: all.length,
+        chainedFrom: null,
+      }
+    }
+
+    const chained = all.slice(firstChained)
+    return {
+      verdict: verifyChain(chained),
+      chainedEntries: chained.length,
+      unchainedEntries: firstChained,
+      chainedFrom: chained[0]?.occurredAt ?? null,
+    }
   }
 
   async findByIdempotencyKey(key: string): Promise<Entry | null> {

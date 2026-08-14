@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Db } from 'mongodb'
-import { GoldLedgerReader } from '../src/index.js'
+import { GoldLedgerReader, hashEntry, isChained, minor, verifyEntry } from '../src/index.js'
 
 /**
  * The conversion is the whole risk in this adapter.
@@ -28,6 +28,8 @@ interface FakeDoc {
   description?: string | null
   metadata?: Record<string, unknown> | null
   createdAt: Date
+  previousHash?: string | null
+  hash?: string | null
 }
 
 /** Enough of the driver's surface for the reader, and no more. */
@@ -119,11 +121,19 @@ describe('GoldLedgerReader', () => {
     expect((await r.readState('cust1', 'asset_fg')).balance).toBe(12300)
   })
 
-  it('never reports a chain head, because pre-cutover rows have none', async () => {
+  it('reports no chain head when the newest entry predates the cutover', async () => {
     // Inventing one would look like tamper-evidence to every caller while
     // proving nothing at all.
     const r = new GoldLedgerReader(fakeDb([doc()]))
     expect((await r.readState('cust1', 'asset_fg')).headHash).toBeNull()
+  })
+
+  it('reports the real chain head once one has been written', async () => {
+    // The opposite error to inventing a hash, and the more dangerous of the
+    // two: a caller that posts from a null head starts a second chain beside
+    // the live one, and nothing notices until someone verifies.
+    const r = new GoldLedgerReader(fakeDb([doc({ hash: 'abc123', previousHash: null })]))
+    expect((await r.readState('cust1', 'asset_fg')).headHash).toBe('abc123')
   })
 
   it('classifies by sign, and keeps the original entry type', async () => {
@@ -188,5 +198,119 @@ describe('GoldLedgerReader', () => {
   it('treats a missing wallet as a zero balance', async () => {
     const r = new GoldLedgerReader(fakeDb([doc({ balanceAfter: 5 })], []))
     expect(await r.verifyBalance('cust1', 'asset_fg')).toEqual({ ok: false, wallet: 0, ledger: 500 })
+  })
+})
+
+/**
+ * The chain-forward contract, from the reading side.
+ *
+ * ClaimYour.Gold's `postEntry` writes the hash; this package defines what the
+ * hash is over. Those are two repositories, and the only thing keeping them
+ * agreeing is that both call `hashEntry` with the same fields in the same
+ * units. `chained()` below constructs a row exactly as `postEntry` does — minor
+ * units into the digest, major units into the columns, `createdAt` set to the
+ * instant that was hashed rather than left to the database clock — so if either
+ * side of that contract moves, these fail rather than production doing so
+ * quietly on the next audit.
+ */
+function chained(
+  over: Partial<FakeDoc> & { amount: number; balanceBefore: number; balanceAfter: number },
+  previousHash: string | null,
+): FakeDoc {
+  const base = doc(over)
+  const scale = 100
+  const toMinor = (major: number) => minor(Math.round(major * scale))
+
+  const hash = hashEntry({
+    previousHash,
+    tenantId: base.tenantId,
+    identityId: base.customerId,
+    assetId: base.assetId,
+    amount: toMinor(base.amount),
+    balanceBefore: toMinor(base.balanceBefore),
+    balanceAfter: toMinor(base.balanceAfter),
+    kind: base.amount >= 0 ? 'EARN' : 'SPEND',
+    source: { type: base.sourceType, ...(base.sourceId ? { id: base.sourceId } : {}) },
+    idempotencyKey: base.idempotencyKey,
+    occurredAt: base.createdAt,
+  })
+
+  return { ...base, previousHash, hash }
+}
+
+describe('GoldLedgerReader, on a chain-forward ledger', () => {
+  const first = chained(
+    { _id: 'c1', idempotencyKey: 'k-c1', amount: 10, balanceBefore: 0, balanceAfter: 10 },
+    null,
+  )
+  const second = chained(
+    {
+      _id: 'c2',
+      idempotencyKey: 'k-c2',
+      amount: -2.5,
+      balanceBefore: 10,
+      balanceAfter: 7.5,
+      sourceType: 'duel',
+      sourceId: 'd7',
+      createdAt: new Date('2026-08-02T00:00:00Z'),
+    },
+    first.hash as string,
+  )
+
+  it('reads back an entry that still verifies against its own hash', async () => {
+    // The cross-repo contract in one assertion: a row written the way
+    // postEntry writes it, read back through this adapter, recomputes to the
+    // same digest. If the field order, the units, or the timestamp source
+    // drifts on either side, this is what fails.
+    const r = new GoldLedgerReader(fakeDb([first]))
+    const entry = only(await r.readEntries('cust1', 'asset_fg'))
+    expect(verifyEntry(entry)).toBe(true)
+  })
+
+  it('distinguishes chained rows from the years of unchained ones', async () => {
+    const r = new GoldLedgerReader(fakeDb([doc({ _id: 'old', idempotencyKey: 'k-old' }), first]))
+    const entries = await r.readEntries('cust1', 'asset_fg')
+    expect(entries.map(isChained)).toEqual([false, true])
+  })
+
+  it('verifies the chained suffix and says how much of the history that is', async () => {
+    const old = doc({ _id: 'old', idempotencyKey: 'k-old', createdAt: new Date('2026-07-01T00:00:00Z') })
+    const r = new GoldLedgerReader(fakeDb([old, first, second]))
+
+    const audit = await r.auditChain('cust1', 'asset_fg')
+    expect(audit.verdict.valid).toBe(true)
+    expect(audit.chainedEntries).toBe(2)
+    // Reported rather than hidden: a caller must be able to say the guarantee
+    // covers two of three entries, not imply it covers all of them.
+    expect(audit.unchainedEntries).toBe(1)
+    expect(audit.chainedFrom).toEqual(first.createdAt)
+  })
+
+  it('passes an identity whose history is entirely pre-cutover, covering nothing', async () => {
+    // Not a break. Reporting these as failures would bury every real one.
+    const r = new GoldLedgerReader(fakeDb([doc()]))
+    const audit = await r.auditChain('cust1', 'asset_fg')
+    expect(audit.verdict.valid).toBe(true)
+    expect(audit.chainedEntries).toBe(0)
+    expect(audit.chainedFrom).toBeNull()
+  })
+
+  it('catches an edited amount, and every entry after it', async () => {
+    const tampered = { ...first, amount: 1_000_000 }
+    const r = new GoldLedgerReader(fakeDb([tampered, second]))
+
+    const audit = await r.auditChain('cust1', 'asset_fg')
+    expect(audit.verdict.valid).toBe(false)
+    // Both: the edited row no longer matches its own hash, and the row after
+    // it no longer opens where the edited one now closes. That second failure
+    // is the property chaining buys — a tamperer has to rewrite the rest too.
+    expect(audit.verdict.problems.length).toBeGreaterThan(1)
+  })
+
+  it('fails an unchained row that appears after chained ones', async () => {
+    // Impossible while postEntry is the only writer, which is exactly why it
+    // is left to fail loudly rather than filtered out as noise.
+    const r = new GoldLedgerReader(fakeDb([first, doc({ _id: 'rogue', idempotencyKey: 'k-rogue' })]))
+    expect((await r.auditChain('cust1', 'asset_fg')).verdict.valid).toBe(false)
   })
 })

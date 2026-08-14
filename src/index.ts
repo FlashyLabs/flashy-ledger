@@ -66,5 +66,5 @@ export type { MongoLedgerStoreOptions } from './adapters/mongo.js'
 // types before the format migration happens. Writing stays with postEntry
 // while both formats coexist — see the file for why that is enforced by the
 // type rather than by convention.
-export { GoldLedgerReader } from './adapters/gold-ledger.js'
-export type { GoldLedgerStoreOptions } from './adapters/gold-ledger.js'
+export { GoldLedgerReader, isChained } from './adapters/gold-ledger.js'
+export type { ChainAudit, GoldLedgerStoreOptions } from './adapters/gold-ledger.js'
