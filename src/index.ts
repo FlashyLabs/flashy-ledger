@@ -60,3 +60,11 @@ export { isTransactional } from './ports/store.js'
 export { InMemoryLedgerStore } from './adapters/memory.js'
 export { MongoLedgerStore } from './adapters/mongo.js'
 export type { MongoLedgerStoreOptions } from './adapters/mongo.js'
+
+// Read-only, and not a LedgerStore. It reads ClaimYour.Gold's existing
+// gold_ledger so consumers can query the live ledger through this package's
+// types before the format migration happens. Writing stays with postEntry
+// while both formats coexist — see the file for why that is enforced by the
+// type rather than by convention.
+export { GoldLedgerReader } from './adapters/gold-ledger.js'
+export type { GoldLedgerStoreOptions } from './adapters/gold-ledger.js'

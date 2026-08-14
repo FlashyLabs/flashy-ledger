@@ -1,0 +1,179 @@
+import { describe, expect, it } from 'vitest'
+import type { Db } from 'mongodb'
+import { GoldLedgerReader } from '../src/index.js'
+
+/**
+ * The conversion is the whole risk in this adapter.
+ *
+ * ClaimYour.Gold stores gold as a floating-point number of major units. This
+ * package works in integer minor units. Everything else here is a query; the
+ * arithmetic at that boundary is where money can quietly disappear, so it is
+ * tested against a fake collection rather than left to a database that is not
+ * available at build time.
+ */
+
+interface FakeDoc {
+  _id: string
+  publicId: string
+  tenantId: string
+  customerId: string
+  assetId: string
+  entryType: string
+  amount: number
+  balanceBefore: number
+  balanceAfter: number
+  sourceType: string
+  sourceId?: string | null
+  idempotencyKey: string
+  description?: string | null
+  metadata?: Record<string, unknown> | null
+  createdAt: Date
+}
+
+/** Enough of the driver's surface for the reader, and no more. */
+function fakeDb(entries: FakeDoc[], wallets: { customerId: string; goldBalance: number }[] = []): Db {
+  const cursor = (rows: unknown[]) => ({
+    sort: () => cursor(rows),
+    limit: (n: number) => cursor(rows.slice(0, n)),
+    toArray: async () => rows,
+  })
+
+  return {
+    collection: (name: string) => {
+      if (name === 'wallets') {
+        return {
+          findOne: async (f: { customerId: string }) =>
+            wallets.find((w) => w.customerId === f.customerId) ?? null,
+        }
+      }
+      return {
+        findOne: async (f: Record<string, unknown>, opts?: { sort?: Record<string, number> }) => {
+          const matched = entries.filter((e) =>
+            Object.entries(f).every(([k, v]) => (e as never)[k] === v),
+          )
+          if (matched.length === 0) return null
+          // Mirror the driver: a descending sort means the caller wants the
+          // newest, which for these tests is the last one inserted.
+          const desc = opts?.sort ? Object.values(opts.sort)[0] === -1 : false
+          return desc ? matched[matched.length - 1] : matched[0]
+        },
+        find: (f: Record<string, unknown>) =>
+          cursor(entries.filter((e) => Object.entries(f).every(([k, v]) => (e as never)[k] === v))),
+      }
+    },
+  } as unknown as Db
+}
+
+function doc(over: Partial<FakeDoc> = {}): FakeDoc {
+  return {
+    _id: 'e1',
+    publicId: 'pub-1',
+    tenantId: 'flashy',
+    customerId: 'cust1',
+    assetId: 'asset_fg',
+    entryType: 'EARN_QUEST',
+    amount: 10,
+    balanceBefore: 0,
+    balanceAfter: 10,
+    sourceType: 'quest',
+    idempotencyKey: 'k1',
+    createdAt: new Date('2026-08-01T00:00:00Z'),
+    ...over,
+  }
+}
+
+describe('GoldLedgerReader', () => {
+  it('reports an empty state for an identity with no entries', async () => {
+    const r = new GoldLedgerReader(fakeDb([]))
+    expect(await r.readState('nobody', 'asset_fg')).toEqual({ balance: 0, headHash: null })
+  })
+
+  it('converts major units to minor units', async () => {
+    const r = new GoldLedgerReader(fakeDb([doc({ amount: 12.34, balanceAfter: 12.34 })]))
+    const state = await r.readState('cust1', 'asset_fg')
+    expect(state.balance).toBe(1234)
+  })
+
+  it('rounds a float that reads back imprecisely, rather than truncating it', async () => {
+    // 12.34 written to a float column can read back as 12.339999999999998.
+    // Truncating loses a whole minor unit per entry, always downward.
+    const r = new GoldLedgerReader(fakeDb([doc({ balanceAfter: 12.339999999999998 })]))
+    expect((await r.readState('cust1', 'asset_fg')).balance).toBe(1234)
+  })
+
+  it('honours a non-default decimal scale', async () => {
+    const r = new GoldLedgerReader(fakeDb([doc({ balanceAfter: 12.3 })]), { decimals: 3 })
+    expect((await r.readState('cust1', 'asset_fg')).balance).toBe(12300)
+  })
+
+  it('never reports a chain head, because pre-cutover rows have none', async () => {
+    // Inventing one would look like tamper-evidence to every caller while
+    // proving nothing at all.
+    const r = new GoldLedgerReader(fakeDb([doc()]))
+    expect((await r.readState('cust1', 'asset_fg')).headHash).toBeNull()
+  })
+
+  it('classifies by sign, and keeps the original entry type', async () => {
+    const r = new GoldLedgerReader(
+      fakeDb([doc({ amount: -5, entryType: 'SPEND_WAGER', balanceAfter: 5 })]),
+    )
+    const [entry] = await r.readEntries('cust1', 'asset_fg')
+
+    expect(entry.kind).toBe('SPEND')
+    expect(entry.amount).toBe(-500)
+    // The stored enum is richer than EARN/SPEND, so it survives translation
+    // rather than being flattened away.
+    expect(entry.metadata?.goldLedgerEntryType).toBe('SPEND_WAGER')
+  })
+
+  it('carries the source through as type and id', async () => {
+    const r = new GoldLedgerReader(fakeDb([doc({ sourceType: 'duel', sourceId: 'd7' })]))
+    const [entry] = await r.readEntries('cust1', 'asset_fg')
+    expect(entry.source).toEqual({ type: 'duel', id: 'd7' })
+  })
+
+  it('omits the source id when there is none', async () => {
+    const r = new GoldLedgerReader(fakeDb([doc({ sourceId: null })]))
+    const [entry] = await r.readEntries('cust1', 'asset_fg')
+    expect(entry.source).toEqual({ type: 'quest' })
+  })
+
+  it('finds an entry by idempotency key, and nothing by an unused one', async () => {
+    const r = new GoldLedgerReader(fakeDb([doc({ idempotencyKey: 'quest:7' })]))
+    expect((await r.findByIdempotencyKey('quest:7'))?.idempotencyKey).toBe('quest:7')
+    expect(await r.findByIdempotencyKey('never')).toBeNull()
+  })
+
+  it('caps how many recent entries it will return', async () => {
+    const many = Array.from({ length: 300 }, (_, i) => doc({ _id: `e${i}`, idempotencyKey: `k${i}` }))
+    const r = new GoldLedgerReader(fakeDb(many))
+    // A long-lived hunter has thousands of entries and no endpoint should
+    // serialise all of them to answer "what happened lately?".
+    expect(await r.readRecentEntries('cust1', 'asset_fg', 1000)).toHaveLength(200)
+    expect(await r.readRecentEntries('cust1', 'asset_fg', 10)).toHaveLength(10)
+  })
+
+  it('confirms the wallet cache agrees with the ledger', async () => {
+    const r = new GoldLedgerReader(
+      fakeDb([doc({ balanceAfter: 42 })], [{ customerId: 'cust1', goldBalance: 42 }]),
+    )
+    expect(await r.verifyBalance('cust1', 'asset_fg')).toEqual({ ok: true, wallet: 4200, ledger: 4200 })
+  })
+
+  it('reports drift when the wallet cache disagrees with the ledger', async () => {
+    // This is the question that has never been answered against production
+    // data — the wallet is a cached fold, and it is the cache that drifts.
+    const r = new GoldLedgerReader(
+      fakeDb([doc({ balanceAfter: 42 })], [{ customerId: 'cust1', goldBalance: 7 }]),
+    )
+    const result = await r.verifyBalance('cust1', 'asset_fg')
+    expect(result.ok).toBe(false)
+    expect(result.wallet).toBe(700)
+    expect(result.ledger).toBe(4200)
+  })
+
+  it('treats a missing wallet as a zero balance', async () => {
+    const r = new GoldLedgerReader(fakeDb([doc({ balanceAfter: 5 })], []))
+    expect(await r.verifyBalance('cust1', 'asset_fg')).toEqual({ ok: false, wallet: 0, ledger: 500 })
+  })
+})
