@@ -17,7 +17,7 @@ export interface Asset {
   readonly tenantId: string;
 }
 
-export type AssetClass = 'REWARD_CURRENCY' | 'COMMODITY_UNIT' | 'PARTNER_CREDIT';
+export type AssetClass = 'REWARD_CURRENCY' | 'COMMODITY_UNIT' | 'PARTNER_CREDIT' | 'SKILL_XP';
 
 export function assetRegistry(assets: readonly Asset[]): ReadonlyMap<string, Asset> {
   return new Map(assets.map((a) => [a.id, a]));

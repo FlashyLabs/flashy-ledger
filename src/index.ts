@@ -51,6 +51,16 @@ export { post, postTransfer, reverse } from './domain/post.js'
 
 export { balanceOf, balancesByAsset, stateFrom } from './domain/fold.js'
 
+export type { SkillKey } from './domain/experience.js'
+export {
+  SKILL_KEYS,
+  skillAsset,
+  skillAssetRegistry,
+  skillAssets,
+  skillForAssetId,
+  xpIdempotencyKey,
+} from './domain/experience.js'
+
 export { LedgerError } from './domain/errors.js'
 export type { LedgerErrorCode } from './domain/errors.js'
 
