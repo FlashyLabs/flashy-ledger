@@ -1,0 +1,216 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// THE FLASHY LEDGER
+//
+// One book, for Flashy Gold and every asset that follows it. Two properties
+// are non-negotiable here, and both are things the existing implementation
+// inside Claim Your Gold does not have:
+//
+//   1. MONEY IS AN INTEGER. Every amount in this schema is a BigInt in the
+//      asset's minor units. There is no Float anywhere and there never will
+//      be. Float error is survivable at human volume and systematically
+//      unsurvivable at agent volume, because an agent economy is precisely a
+//      system with nobody watching any individual transaction.
+//
+//   2. EVERY MOVEMENT IS DOUBLE-ENTRY. A Transfer creates two or more Entry
+//      rows that sum to exactly zero. This is not bookkeeping ceremony: it
+//      converts "is the ledger correct?" from an unanswerable question into
+//      a single query. SUM(amount) over the whole table must be 0, forever.
+//      A single-sided write — the bug class that silently destroys ledgers —
+//      cannot hide from that.
+//
+// Balances are a PROJECTION over entries, never an authority. That is the
+// same rule already applied to org reputation in FlashyOS: standing is
+// derived from events, never stored as an assertion.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Who can hold value ────────────────────────────────────────────────────
+// A party is a person or an organization, and the distinction is structural
+// rather than a convention someone has to remember.
+//
+// Organizations hold value in their own right specifically so an agent's
+// spend is never drawn from its owner's personal balance. If it were, an
+// agent's spending would be indistinguishable from the founder's, which
+// means it could not be capped, audited, or cut off when an agent is
+// compromised.
+enum PartyKind {
+  PERSON
+  ORG
+  // The counterparty for value entering or leaving the system. Every mint
+  // and every redemption needs somewhere for the other half of the entry to
+  // land, or double-entry cannot balance. Deliberately a party kind rather
+  // than a special case in code — a special case is a place the invariant
+  // can be quietly excepted.
+  SYSTEM
+}
+
+model Party {
+  id        String    @id @default(cuid())
+  kind      PartyKind
+  // The FlashyID (person), FlashyOS org id (org), or reserved name (system).
+  // Owned by the identity service, not by this one — the ledger deliberately
+  // knows nothing about how identity is established.
+  externalId String
+  displayName String  @default("")
+  createdAt DateTime  @default(now())
+
+  accounts  Account[]
+
+  @@unique([kind, externalId])
+  @@index([externalId])
+}
+
+// ─── What can be held ──────────────────────────────────────────────────────
+enum AssetKind {
+  // Flashy Gold and anything else the civilization issues itself.
+  NATIVE
+  // Points, miles, issuer currencies brought in from outside.
+  PARTNER
+  // Represents an off-ledger asset held elsewhere.
+  WRAPPED
+}
+
+model Asset {
+  id       String    @id @default(cuid())
+  slug     String    @unique
+  name     String
+  symbol   String
+  // How many minor units make one major unit — 2 means amounts are stored in
+  // hundredths. Amounts are ALWAYS minor units; this field exists only for
+  // formatting at the edges, and nothing in this service ever divides by it.
+  decimals Int       @default(2)
+  kind     AssetKind @default(NATIVE)
+  isActive Boolean   @default(true)
+  createdAt DateTime @default(now())
+
+  accounts Account[]
+  entries  Entry[]
+
+  @@index([kind, isActive])
+}
+
+// ─── Where value sits ──────────────────────────────────────────────────────
+// One account per (party, asset). The balance column is a cached projection
+// of this account's entries — see ledgerService for why it is written only
+// inside the same transaction as the entries it summarizes, and why it can
+// always be rebuilt from zero.
+model Account {
+  id       String @id @default(cuid())
+  partyId  String
+  party    Party  @relation(fields: [partyId], references: [id])
+  assetId  String
+  asset    Asset  @relation(fields: [assetId], references: [id])
+
+  // Minor units. Projection — authoritative value is SUM(entries.amount).
+  balance  BigInt @default(0)
+
+  // Whether this account may go negative. False for everyone except SYSTEM
+  // parties: the system account is the source of issued value, so it is
+  // negative by construction and that negative IS the total ever minted.
+  allowNegative Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  entries  Entry[]
+
+  @@unique([partyId, assetId])
+  @@index([assetId])
+}
+
+// ─── Movements ─────────────────────────────────────────────────────────────
+// A Transfer is the logical act ("Academy paid a hunter for a completed
+// track"). Its Entry rows are the accounting.
+//
+// idempotencyKey is unique and required, not optional. Optional idempotency
+// is the same as no idempotency, because the one caller who forgets is the
+// one that double-credits during a retry storm — and a retry storm is
+// exactly when it happens.
+model Transfer {
+  id             String   @id @default(cuid())
+  idempotencyKey String   @unique
+  // What caused this: "academy.track_completed", "flashyos.task_completed",
+  // "redemption.fulfilled". Free-form so new surfaces don't need a migration,
+  // indexed so provenance is queryable.
+  reason         String
+  // Correlates back to the originating event on the spine.
+  eventId        String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  entries        Entry[]
+  settlements    Settlement[]
+
+  @@index([reason, createdAt])
+  @@index([eventId])
+}
+
+// One side of a movement. Signed: negative leaves an account, positive
+// arrives. The entries of a transfer sum to zero — enforced in the service
+// and asserted by the invariant checker over the whole table.
+model Entry {
+  id         String   @id @default(cuid())
+  transferId String
+  transfer   Transfer @relation(fields: [transferId], references: [id])
+  accountId  String
+  account    Account  @relation(fields: [accountId], references: [id])
+  // Denormalized from the account so the global invariant can be checked
+  // per-asset without a join across the whole table.
+  assetId    String
+  asset      Asset    @relation(fields: [assetId], references: [id])
+
+  // Minor units, signed. Never zero — a zero entry carries no information
+  // and would only ever be a bug that balanced.
+  amount     BigInt
+  createdAt  DateTime @default(now())
+
+  @@index([accountId, createdAt])
+  @@index([assetId])
+  @@index([transferId])
+}
+
+// ─── Settlement ────────────────────────────────────────────────────────────
+// Where a transfer was mirrored, if anywhere.
+//
+// This table sits BELOW the ledger, not above it. The ledger is the book; a
+// chain is a wire network, and banks did not move their books onto SWIFT. If
+// balances lived on-chain, a chain outage would be a product outage, its
+// fees would be our unit economics, and unplugging it would mean losing the
+// balances. As a record hanging off an already-authoritative transfer,
+// adding a venue is an integration and removing one is a config change.
+//
+// Nothing in this service ever asks a settlement venue what a balance is.
+enum SettlementStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  // The venue was removed while this was in flight. Kept rather than deleted
+  // so history stays honest about where value was once mirrored.
+  ABANDONED
+}
+
+model Settlement {
+  id         String           @id @default(cuid())
+  transferId String
+  transfer   Transfer         @relation(fields: [transferId], references: [id])
+  // Adapter name: "native", "ton", "base". Not an enum — adding a venue must
+  // not require a migration, or "pluggable" isn't true.
+  venue      String
+  status     SettlementStatus @default(PENDING)
+  // The venue's own identifier: a tx hash, a batch id, null while pending.
+  externalRef String?
+  error      String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@unique([transferId, venue])
+  @@index([venue, status])
+}
