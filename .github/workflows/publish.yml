@@ -27,12 +27,18 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          # Scopes this Node install's npm to GH Packages for the @flashy
-          # scope specifically — matches package.json's own publishConfig,
-          # stated here too so `npm publish` doesn't depend on the working
-          # directory already having a correct .npmrc.
+          # Scopes this Node install's npm to GH Packages for the
+          # @flashylabs scope specifically — matches package.json's own
+          # publishConfig, stated here too so `npm publish` doesn't depend
+          # on the working directory already having a correct .npmrc.
+          #
+          # Not @flashy: GitHub Packages requires the npm scope to exactly
+          # match the GitHub account that owns the repo (FlashyLabs), or it
+          # refuses to create the package regardless of token permissions —
+          # this is what "installation does not exist" / "permission_denied:
+          # create_package" actually meant, on every prior publish attempt.
           registry-url: https://npm.pkg.github.com
-          scope: "@flashy"
+          scope: "@flashylabs"
 
       - run: npm ci
       - run: npm run typecheck

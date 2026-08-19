@@ -1,6 +1,6 @@
 {
-  "name": "@flashy/ledger",
-  "version": "0.1.1",
+  "name": "@flashylabs/ledger",
+  "version": "0.1.2",
   "description": "Append-only, multi-asset settlement ledger. Storage-agnostic by construction.",
   "license": "UNLICENSED",
   "type": "module",
