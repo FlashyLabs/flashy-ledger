@@ -1,0 +1,56 @@
+name: Publish
+
+# Tag-triggered, not push-to-main-triggered — a merge to main should not be
+# indistinguishable from a release. Push a version tag (git tag v0.1.0 && git
+# push --tags) when you actually mean to publish.
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  # The one thing this workflow needs beyond the default. No NPM_TOKEN secret
+  # to create or rotate — GITHUB_TOKEN already has package-publish rights to
+  # this repo's own packages when a workflow explicitly asks for them here.
+  packages: write
+
+jobs:
+  publish:
+    name: Build and publish to GitHub Packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          # Scopes this Node install's npm to GH Packages for the @flashy
+          # scope specifically — matches package.json's own publishConfig,
+          # stated here too so `npm publish` doesn't depend on the working
+          # directory already having a correct .npmrc.
+          registry-url: https://npm.pkg.github.com
+          scope: "@flashy"
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+
+      # The tag is the source of truth for "what version am I publishing,"
+      # not a value someone could forget to bump in package.json before
+      # tagging. Refusing on mismatch turns that class of mistake into a
+      # failed job instead of a wrongly-versioned package on the registry.
+      - name: Verify tag matches package.json version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $PKG_VERSION" >&2
+            exit 1
+          fi
+
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
