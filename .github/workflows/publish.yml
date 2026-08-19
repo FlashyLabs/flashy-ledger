@@ -51,6 +51,11 @@ jobs:
             exit 1
           fi
 
+      # GITHUB_TOKEN's automatic Packages authorization was returning
+      # "403 ... The requested installation does not exist" on every publish
+      # attempt here and on flashy-contracts both, against an otherwise
+      # correct workflow — a known gap between GITHUB_TOKEN and GitHub
+      # Packages. A classic PAT with write:packages sidesteps it.
       - run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
