@@ -2,7 +2,12 @@ import type { Collection, Db, MongoClient, ObjectId, OptionalId } from 'mongodb'
 import type { Entry, EntryKind, EntrySource } from '../domain/entry.js'
 import type { LedgerState, ProposedEntry } from '../domain/post.js'
 import { ZERO, minor } from '../domain/money.js'
-import type { AppendResult, TransactionalLedgerStore } from '../ports/store.js'
+import type {
+  AccountRef,
+  AppendResult,
+  HistoryRef,
+  TransactionalLedgerStore,
+} from '../ports/store.js'
 
 /**
  * MongoDB implementation of the store port.
@@ -13,12 +18,14 @@ import type { AppendResult, TransactionalLedgerStore } from '../ports/store.js'
  * in this file runs once per process and an index runs on every write from
  * every process forever:
  *
- *   1. `idempotencyKey` is unique. A replay cannot become a second entry even
- *      if two processes race the same key at the same instant.
- *   2. `(identityId, assetId, previousHash)` is unique. This is what stops two
- *      concurrent appends both building on the same chain head — the second
- *      one violates the index and is retried against the new head rather than
- *      silently forking history.
+ *   1. `(tenantId, idempotencyKey)` is unique. A replay cannot become a second
+ *      entry even if two processes race the same key at the same instant — and
+ *      the tenant is part of the key, so two networks deriving the same key
+ *      from similar source events do not deduplicate against each other.
+ *   2. `(tenantId, identityId, assetId, previousHash)` is unique. This is what
+ *      stops two concurrent appends both building on the same chain head — the
+ *      second one violates the index and is retried against the new head rather
+ *      than silently forking history.
  *   3. Nothing updates or deletes. There is no code path in this class that
  *      issues either, matching the port's requirement that entries are
  *      immutable.
@@ -123,7 +130,25 @@ export class MongoLedgerStore implements TransactionalLedgerStore {
    * exists with the same specification.
    */
   async ensureIndexes(): Promise<void> {
-    await this.entries.createIndex({ idempotencyKey: 1 }, { unique: true, name: 'uniq_idempotency' })
+    // The pre-0.2 indexes were globally unique rather than tenant-scoped, and a
+    // surviving one silently defeats the isolation below: the old
+    // `uniq_idempotency` would still reject a second tenant's legitimate write
+    // even though the new index permits it. Creating the new ones without
+    // removing the old would look like a successful migration and behave like
+    // no migration at all, so they are dropped first and by name.
+    for (const legacy of ['uniq_idempotency', 'uniq_chain_head', 'chain_order']) {
+      try {
+        await this.entries.dropIndex(legacy)
+      } catch {
+        // IndexNotFound. Expected on a fresh collection and on any deployment
+        // that has already migrated.
+      }
+    }
+
+    await this.entries.createIndex(
+      { tenantId: 1, idempotencyKey: 1 },
+      { unique: true, name: 'uniq_tenant_idempotency' },
+    )
 
     // The chain-head guard. Two appends that both read the same head produce
     // the same previousHash, and this index lets exactly one of them land.
@@ -133,19 +158,19 @@ export class MongoLedgerStore implements TransactionalLedgerStore {
     // "one entry with no predecessor" is scoped per chain, which is exactly
     // the constraint wanted, rather than one null across the collection.
     await this.entries.createIndex(
-      { identityId: 1, assetId: 1, previousHash: 1 },
-      { unique: true, name: 'uniq_chain_head' },
+      { tenantId: 1, identityId: 1, assetId: 1, previousHash: 1 },
+      { unique: true, name: 'uniq_tenant_chain_head' },
     )
 
     // Reading a chain in order, and finding its head, are the two hot paths.
     await this.entries.createIndex(
-      { identityId: 1, assetId: 1, _id: 1 },
-      { name: 'chain_order' },
+      { tenantId: 1, identityId: 1, assetId: 1, _id: 1 },
+      { name: 'tenant_chain_order' },
     )
   }
 
   async append(proposed: ProposedEntry): Promise<AppendResult> {
-    const existing = await this.findByIdempotencyKey(proposed.idempotencyKey)
+    const existing = await this.findByIdempotencyKey(proposed.tenantId, proposed.idempotencyKey)
     if (existing) return { entry: existing, deduplicated: true }
 
     try {
@@ -158,7 +183,7 @@ export class MongoLedgerStore implements TransactionalLedgerStore {
       // Lost a race. Either on the key — in which case the winner's entry is
       // the answer and this is a replay — or on the chain head, which is a
       // genuine conflict the caller must retry against the new head.
-      const winner = await this.findByIdempotencyKey(proposed.idempotencyKey)
+      const winner = await this.findByIdempotencyKey(proposed.tenantId, proposed.idempotencyKey)
       if (winner) return { entry: winner, deduplicated: true }
 
       throw new Error(
@@ -203,7 +228,7 @@ export class MongoLedgerStore implements TransactionalLedgerStore {
 
         for (const candidate of proposed) {
           const existing = await this.entries.findOne(
-            { idempotencyKey: candidate.idempotencyKey },
+            { tenantId: candidate.tenantId, idempotencyKey: candidate.idempotencyKey },
             { session },
           )
           if (existing) {
@@ -223,9 +248,9 @@ export class MongoLedgerStore implements TransactionalLedgerStore {
     }
   }
 
-  async readState(identityId: string, assetId: string): Promise<LedgerState> {
+  async readState({ tenantId, identityId, assetId }: AccountRef): Promise<LedgerState> {
     const head = await this.entries.findOne(
-      { identityId, assetId },
+      { tenantId, identityId, assetId },
       { sort: { _id: -1 } },
     )
 
@@ -237,14 +262,15 @@ export class MongoLedgerStore implements TransactionalLedgerStore {
     }
   }
 
-  async readEntries(identityId: string, assetId?: string): Promise<readonly Entry[]> {
-    const filter = assetId === undefined ? { identityId } : { identityId, assetId }
+  async readEntries({ tenantId, identityId, assetId }: HistoryRef): Promise<readonly Entry[]> {
+    const filter =
+      assetId === undefined ? { tenantId, identityId } : { tenantId, identityId, assetId }
     const docs = await this.entries.find(filter).sort({ _id: 1 }).toArray()
     return docs.map(fromDoc)
   }
 
-  async findByIdempotencyKey(key: string): Promise<Entry | null> {
-    const doc = await this.entries.findOne({ idempotencyKey: key })
+  async findByIdempotencyKey(tenantId: string, key: string): Promise<Entry | null> {
+    const doc = await this.entries.findOne({ tenantId, idempotencyKey: key })
     return doc ? fromDoc(doc) : null
   }
 }

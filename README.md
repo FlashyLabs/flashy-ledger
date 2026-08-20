@@ -1,4 +1,4 @@
-# @flashy/ledger
+# @flashylabs/ledger
 
 An append-only, multi-asset settlement ledger. Flashy Gold is the first asset on
 it, not the thing itself — ore, stone and wheat are configuration records, not
@@ -21,7 +21,7 @@ npm run check     # typecheck + lint + tests with coverage gates
 ```ts
 import {
   InMemoryLedgerStore, post, fromDecimal, type Asset,
-} from '@flashy/ledger'
+} from '@flashylabs/ledger'
 
 const gold: Asset = {
   id: 'asset_fg', slug: 'flashy-gold', symbol: 'FG',
@@ -30,7 +30,9 @@ const gold: Asset = {
 
 const store = new InMemoryLedgerStore()
 
-const state = await store.readState('identity_1', gold.id)
+const state = await store.readState({
+  tenantId: 'flashy', identityId: 'identity_1', assetId: gold.id,
+})
 const entry = post(state, {
   tenantId: 'flashy',
   identityId: 'identity_1',
@@ -56,6 +58,26 @@ const [debit, credit] = postTransfer(
 )
 await store.appendAll([debit, credit])   // both land, or neither
 ```
+
+## Tenancy is a boundary, not a label
+
+Every read names a tenant, and every uniqueness constraint is scoped to one:
+
+```ts
+await store.readState({ tenantId, identityId, assetId })
+await store.readEntries({ tenantId, identityId })          // assetId optional
+await store.findByIdempotencyKey(tenantId, key)
+```
+
+There is no overload without a tenant, so a cross-tenant read does not compile.
+This matters most for idempotency keys, which are derived from source events —
+two networks running similar mechanics generate colliding keys by construction,
+and a globally scoped lookup would hand one tenant another's entry while
+reporting a successful deduplication.
+
+**Upgrading from 0.1.x:** `ensureIndexes()` drops the pre-0.2 global indexes
+before creating the scoped ones. Run it once per deployment before writing. A
+surviving `uniq_idempotency` silently defeats the change.
 
 ## The five invariants
 
@@ -135,6 +157,13 @@ not invent a rate.
 Pre-1.0. The entry format and hash input are not yet frozen — changing either
 invalidates existing chains, so both will be locked before the first production
 write. See `docs/adr/` for the decisions behind the design.
+
+## The invariants
+
+Six guarantees, numbered so they can be cited in an audit, each mapped to the
+test that proves it: `docs/INVARIANTS.md`. The mapping is itself asserted —
+`tests/invariants.test.ts` fails the build if the document cites a test that no
+longer exists, so a rename cannot quietly hollow out the spec.
 
 ## The mongodb peer dependency
 

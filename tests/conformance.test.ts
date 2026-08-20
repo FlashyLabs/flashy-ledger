@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { MongoClient } from 'mongodb'
 import {
   InMemoryLedgerStore,
@@ -58,12 +58,34 @@ async function propose(
   amount: number,
   key: string,
 ): Promise<ProposedEntry> {
-  const state = await store.readState(identityId, GOLD.id)
+  const state = await store.readState({ tenantId: 'flashy', identityId: identityId, assetId: GOLD.id })
   return post(state, {
     tenantId: 'flashy',
     identityId,
     asset: GOLD,
     amount: fromDecimal(amount, GOLD.decimals),
+    kind: amount >= 0 ? 'EARN' : 'SPEND',
+    source: { type: 'test', id: key },
+    idempotencyKey: key,
+    occurredAt: new Date('2026-08-13T12:00:00Z'),
+  })
+}
+
+/** Same, for a named tenant. Isolation cannot be tested with one tenant. */
+async function proposeFor(
+  store: LedgerStore,
+  tenantId: string,
+  identityId: string,
+  amount: number,
+  key: string,
+): Promise<ProposedEntry> {
+  const asset: Asset = { ...GOLD, tenantId }
+  const state = await store.readState({ tenantId, identityId, assetId: asset.id })
+  return post(state, {
+    tenantId,
+    identityId,
+    asset,
+    amount: fromDecimal(amount, asset.decimals),
     kind: amount >= 0 ? 'EARN' : 'SPEND',
     source: { type: 'test', id: key },
     idempotencyKey: key,
@@ -111,7 +133,7 @@ describe.each(harnesses)('$name', ({ make }) => {
   })
 
   it('reports an empty state for an identity with no entries', async () => {
-    const state = await store.readState('nobody', GOLD.id)
+    const state = await store.readState({ tenantId: 'flashy', identityId: 'nobody', assetId: GOLD.id })
 
     expect(state.balance).toBe(0)
     expect(state.headHash).toBeNull()
@@ -126,7 +148,7 @@ describe.each(harnesses)('$name', ({ make }) => {
     expect(entry.balanceAfter).toBe(2500)
     expect(entry.id).toBeTruthy()
 
-    const state = await store.readState(id, GOLD.id)
+    const state = await store.readState({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })
     expect(state.balance).toBe(2500)
     expect(state.headHash).toBe(entry.hash)
   })
@@ -155,17 +177,17 @@ describe.each(harnesses)('$name', ({ make }) => {
 
     // The balance moved once, not twice. This is the property the whole
     // idempotency design exists for.
-    const state = await store.readState(id, GOLD.id)
+    const state = await store.readState({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })
     expect(state.balance).toBe(4000)
-    expect(await store.readEntries(id, GOLD.id)).toHaveLength(1)
+    expect(await store.readEntries({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })).toHaveLength(1)
   })
 
   it('finds an entry by its idempotency key, and nothing by an unused one', async () => {
     const id = 'id_lookup'
     const { entry } = await store.append(await propose(store, id, 7, `${id}:k`))
 
-    expect((await store.findByIdempotencyKey(`${id}:k`))?.id).toBe(entry.id)
-    expect(await store.findByIdempotencyKey(`${id}:never`)).toBeNull()
+    expect((await store.findByIdempotencyKey('flashy', `${id}:k`))?.id).toBe(entry.id)
+    expect(await store.findByIdempotencyKey('flashy', `${id}:never`)).toBeNull()
   })
 
   it('reads a chain back in the order it was written', async () => {
@@ -174,7 +196,7 @@ describe.each(harnesses)('$name', ({ make }) => {
       await store.append(await propose(store, id, n, `${id}:${n}`))
     }
 
-    const entries = await store.readEntries(id, GOLD.id)
+    const entries = await store.readEntries({ tenantId: 'flashy', identityId: id, assetId: GOLD.id })
     expect(entries.map((e) => e.amount)).toEqual([100, 200, 300, 400])
   })
 
@@ -182,9 +204,9 @@ describe.each(harnesses)('$name', ({ make }) => {
     await store.append(await propose(store, 'id_a', 10, 'id_a:1'))
     await store.append(await propose(store, 'id_b', 99, 'id_b:1'))
 
-    expect((await store.readState('id_a', GOLD.id)).balance).toBe(1000)
-    expect((await store.readState('id_b', GOLD.id)).balance).toBe(9900)
-    expect(await store.readEntries('id_a', GOLD.id)).toHaveLength(1)
+    expect((await store.readState({ tenantId: 'flashy', identityId: 'id_a', assetId: GOLD.id })).balance).toBe(1000)
+    expect((await store.readState({ tenantId: 'flashy', identityId: 'id_b', assetId: GOLD.id })).balance).toBe(9900)
+    expect(await store.readEntries({ tenantId: 'flashy', identityId: 'id_a', assetId: GOLD.id })).toHaveLength(1)
   })
 
   it('declares whether it can commit several entries together', () => {
@@ -204,7 +226,7 @@ describe.each(harnesses)('$name — transfers', ({ make }) => {
   })
 
   it('lands a debit and its matching credit together', async () => {
-    const senderState = await store.readState('id_sender', GOLD.id)
+    const senderState = await store.readState({ tenantId: 'flashy', identityId: 'id_sender', assetId: GOLD.id })
     await store.append(
       post(senderState, {
         tenantId: 'flashy',
@@ -219,8 +241,8 @@ describe.each(harnesses)('$name — transfers', ({ make }) => {
     )
 
     const [from, to] = await Promise.all([
-      store.readState('id_sender', GOLD.id),
-      store.readState('id_recipient', GOLD.id),
+      store.readState({ tenantId: 'flashy', identityId: 'id_sender', assetId: GOLD.id }),
+      store.readState({ tenantId: 'flashy', identityId: 'id_recipient', assetId: GOLD.id }),
     ])
 
     const pair = postTransfer(
@@ -240,11 +262,112 @@ describe.each(harnesses)('$name — transfers', ({ make }) => {
     expect(results).toHaveLength(2)
     expect(results.every((r) => !r.deduplicated)).toBe(true)
 
-    expect((await store.readState('id_sender', GOLD.id)).balance).toBe(7000)
-    expect((await store.readState('id_recipient', GOLD.id)).balance).toBe(3000)
+    expect((await store.readState({ tenantId: 'flashy', identityId: 'id_sender', assetId: GOLD.id })).balance).toBe(7000)
+    expect((await store.readState({ tenantId: 'flashy', identityId: 'id_recipient', assetId: GOLD.id })).balance).toBe(3000)
   })
 
   it('treats an empty batch as a no-op rather than an error', async () => {
     expect(await store.appendAll([])).toEqual([])
+  })
+})
+
+/**
+ * Tenant isolation.
+ *
+ * These run against every adapter, because isolation is a property of the port
+ * rather than of any one implementation — an in-memory reference that isolates
+ * while the database adapter does not would be worse than neither doing it,
+ * since the suite would report a guarantee production does not have.
+ *
+ * Every case here fails against the pre-0.2 adapters, where `tenantId` was
+ * written onto every entry and used in no query, no index and no signature.
+ */
+describe.each(harnesses)('$name — tenant isolation', ({ make }) => {
+  let store: LedgerStore
+
+  beforeEach(async () => {
+    store = await make()
+  })
+
+  it('lets two tenants use the same idempotency key without deduplicating', async () => {
+    // The failure this prevents: keys are derived from source events — this
+    // package's own example is `quest:q_9:identity_1` — so two networks running
+    // similar mechanics collide by construction. Globally scoped, tenant B's
+    // legitimate award silently returns tenant A's entry and reports success.
+    const key = 'quest:q_9:identity_1'
+
+    const a = await store.append(await proposeFor(store, 'flashy', 'identity_1', 10, key))
+    const b = await store.append(await proposeFor(store, 'acme', 'identity_1', 25, key))
+
+    expect(a.deduplicated).toBe(false)
+    expect(b.deduplicated).toBe(false)
+    expect(b.entry.id).not.toBe(a.entry.id)
+    expect(b.entry.amount).toBe(2500)
+    expect(a.entry.amount).toBe(1000)
+  })
+
+  it('gives each tenant its own chain head for the same identity and asset', async () => {
+    // Both first entries carry previousHash null. Under a chain-head index that
+    // is not tenant-scoped, the second is rejected as a duplicate — a correct
+    // write refused because an unrelated network got there first.
+    await store.append(await proposeFor(store, 'flashy', 'shared_identity', 10, 'k_flashy'))
+    await store.append(await proposeFor(store, 'acme', 'shared_identity', 10, 'k_acme'))
+
+    const flashy = await store.readEntries({ tenantId: 'flashy', identityId: 'shared_identity' })
+    const acme = await store.readEntries({ tenantId: 'acme', identityId: 'shared_identity' })
+
+    expect(flashy).toHaveLength(1)
+    expect(acme).toHaveLength(1)
+    expect(flashy[0]?.previousHash).toBeNull()
+    expect(acme[0]?.previousHash).toBeNull()
+  })
+
+  it('scopes readState, so a balance is never a sum of two tenants books', async () => {
+    await store.append(await proposeFor(store, 'flashy', 'identity_1', 10, 'k1'))
+    await store.append(await proposeFor(store, 'acme', 'identity_1', 25, 'k2'))
+
+    const flashy = await store.readState({
+      tenantId: 'flashy',
+      identityId: 'identity_1',
+      assetId: GOLD.id,
+    })
+    const acme = await store.readState({
+      tenantId: 'acme',
+      identityId: 'identity_1',
+      assetId: GOLD.id,
+    })
+
+    expect(flashy.balance).toBe(1000)
+    expect(acme.balance).toBe(2500)
+  })
+
+  it('scopes readEntries', async () => {
+    await store.append(await proposeFor(store, 'flashy', 'identity_1', 10, 'k1'))
+    await store.append(await proposeFor(store, 'acme', 'identity_1', 25, 'k2'))
+
+    const entries = await store.readEntries({
+      tenantId: 'flashy',
+      identityId: 'identity_1',
+      assetId: GOLD.id,
+    })
+
+    expect(entries).toHaveLength(1)
+    expect(entries.every((e) => e.tenantId === 'flashy')).toBe(true)
+  })
+
+  it('scopes findByIdempotencyKey, so a lookup never returns another tenants entry', async () => {
+    await store.append(await proposeFor(store, 'flashy', 'identity_1', 10, 'shared_key'))
+
+    expect(await store.findByIdempotencyKey('acme', 'shared_key')).toBeNull()
+    expect((await store.findByIdempotencyKey('flashy', 'shared_key'))?.tenantId).toBe('flashy')
+  })
+
+  it('still deduplicates a genuine replay within one tenant', async () => {
+    // The isolation must not have been bought by weakening idempotency.
+    const first = await store.append(await proposeFor(store, 'acme', 'identity_1', 10, 'replay'))
+    const second = await store.append(await proposeFor(store, 'acme', 'identity_1', 10, 'replay'))
+
+    expect(second.deduplicated).toBe(true)
+    expect(second.entry.id).toBe(first.entry.id)
   })
 })

@@ -2,6 +2,7 @@ import type { Collection, Db, ObjectId } from 'mongodb'
 import type { Entry, EntryKind, EntrySource } from '../domain/entry.js'
 import type { LedgerState } from '../domain/post.js'
 import { ZERO, minor, type Minor } from '../domain/money.js'
+import type { AccountRef, HistoryRef } from '../ports/store.js'
 
 /**
  * A read-only view of ClaimYour.Gold's existing ledger.
@@ -153,9 +154,9 @@ export class GoldLedgerReader {
    * is the one to believe — the wallet is a cached fold over entries, and it is
    * the cache that has historically drifted.
    */
-  async readState(identityId: string, assetId: string): Promise<LedgerState> {
+  async readState({ tenantId, identityId, assetId }: AccountRef): Promise<LedgerState> {
     const head = await this.entries.findOne(
-      { customerId: identityId, assetId },
+      { tenantId, customerId: identityId, assetId },
       { sort: { createdAt: -1, _id: -1 } },
     )
 
@@ -167,9 +168,11 @@ export class GoldLedgerReader {
     }
   }
 
-  async readEntries(identityId: string, assetId?: string): Promise<readonly Entry[]> {
+  async readEntries({ tenantId, identityId, assetId }: HistoryRef): Promise<readonly Entry[]> {
     const filter =
-      assetId === undefined ? { customerId: identityId } : { customerId: identityId, assetId }
+      assetId === undefined
+        ? { tenantId, customerId: identityId }
+        : { tenantId, customerId: identityId, assetId }
 
     const docs = await this.entries
       .find(filter)
@@ -187,12 +190,11 @@ export class GoldLedgerReader {
    * endpoint should serialise all of them to answer "what happened lately?".
    */
   async readRecentEntries(
-    identityId: string,
-    assetId: string,
+    { tenantId, identityId, assetId }: AccountRef,
     limit = 50,
   ): Promise<readonly Entry[]> {
     const docs = await this.entries
-      .find({ customerId: identityId, assetId })
+      .find({ tenantId, customerId: identityId, assetId })
       .sort({ createdAt: -1, _id: -1 })
       .limit(Math.min(limit, 200))
       .toArray()
@@ -200,8 +202,8 @@ export class GoldLedgerReader {
     return docs.map((d) => this.fromDoc(d))
   }
 
-  async findByIdempotencyKey(key: string): Promise<Entry | null> {
-    const doc = await this.entries.findOne({ idempotencyKey: key })
+  async findByIdempotencyKey(tenantId: string, key: string): Promise<Entry | null> {
+    const doc = await this.entries.findOne({ tenantId, idempotencyKey: key })
     return doc ? this.fromDoc(doc) : null
   }
 
@@ -212,13 +214,10 @@ export class GoldLedgerReader {
    * Exposing it here means any consumer can ask it, rather than it living in a
    * script that has to be remembered and run.
    */
-  async verifyBalance(
-    identityId: string,
-    assetId: string,
-  ): Promise<{ ok: boolean; wallet: number; ledger: number }> {
+  async verifyBalance(ref: AccountRef): Promise<{ ok: boolean; wallet: number; ledger: number }> {
     const [walletDoc, state] = await Promise.all([
-      this.wallets.findOne({ customerId: identityId }),
-      this.readState(identityId, assetId),
+      this.wallets.findOne({ customerId: ref.identityId }),
+      this.readState(ref),
     ])
 
     const wallet = this.toMinorUnits(walletDoc?.goldBalance ?? 0)
