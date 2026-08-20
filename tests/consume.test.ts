@@ -46,6 +46,23 @@ const cost = (a: Asset, amount: number, balance: number): ConsumptionCost => ({
   state: held(balance),
 })
 
+/**
+ * Run something that should throw and hand back what it threw.
+ *
+ * try/catch into a `let` leaves the binding possibly-undefined, which is only
+ * resolved at the assertion by a non-null assertion — and this suite is about
+ * a function whose whole job is refusing to assume. Narrowing at the callsite
+ * keeps that honest.
+ */
+const capture = (fn: () => unknown): unknown => {
+  try {
+    fn()
+  } catch (error) {
+    return error
+  }
+  return undefined
+}
+
 const build = (costs: readonly ConsumptionCost[], key = 'build:hut:identity_1') => ({
   tenantId: 'flashy',
   identityId: 'identity_1',
@@ -68,17 +85,16 @@ describe('a build that cannot be afforded', () => {
   it('reports every shortfall, not the first one found', () => {
     // Otherwise a player discovers their own bill one line at a time: told they
     // are short of stone, gathers stone, then told they are short of wheat.
-    let thrown: InsufficientForConsumptionError | undefined
-    try {
-      postConsume(build([cost(wood, 40, 100), cost(stone, 12, 3), cost(wheat, 5, 1)]))
-    } catch (error) {
-      thrown = error as InsufficientForConsumptionError
-    }
+    const thrown = capture(() =>
+      postConsume(build([cost(wood, 40, 100), cost(stone, 12, 3), cost(wheat, 5, 1)])),
+    )
 
     expect(thrown).toBeInstanceOf(InsufficientForConsumptionError)
-    expect(thrown!.shortfalls.map((s) => s.assetId)).toEqual(['asset_stone', 'asset_wheat'])
-    expect(thrown!.shortfalls[0]).toMatchObject({ available: 3, required: 12, short: 9 })
-    expect(thrown!.code).toBe('INSUFFICIENT_FOR_CONSUMPTION')
+    if (!(thrown instanceof InsufficientForConsumptionError)) return
+
+    expect(thrown.shortfalls.map((s) => s.assetId)).toEqual(['asset_stone', 'asset_wheat'])
+    expect(thrown.shortfalls[0]).toMatchObject({ available: 3, required: 12, short: 9 })
+    expect(thrown.code).toBe('INSUFFICIENT_FOR_CONSUMPTION')
   })
 
   it('can be asked about before it is attempted, by the same code that enforces it', () => {
@@ -196,10 +212,13 @@ describe('consumption against a store', () => {
       ),
     )
 
+    const [woodState, stoneState] = states
+    if (!woodState || !stoneState) throw new Error('seeded states missing')
+
     const entries = postConsume(
       build([
-        { asset: wood, amount: minor(40), state: states[0]! },
-        { asset: stone, amount: minor(12), state: states[1]! },
+        { asset: wood, amount: minor(40), state: woodState },
+        { asset: stone, amount: minor(12), state: stoneState },
       ]),
     )
 

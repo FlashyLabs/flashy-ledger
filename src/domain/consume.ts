@@ -59,7 +59,9 @@ export function shortfalls(costs: readonly ConsumptionCost[]): readonly Shortfal
         assetId: cost.asset.id,
         available: cost.state.balance,
         required: cost.amount,
-        short: -remaining,
+        // negate() rather than a bare minus: Minor is branded, and the unary
+        // operator would strip the brand while looking like arithmetic.
+        short: negate(remaining),
       })
     }
   }
