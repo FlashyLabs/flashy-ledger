@@ -35,6 +35,13 @@ const RUNTIME_EXPORTS = [
   'post',
   'postTransfer',
   'reverse',
+  // experience — added in 0.4.0: the five skills as SKILL_XP assets
+  'SKILL_KEYS',
+  'skillAsset',
+  'skillAssetRegistry',
+  'skillAssets',
+  'skillForAssetId',
+  'xpIdempotencyKey',
   // consumption — added in 0.3.0 for multi-asset builds
   'canConsume',
   'postConsume',
