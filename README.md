@@ -1,4 +1,4 @@
-# @flashy/ledger
+# @flashylabs/ledger
 
 An append-only, multi-asset settlement ledger. Flashy Gold is the first asset on
 it, not the thing itself — ore, stone and wheat are configuration records, not
@@ -21,7 +21,7 @@ npm run check     # typecheck + lint + tests with coverage gates
 ```ts
 import {
   InMemoryLedgerStore, post, fromDecimal, type Asset,
-} from '@flashy/ledger'
+} from '@flashylabs/ledger'
 
 const gold: Asset = {
   id: 'asset_fg', slug: 'flashy-gold', symbol: 'FG',

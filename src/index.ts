@@ -1,5 +1,5 @@
 /**
- * @flashy/ledger — an append-only, multi-asset settlement ledger.
+ * @flashylabs/ledger — an append-only, multi-asset settlement ledger.
  *
  * The domain is pure and knows nothing about storage. Everything that touches a
  * database sits behind `LedgerStore`, which is the only thing that has to change

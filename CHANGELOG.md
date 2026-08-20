@@ -56,6 +56,19 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Cross-tenant reads, where a balance — a fold over entries — became the sum of
   two networks' books.
 
+## [0.1.2] — 2026-08-14
+
+### Changed
+
+- Package renamed to `@flashylabs/ledger` to match the GitHub account.
+
+## [0.1.1] — 2026-08-14
+
+### Added
+
+- CommonJS build alongside ESM; `mongodb` 7 accepted and the peer made optional.
+- Publishing to GitHub Packages, driven by a tag.
+
 ## [0.1.0] — 2026-08-14
 
 First tagged release. Contents as listed below.
