@@ -30,7 +30,9 @@ const gold: Asset = {
 
 const store = new InMemoryLedgerStore()
 
-const state = await store.readState('identity_1', gold.id)
+const state = await store.readState({
+  tenantId: 'flashy', identityId: 'identity_1', assetId: gold.id,
+})
 const entry = post(state, {
   tenantId: 'flashy',
   identityId: 'identity_1',
@@ -56,6 +58,26 @@ const [debit, credit] = postTransfer(
 )
 await store.appendAll([debit, credit])   // both land, or neither
 ```
+
+## Tenancy is a boundary, not a label
+
+Every read names a tenant, and every uniqueness constraint is scoped to one:
+
+```ts
+await store.readState({ tenantId, identityId, assetId })
+await store.readEntries({ tenantId, identityId })          // assetId optional
+await store.findByIdempotencyKey(tenantId, key)
+```
+
+There is no overload without a tenant, so a cross-tenant read does not compile.
+This matters most for idempotency keys, which are derived from source events —
+two networks running similar mechanics generate colliding keys by construction,
+and a globally scoped lookup would hand one tenant another's entry while
+reporting a successful deduplication.
+
+**Upgrading from 0.1.x:** `ensureIndexes()` drops the pre-0.2 global indexes
+before creating the scoped ones. Run it once per deployment before writing. A
+surviving `uniq_idempotency` silently defeats the change.
 
 ## The five invariants
 

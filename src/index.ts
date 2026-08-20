@@ -54,7 +54,13 @@ export { balanceOf, balancesByAsset, stateFrom } from './domain/fold.js'
 export { LedgerError } from './domain/errors.js'
 export type { LedgerErrorCode } from './domain/errors.js'
 
-export type { AppendResult, LedgerStore, TransactionalLedgerStore } from './ports/store.js'
+export type {
+  AccountRef,
+  AppendResult,
+  HistoryRef,
+  LedgerStore,
+  TransactionalLedgerStore,
+} from './ports/store.js'
 export { isTransactional } from './ports/store.js'
 
 export { InMemoryLedgerStore } from './adapters/memory.js'

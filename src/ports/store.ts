@@ -19,7 +19,33 @@ import type { LedgerState } from '../domain/post.js'
  *      delete on this interface.
  *   4. `readState` reflects every entry appended before it was called, so two
  *      concurrent appends cannot both build on the same head.
+ *   5. Every read and every uniqueness constraint is scoped to one tenant. An
+ *      implementation that returns another tenant's entry, or that rejects a
+ *      write because a different tenant used the same idempotency key, does not
+ *      satisfy this interface.
  */
+/**
+ * Which tenant's books, whose holding, of which asset.
+ *
+ * Reads take a reference object rather than positional strings for two reasons.
+ * The first is that three same-typed parameters are transposable and this one
+ * decides whose money you are looking at. The second is that isolation must be
+ * impossible to omit: there is no overload without a tenant, so a caller cannot
+ * accidentally read across the boundary, and one that tries does not compile.
+ */
+export interface AccountRef {
+  readonly tenantId: string
+  readonly identityId: string
+  readonly assetId: string
+}
+
+/** The same, for history reads where an asset filter is optional. */
+export interface HistoryRef {
+  readonly tenantId: string
+  readonly identityId: string
+  readonly assetId?: string
+}
+
 export interface LedgerStore {
   /**
    * Persist an entry. Returns what was written, and whether this call is a
@@ -27,14 +53,21 @@ export interface LedgerStore {
    */
   append(entry: ProposedEntry): Promise<AppendResult>
 
-  /** Current balance and chain head for an identity's holding of one asset. */
-  readState(identityId: string, assetId: string): Promise<LedgerState>
+  /** Current balance and chain head for one tenant's identity holding one asset. */
+  readState(ref: AccountRef): Promise<LedgerState>
 
   /** Full history, oldest first. Used for audit and for rebuilding projections. */
-  readEntries(identityId: string, assetId?: string): Promise<readonly Entry[]>
+  readEntries(ref: HistoryRef): Promise<readonly Entry[]>
 
-  /** Look up by idempotency key, for callers that want to check before posting. */
-  findByIdempotencyKey(key: string): Promise<Entry | null>
+  /**
+   * Look up by idempotency key, for callers that want to check before posting.
+   *
+   * Scoped by tenant, which is the whole point. Keys are derived from source
+   * events — `quest:q_9:identity_1` in this package's own example — so two
+   * networks running similar mechanics will collide, and a global lookup would
+   * hand one tenant another's entry while reporting a successful deduplication.
+   */
+  findByIdempotencyKey(tenantId: string, key: string): Promise<Entry | null>
 }
 
 export interface AppendResult {

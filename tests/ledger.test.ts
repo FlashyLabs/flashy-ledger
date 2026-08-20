@@ -247,12 +247,12 @@ describe('balances are folds', () => {
 describe('store conformance', () => {
   it('appends and reads back state', async () => {
     const store = new InMemoryLedgerStore()
-    const state = await store.readState('identity_1', gold.id)
+    const state = await store.readState({ tenantId: 'flashy', identityId: 'identity_1', assetId: gold.id })
 
     const { deduplicated } = await store.append(post(state, command()))
 
     expect(deduplicated).toBe(false)
-    expect((await store.readState('identity_1', gold.id)).balance).toBe(2500)
+    expect((await store.readState({ tenantId: 'flashy', identityId: 'identity_1', assetId: gold.id })).balance).toBe(2500)
   })
 
   it('returns the original entry when a key is replayed', async () => {
@@ -272,8 +272,8 @@ describe('store conformance', () => {
     await store.append(post(EMPTY, command({ identityId: 'a' })))
 
     const [debit, credit] = postTransfer(
-      { state: await store.readState('a', gold.id), identityId: 'a' },
-      { state: await store.readState('b', gold.id), identityId: 'b' },
+      { state: await store.readState({ tenantId: 'flashy', identityId: 'a', assetId: gold.id }), identityId: 'a' },
+      { state: await store.readState({ tenantId: 'flashy', identityId: 'b', assetId: gold.id }), identityId: 'b' },
       {
         tenantId: 'flashy',
         asset: gold,
@@ -285,19 +285,19 @@ describe('store conformance', () => {
     )
     await store.appendAll([debit, credit])
 
-    expect((await store.readState('a', gold.id)).balance).toBe(1500)
-    expect((await store.readState('b', gold.id)).balance).toBe(1000)
+    expect((await store.readState({ tenantId: 'flashy', identityId: 'a', assetId: gold.id })).balance).toBe(1500)
+    expect((await store.readState({ tenantId: 'flashy', identityId: 'b', assetId: gold.id })).balance).toBe(1000)
   })
 
   it('keeps a verifiable chain across many appends', async () => {
     const store = new InMemoryLedgerStore()
 
     for (let i = 0; i < 25; i++) {
-      const state = await store.readState('identity_1', gold.id)
+      const state = await store.readState({ tenantId: 'flashy', identityId: 'identity_1', assetId: gold.id })
       await store.append(post(state, command({ amount: minor(100), idempotencyKey: `k${i}` })))
     }
 
-    const entries = await store.readEntries('identity_1', gold.id)
+    const entries = await store.readEntries({ tenantId: 'flashy', identityId: 'identity_1', assetId: gold.id })
     expect(entries).toHaveLength(25)
     expect(balanceOf(entries)).toBe(2500)
     expect(verifyChain(entries).valid).toBe(true)
@@ -352,16 +352,16 @@ describe('supporting surface', () => {
     await store.append(post(EMPTY, command()))
     await store.append(post(EMPTY, command({ asset: wheat, amount: minor(3), idempotencyKey: 'w1' })))
 
-    expect(await store.readEntries('identity_1')).toHaveLength(2)
-    expect(await store.readEntries('identity_1', wheat.id)).toHaveLength(1)
+    expect(await store.readEntries({ tenantId: 'flashy', identityId: 'identity_1' })).toHaveLength(2)
+    expect(await store.readEntries({ tenantId: 'flashy', identityId: 'identity_1', assetId: wheat.id })).toHaveLength(1)
   })
 
   it('finds an entry by idempotency key, or reports none', async () => {
     const store = new InMemoryLedgerStore()
     await store.append(post(EMPTY, command()))
 
-    expect(await store.findByIdempotencyKey('quest:q_1')).not.toBeNull()
-    expect(await store.findByIdempotencyKey('never-posted')).toBeNull()
+    expect(await store.findByIdempotencyKey('flashy', 'quest:q_1')).not.toBeNull()
+    expect(await store.findByIdempotencyKey('flashy', 'never-posted')).toBeNull()
   })
 
   it('reports an entry whose amount contradicts its own balances', () => {
