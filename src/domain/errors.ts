@@ -13,7 +13,9 @@ export class LedgerError extends Error {
 export type LedgerErrorCode =
   | 'INSUFFICIENT_BALANCE'
   | 'ZERO_AMOUNT'
-  | 'MISSING_IDEMPOTENCY_KEY';
+  | 'MISSING_IDEMPOTENCY_KEY'
+  | 'INSUFFICIENT_FOR_CONSUMPTION'
+  | 'DUPLICATE_ASSET_IN_COMMAND';
 
 export const insufficientBalance = (available: number, requested: number): LedgerError =>
   new LedgerError(
@@ -28,4 +30,39 @@ export const missingIdempotencyKey = (): LedgerError =>
   new LedgerError(
     'MISSING_IDEMPOTENCY_KEY',
     'Every command needs an idempotency key so retries are safe',
+  );
+
+/** One asset a consumption could not cover, and by how much. */
+export interface Shortfall {
+  readonly assetId: string;
+  readonly available: number;
+  readonly required: number;
+  readonly short: number;
+}
+
+/**
+ * A consumption that cannot be afforded, reported in full.
+ *
+ * Every shortfall is listed, not just the first one found. A player told they
+ * are short of stone, who gathers stone, and is then told they are short of
+ * wood, has been made to discover their own bill one line at a time.
+ */
+export class InsufficientForConsumptionError extends LedgerError {
+  constructor(readonly shortfalls: readonly Shortfall[]) {
+    super(
+      'INSUFFICIENT_FOR_CONSUMPTION',
+      `Cannot consume: ${shortfalls
+        .map((s) => `${s.assetId} short by ${s.short} (has ${s.available}, needs ${s.required})`)
+        .join('; ')}`,
+    );
+    this.name = 'InsufficientForConsumptionError';
+  }
+}
+
+export const duplicateAssetInCommand = (assetId: string): LedgerError =>
+  new LedgerError(
+    'DUPLICATE_ASSET_IN_COMMAND',
+    `Asset ${assetId} appears twice in one consumption. Both costs would be checked ` +
+      'against the same balance and both entries would chain onto the same head, ' +
+      'forking that asset\'s chain. Sum the costs before calling.',
   );

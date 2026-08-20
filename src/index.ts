@@ -49,10 +49,13 @@ export type {
 } from './domain/post.js'
 export { post, postTransfer, reverse } from './domain/post.js'
 
+export type { ConsumeCommand, ConsumptionCost } from './domain/consume.js'
+export { canConsume, postConsume, shortfalls } from './domain/consume.js'
+
 export { balanceOf, balancesByAsset, stateFrom } from './domain/fold.js'
 
-export { LedgerError } from './domain/errors.js'
-export type { LedgerErrorCode } from './domain/errors.js'
+export { InsufficientForConsumptionError, LedgerError } from './domain/errors.js'
+export type { LedgerErrorCode, Shortfall } from './domain/errors.js'
 
 export type {
   AccountRef,

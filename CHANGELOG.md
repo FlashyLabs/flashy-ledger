@@ -5,6 +5,37 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-08-20
+
+### Added
+
+- **`postConsume` — multi-asset consumption, all or nothing.** The primitive
+  building needs: a bill of several assets at once, where an unaffordable build
+  spends nothing. Sufficiency is decided for every cost before a single entry is
+  produced, and the error carries every shortfall rather than the first, so
+  nobody discovers their own bill one line at a time.
+
+  `shortfalls()` and `canConsume()` are exported so a caller can ask before it
+  commits. The preview and the rule are the same function, so they cannot
+  disagree.
+
+  Three deliberate refusals: the same asset twice (both lines would check
+  against one balance and both entries would chain onto one head, forking that
+  asset's chain — sum them before calling), a zero or negative line, and debt.
+  `allowNegative` is not part of `ConsumeCommand` at all; a build financed by
+  credit is a product decision that should have to be written.
+
+  Completeness of an *affordable* build belongs to the store: pass the entries
+  to `appendAll` on a `TransactionalLedgerStore`, never to `append` in a loop.
+
+- `InsufficientForConsumptionError`, carrying a `Shortfall[]`, and the
+  `INSUFFICIENT_FOR_CONSUMPTION` and `DUPLICATE_ASSET_IN_COMMAND` codes.
+
+- **`docs/INVARIANTS.md`** — the seven guarantees this package makes, numbered
+  so they can be cited, each mapped to the test that proves it.
+  `tests/invariants.test.ts` fails the build if the document cites a test that
+  no longer exists, so a rename cannot quietly hollow out the spec.
+
 ## [0.2.0] — 2026-08-14
 
 ### Changed — BREAKING

@@ -35,12 +35,17 @@ const RUNTIME_EXPORTS = [
   'post',
   'postTransfer',
   'reverse',
+  // consumption — added in 0.3.0 for multi-asset builds
+  'canConsume',
+  'postConsume',
+  'shortfalls',
   // folds
   'balanceOf',
   'balancesByAsset',
   'stateFrom',
   // errors
   'LedgerError',
+  'InsufficientForConsumptionError',
   // ports
   'isTransactional',
   // adapters
