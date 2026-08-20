@@ -39,6 +39,15 @@ export {
 
 export type { ChainVerdict, Entry, EntryKind, EntrySource, HashableEntry } from './domain/entry.js'
 export { hashEntry, verifyChain, verifyEntry } from './domain/entry.js'
+export type { SkillKey } from './domain/experience.js'
+export {
+  SKILL_KEYS,
+  skillAsset,
+  skillAssetRegistry,
+  skillAssets,
+  skillForAssetId,
+  xpIdempotencyKey,
+} from './domain/experience.js'
 
 export type {
   LedgerState,
