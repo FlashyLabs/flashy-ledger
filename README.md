@@ -158,6 +158,13 @@ Pre-1.0. The entry format and hash input are not yet frozen — changing either
 invalidates existing chains, so both will be locked before the first production
 write. See `docs/adr/` for the decisions behind the design.
 
+## The invariants
+
+Six guarantees, numbered so they can be cited in an audit, each mapped to the
+test that proves it: `docs/INVARIANTS.md`. The mapping is itself asserted —
+`tests/invariants.test.ts` fails the build if the document cites a test that no
+longer exists, so a rename cannot quietly hollow out the spec.
+
 ## The mongodb peer dependency
 
 `mongodb` is an **optional** peer, accepted at `^6.21.0 || ^7.0.0`.
