@@ -113,3 +113,32 @@ every adapter, of which four were verified to fail against the pre-0.2
 implementation. The two that name the money bugs directly:
 › *lets two tenants use the same idempotency key without deduplicating* and
 › *scopes findByIdempotencyKey, so a lookup never returns another tenants entry*.
+
+## I-7 · All or nothing consumption
+
+**Claim.** A multi-asset consumption that cannot be afforded in full produces no
+entries at all. No asset in the bill is debited unless every asset can be.
+
+**Why.** Added in 0.3.0 with `postConsume`, the primitive building needs. The
+failure it prevents is the partial spend: wood debited, stone found short, and
+someone left poorer with nothing to show for it. That bug is silent — it surfaces
+weeks later as a support ticket about missing resources, with no entry anywhere
+saying what happened.
+
+**Enforced by.** Ordering, not error handling. `postConsume` computes the
+shortfalls across every cost before it produces a single entry, and throws
+`InsufficientForConsumptionError` carrying all of them. The same `shortfalls()`
+function answers the caller's "can this be built?", so a preview cannot disagree
+with the rule. `allowNegative` is not part of `ConsumeCommand`, so a build cannot
+be financed with debt by passing a flag.
+
+Completeness of an *affordable* build is the store's guarantee, not the domain's:
+the entries go to `appendAll` on a `TransactionalLedgerStore`. A loop over
+`append` that fails on the third leg has spent the first two — the same failure,
+one layer down.
+
+**Proved by.** `consume.test.ts` › *destroys nothing — not even the assets it could have paid for*,
+› *reports every shortfall, not the first one found*,
+› *offers no way to finance a build with debt*, and
+› *lands every leg together, and each asset keeps its own verifiable chain*.
+
