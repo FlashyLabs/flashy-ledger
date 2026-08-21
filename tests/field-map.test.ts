@@ -4,7 +4,6 @@ import {
   GOLD_LEDGER_FIELDS,
   PrecisionError,
   resolveFields,
-  type FieldMap,
 } from '../src/index.js'
 import { readSource, writeSource } from '../src/adapters/field-map.js'
 
@@ -44,7 +43,7 @@ describe('resolving a map', () => {
   })
 
   it('ignores an explicit undefined rather than mapping a field to nothing', () => {
-    const fields = resolveFields({ identityId: undefined } as FieldMap)
+    const fields = resolveFields({ identityId: undefined })
     expect(fields.identityId).toBe('identityId')
   })
 
