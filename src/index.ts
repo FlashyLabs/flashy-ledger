@@ -63,6 +63,15 @@ export { canConsume, postConsume, shortfalls } from './domain/consume.js'
 
 export { balanceOf, balancesByAsset, stateFrom } from './domain/fold.js'
 
+// The identity rule: opaque, tenant-scoped, never a natural key. Enforced in
+// post(), so no entry can be written that skips it.
+export {
+  NaturalKeyError,
+  assertOpaqueIdentity,
+  looksLikeNaturalKey,
+  surrogateIdentity,
+} from './domain/identity.js'
+
 export { InsufficientForConsumptionError, LedgerError } from './domain/errors.js'
 export type { LedgerErrorCode, Shortfall } from './domain/errors.js'
 

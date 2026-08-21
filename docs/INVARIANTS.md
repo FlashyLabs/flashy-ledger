@@ -142,3 +142,42 @@ one layer down.
 › *offers no way to finance a build with debt*, and
 › *lands every leg together, and each asset keeps its own verifiable chain*.
 
+## I-8 · Identities are opaque
+
+**Claim.** An `identityId` is an opaque token scoped to one tenant. It is never a
+natural key — never an email address, a phone number, a wallet address or a
+public key.
+
+**Why.** Added in 0.5.0. The ledger keys on a tenant-scoped identifier and never
+resolves who a person is; linkage across tenants belongs to an identity layer,
+where it can be consented to and withdrawn. A link recorded inside an entry
+cannot be withdrawn at all — the entry is immutable and every subsequent hash
+depends on it, so a consent revoked later has nothing to act on.
+
+That reasoning is worth little by itself. The failure that actually happens is a
+service passing `user@example.com` because it was the value to hand, into a
+record that is append-only, hash-chained and published. A natural key correlates
+across tenants **even with no shared namespace at all**, which makes the careful
+scoping moot in practice and does so silently.
+
+**Enforced by.** `assertOpaqueIdentity()`, called from `post()` before anything
+is hashed — the one path every entry takes, rather than a helper a caller may
+forget. The patterns are deliberately narrow: a guard with false positives gets
+switched off, and then nothing is checked. ObjectIds, ULIDs, UUIDs, nanoids and
+bare integers all pass, and base58 is not attempted at all because it cannot be
+told from an opaque token.
+
+`surrogateIdentity(value, tenantSalt)` gives the caller the fix rather than only
+a refusal, and its per-tenant salt produces the pairwise property: the same
+person at two issuers yields two unrelated identifiers, with no coordination
+between the tenants.
+
+**Proved by.** `identity.test.ts` › *refuses at post(), so no entry can be written that skips the check*,
+which was verified by removing the call and watching it fail. The false-positive
+half matters as much: › *does not reject a 24-hex ObjectId as a wallet address*
+guards the one consumer this package has. The surrogate is held to
+› *differs per tenant, which is the pairwise property*,
+› *produces something the guard accepts* — otherwise the advice in the error
+message would be wrong — and
+› *refuses a salt short enough to be brute-forced*.
+

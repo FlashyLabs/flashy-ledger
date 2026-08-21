@@ -5,6 +5,59 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-08-21
+
+### Added
+
+- **`MongoLedgerStore` can address a collection it did not design.** A `FieldMap`
+  names where each field lives, so the adapter reads and writes an existing
+  collection in place instead of requiring its rows to be copied into a new one.
+  That is the difference between a migration and a swap: a migration against
+  live money is a project with a rollback plan, a swap is a configuration line.
+  `GOLD_LEDGER_FIELDS` maps ClaimYour.Gold's `gold_ledger`.
+
+  Three refusals are deliberate. Two fields mapped to one key (the second write
+  overwrites the first and the entry read back is not the entry written). A
+  timestamp replacing `_id` as the chain order (two entries in the same
+  millisecond have no order, so `_id` stays as the tiebreak). And an amount that
+  is not already a whole number of minor units — converting decimal majors here
+  would be float arithmetic deciding a balance, at the boundary nobody reads, so
+  it throws and names the migration that has to happen first.
+
+  Every query and every index routes through the map. A map covering reads but
+  not indexes would leave tenant isolation unenforced on the adopted collection,
+  which is the worst outcome available: it would look adopted.
+
+### Changed — BREAKING
+
+- **`identityId` must be opaque.** `post()` now refuses an identity that looks
+  like a natural key — an email address, an E.164 phone number, an EVM or TON
+  wallet address, or a public key — before anything is hashed. See I-8.
+
+  This is breaking for any consumer passing one of those today. It is breaking
+  on purpose: such a value identifies a person, correlates across tenants with
+  no shared namespace at all, and cannot be removed from a chain once hashed
+  into it. `surrogateIdentity(value, tenantSalt)` derives a replacement, and its
+  per-tenant salt gives the pairwise property for free.
+
+  The patterns are narrow by design. ObjectIds, ULIDs, UUIDs, nanoids and bare
+  integers are untouched, and base58 is not attempted, because a guard with
+  false positives gets switched off and then nothing is checked.
+
+### Fixed
+
+- **The conformance job runs against an actual replica set.** It had been
+  failing for months on a standalone mongod: a `services:` container cannot take
+  command arguments, so `--replSet` was never passed, while the readiness gate
+  checked `isWritablePrimary` — which a standalone reports true. It announced
+  success against a server with no replication, and the suite then failed on
+  "Transaction numbers are only allowed on a replica set member", which reads
+  like a broken adapter. The gate now checks `setName`.
+
+- vitest and `@vitest/coverage-v8` to 4.1.11, clearing a critical advisory in
+  the vitest UI server and a high path-traversal advisory in the vite it pulls.
+  Dev-only; neither ships in the package.
+
 ## [0.3.0] — 2026-08-20
 
 ### Added
