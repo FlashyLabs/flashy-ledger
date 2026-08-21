@@ -56,5 +56,6 @@
       "optional": true
     }
   },
-  "module": "./dist/index.js"
+  "module": "./dist/index.js",
+  "packageManager": "npm@10.9.8"
 }
