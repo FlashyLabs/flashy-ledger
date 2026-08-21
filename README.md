@@ -165,6 +165,31 @@ test that proves it: `docs/INVARIANTS.md`. The mapping is itself asserted —
 `tests/invariants.test.ts` fails the build if the document cites a test that no
 longer exists, so a rename cannot quietly hollow out the spec.
 
+## The npm version
+
+`packageManager` pins npm to 10.9.8, the version CI runs.
+
+This is worth being precise about, because the field is easy to over-trust: it
+is a **declaration, not an enforcement**. npm does not read it. Corepack does.
+On a machine where Corepack is not enabled, npm 12 will install against this
+pin without a word of complaint — verified, not assumed.
+
+That matters because the failure it guards against is silent on the way in and
+loud somewhere else entirely. npm 12 resolves a different tree and prunes
+entries npm 10 expects; `npm install` accepts the result, and `npm ci` on the
+runner then refuses it with `Missing: <package> from lock file` — an error that
+names a package nobody touched, in a repository whose only change was a version
+bump. It cost an afternoon in a sibling repository.
+
+So: enable Corepack once, on any machine that will regenerate a lockfile here.
+
+```
+corepack enable
+```
+
+After that the pin is real, and `npm install` uses 10.9.8 whatever the global
+npm happens to be.
+
 ## The mongodb peer dependency
 
 `mongodb` is an **optional** peer, accepted at `^6.21.0 || ^7.0.0`.
