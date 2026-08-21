@@ -17,7 +17,25 @@ export interface Asset {
   readonly tenantId: string;
 }
 
-export type AssetClass = 'REWARD_CURRENCY' | 'COMMODITY_UNIT' | 'PARTNER_CREDIT';
+export type AssetClass = 'REWARD_CURRENCY' | 'COMMODITY_UNIT' | 'PARTNER_CREDIT' | 'SKILL_XP'
+
+/**
+ * Classes whose assets may move between identities.
+ *
+ * `SKILL_XP` is absent deliberately. Experience is a claim about who earned
+ * something; the moment it can be handed to someone else it is a market, and a
+ * market in status is a currency by another name. Enforced in `postTransfer`
+ * rather than left to each product to remember.
+ */
+const TRANSFERABLE: ReadonlySet<AssetClass> = new Set<AssetClass>([
+  'REWARD_CURRENCY',
+  'COMMODITY_UNIT',
+  'PARTNER_CREDIT',
+])
+
+export function isTransferable(asset: Asset): boolean {
+  return TRANSFERABLE.has(asset.class)
+};
 
 export function assetRegistry(assets: readonly Asset[]): ReadonlyMap<string, Asset> {
   return new Map(assets.map((a) => [a.id, a]));

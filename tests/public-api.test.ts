@@ -27,6 +27,7 @@ const RUNTIME_EXPORTS = [
   'PrecisionError',
   // assets
   'assetRegistry',
+  'isTransferable',
   // entries
   'hashEntry',
   'verifyChain',
@@ -39,6 +40,13 @@ const RUNTIME_EXPORTS = [
   'balanceOf',
   'balancesByAsset',
   'stateFrom',
+  // experience — the five skill assets and the shared key convention
+  'SKILL_KEYS',
+  'skillAsset',
+  'skillAssetRegistry',
+  'skillAssets',
+  'skillForAssetId',
+  'xpIdempotencyKey',
   // errors
   'LedgerError',
   // ports

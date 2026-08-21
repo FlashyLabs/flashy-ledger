@@ -13,7 +13,8 @@ export class LedgerError extends Error {
 export type LedgerErrorCode =
   | 'INSUFFICIENT_BALANCE'
   | 'ZERO_AMOUNT'
-  | 'MISSING_IDEMPOTENCY_KEY';
+  | 'MISSING_IDEMPOTENCY_KEY'
+  | 'ASSET_NOT_TRANSFERABLE';
 
 export const insufficientBalance = (available: number, requested: number): LedgerError =>
   new LedgerError(
@@ -28,4 +29,10 @@ export const missingIdempotencyKey = (): LedgerError =>
   new LedgerError(
     'MISSING_IDEMPOTENCY_KEY',
     'Every command needs an idempotency key so retries are safe',
+  );
+
+export const assetNotTransferable = (slug: string, assetClass: string): LedgerError =>
+  new LedgerError(
+    'ASSET_NOT_TRANSFERABLE',
+    `${slug} is ${assetClass} and cannot move between identities`,
   );

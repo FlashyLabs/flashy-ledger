@@ -5,6 +5,51 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-08-21
+
+### Added
+
+- **Experience settles on these books.** Five `SKILL_XP` assets — `xp-int`,
+  `xp-str`, `xp-ins`, `xp-inf`, `xp-com` — with `skillAsset`, `skillAssets`,
+  `skillAssetRegistry` and `skillForAssetId`. Zero decimals, because XP is
+  indivisible. Nothing in the engine knows what "Intelligence" means; a skill is
+  a configuration record, exactly like wheat.
+
+  The asset ids are stable machine names rather than database ids, and they are
+  pinned by a test written out in literals. They go into every entry hash, so
+  renaming one does not migrate a chain — it invalidates one.
+
+- **`xpIdempotencyKey(product, activity, entityId, identityId)`.** The key
+  convention in one function so every product in the network derives it
+  identically. This is what makes one hunter's XP the same hunter's XP across
+  ClaimYour.Gold, Flashy Academy and whatever ships next: two products awarding
+  the same lesson collide on the key and the store's uniqueness constraint pays
+  once. A convention documented in prose is a convention two teams implement
+  differently.
+
+- **`isTransferable(asset)`, and `postTransfer` now enforces it.** Skill assets
+  cannot move between identities and the attempt raises
+  `ASSET_NOT_TRANSFERABLE`.
+
+  Experience is a claim about who earned something. The moment it can be handed
+  to someone else it is a market, and a market in status is a currency by
+  another name — which is the exact thing the XP/gold separation exists to
+  prevent. The previous statement of this rule was a sentence in a doc comment
+  claiming the ledger enforced it while no code did.
+
+  Currency, commodities and partner credit are unaffected: raids and the
+  marketplace need commodities to move.
+
+### Note on provenance
+
+This release folds in the experience domain from an unreleased fork that
+shipped as `@flashy/ledger@0.2.0` — the same version number as this package's
+0.2.0 and different contents, because it branched before the tenant-isolation
+work. The fork's consumer only ever used the pure domain functions (`post`,
+`minor`, `skillAsset`), so 0.2.0's breaking changes to the store read
+signatures do not affect it. The fork is superseded; the vendored tarball
+carrying it should be deleted wherever it appears.
+
 ## [0.2.0] — 2026-08-14
 
 ### Changed — BREAKING
