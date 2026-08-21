@@ -5,6 +5,32 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-08-21
+
+### Added — enforcement of a rule that was already written down
+
+- **`isTransferable(asset)`, and `postTransfer` now enforces it.** A `SKILL_XP`
+  asset cannot move between identities; the attempt raises
+  `ASSET_NOT_TRANSFERABLE` and produces no entries.
+
+  The asset-class comment has said XP is "never convertible" since the
+  experience domain landed, and the doc block on `experience.ts` states the
+  ledger enforces the half it can see. Nothing did. A sentence in a comment and
+  a check in `postTransfer` are not the same artefact, and only one of them
+  survives a contributor who has not read the comment.
+
+  The rule matters because Flashy Gold is redeemable. Experience is a claim
+  about who earned something; once it can be handed to someone else it is a
+  market, and a market in status is a currency by another name — sitting one
+  conversion away from a currency that buys gift cards.
+
+  Currency, commodities and partner credit are unaffected: raids and a
+  marketplace need commodities to change hands.
+
+  Consumption is deliberately left open. Whether XP can be *spent* on something
+  is a product decision that should have to be written down, not one this
+  predicate forecloses. What it forecloses is XP changing hands.
+
 ## [0.5.0] — 2026-08-21
 
 ### Added

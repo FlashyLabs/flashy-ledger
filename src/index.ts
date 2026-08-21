@@ -22,7 +22,7 @@
  */
 
 export type { Asset, AssetClass } from './domain/asset.js'
-export { assetRegistry } from './domain/asset.js'
+export { assetRegistry, isTransferable } from './domain/asset.js'
 
 export type { Minor } from './domain/money.js'
 export {

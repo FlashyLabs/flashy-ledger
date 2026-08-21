@@ -27,6 +27,7 @@ const RUNTIME_EXPORTS = [
   'PrecisionError',
   // assets
   'assetRegistry',
+  'isTransferable',
   // entries
   'hashEntry',
   'verifyChain',

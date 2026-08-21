@@ -16,7 +16,8 @@ export type LedgerErrorCode =
   | 'MISSING_IDEMPOTENCY_KEY'
   | 'INSUFFICIENT_FOR_CONSUMPTION'
   | 'DUPLICATE_ASSET_IN_COMMAND'
-  | 'NATURAL_KEY_IDENTITY';
+  | 'NATURAL_KEY_IDENTITY'
+  | 'ASSET_NOT_TRANSFERABLE';
 
 export const insufficientBalance = (available: number, requested: number): LedgerError =>
   new LedgerError(
@@ -66,4 +67,10 @@ export const duplicateAssetInCommand = (assetId: string): LedgerError =>
     `Asset ${assetId} appears twice in one consumption. Both costs would be checked ` +
       'against the same balance and both entries would chain onto the same head, ' +
       'forking that asset\'s chain. Sum the costs before calling.',
+  );
+
+export const assetNotTransferable = (slug: string, assetClass: string): LedgerError =>
+  new LedgerError(
+    'ASSET_NOT_TRANSFERABLE',
+    `${slug} is ${assetClass} and cannot move between identities`,
   );

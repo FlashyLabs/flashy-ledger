@@ -1,8 +1,13 @@
-import type { Asset } from './asset.js'
+import { isTransferable, type Asset } from './asset.js'
 import type { Entry, EntryKind, EntrySource, HashableEntry } from './entry.js'
 import { hashEntry } from './entry.js'
 import { add, isZero, isNegative, negate, type Minor } from './money.js'
-import { insufficientBalance, missingIdempotencyKey, zeroAmount } from './errors.js'
+import {
+  assetNotTransferable,
+  insufficientBalance,
+  missingIdempotencyKey,
+  zeroAmount,
+} from './errors.js'
 import { assertOpaqueIdentity } from './identity.js'
 
 /**
@@ -97,6 +102,13 @@ export function postTransfer(
 ): readonly [ProposedEntry, ProposedEntry] {
   if (isNegative(command.amount) || isZero(command.amount)) {
     throw zeroAmount()
+  }
+
+  // Some assets record who earned something rather than who holds it. Moving
+  // one is not a transfer, it is a forgery — and the rule belongs here, where
+  // no product can forget it, rather than in each product's review checklist.
+  if (!isTransferable(command.asset)) {
+    throw assetNotTransferable(command.asset.slug, command.asset.class)
   }
 
   const debit = post(from.state, {
