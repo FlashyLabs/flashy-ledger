@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { MongoClient } from 'mongodb'
 import {
+  GOLD_LEDGER_FIELDS,
   InMemoryLedgerStore,
   MongoLedgerStore,
   fromDecimal,
@@ -100,15 +101,45 @@ const harnesses: Harness[] = [
 let client: MongoClient | undefined
 
 if (MONGO_URL) {
+  const connect = async () => {
+    if (!client) {
+      client = new MongoClient(MONGO_URL)
+      await client.connect()
+    }
+    return client.db(`ledger_conformance_${Date.now()}_${Math.floor(Math.random() * 1e6)}`)
+  }
+
   harnesses.push({
     name: 'MongoLedgerStore',
     make: async () => {
-      if (!client) {
-        client = new MongoClient(MONGO_URL)
-        await client.connect()
-      }
-      const db = client.db(`ledger_conformance_${Date.now()}_${Math.floor(Math.random() * 1e6)}`)
-      const store = new MongoLedgerStore(db, { client })
+      const store = new MongoLedgerStore(await connect(), { client })
+      await store.ensureIndexes()
+      return store
+    },
+  })
+
+  /**
+   * The same adapter, addressing a collection it did not design.
+   *
+   * This is the claim the field map makes, tested rather than asserted: a
+   * network that already runs a ledger can put this package's rules on its
+   * existing rows, and every guarantee in this suite still holds — the
+   * idempotency uniqueness, the chain-head race, the tenant isolation, the
+   * transfer atomicity. Different column names, different source layout,
+   * different order field, same behaviour or the build fails.
+   *
+   * Without this, "you can adopt an existing collection" is a sentence in a
+   * README, and the first person to try it finds out which of these guarantees
+   * quietly stopped applying.
+   */
+  harnesses.push({
+    name: 'MongoLedgerStore (mapped to gold_ledger)',
+    make: async () => {
+      const store = new MongoLedgerStore(await connect(), {
+        client,
+        collection: 'gold_ledger',
+        fields: GOLD_LEDGER_FIELDS,
+      })
       await store.ensureIndexes()
       return store
     },

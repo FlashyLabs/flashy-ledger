@@ -1,13 +1,20 @@
 import type { Collection, Db, MongoClient, ObjectId, OptionalId } from 'mongodb'
 import type { Entry, EntryKind, EntrySource } from '../domain/entry.js'
 import type { LedgerState, ProposedEntry } from '../domain/post.js'
-import { ZERO, minor } from '../domain/money.js'
+import { PrecisionError, ZERO, minor } from '../domain/money.js'
 import type {
   AccountRef,
   AppendResult,
   HistoryRef,
   TransactionalLedgerStore,
 } from '../ports/store.js'
+import {
+  readSource,
+  resolveFields,
+  writeSource,
+  type FieldMap,
+  type ResolvedFieldMap,
+} from './field-map.js'
 
 /**
  * MongoDB implementation of the store port.
@@ -63,46 +70,105 @@ function isDuplicateKey(err: unknown): boolean {
   return (err as { code?: number }).code === DUPLICATE_KEY
 }
 
-function toDoc(entry: ProposedEntry): OptionalId<EntryDoc> {
-  return {
-    tenantId: entry.tenantId,
-    identityId: entry.identityId,
-    assetId: entry.assetId,
-    amount: String(entry.amount),
-    balanceBefore: String(entry.balanceBefore),
-    balanceAfter: String(entry.balanceAfter),
-    kind: entry.kind,
-    source: entry.source,
-    idempotencyKey: entry.idempotencyKey,
-    occurredAt: entry.occurredAt,
-    previousHash: entry.previousHash,
-    hash: entry.hash,
-    ...(entry.metadata ? { metadata: entry.metadata } : {}),
-  }
+/**
+ * Amounts, in the encoding the target collection uses.
+ *
+ * Strings by default: minor units outgrow a double over a long-lived ledger and
+ * BSON has no unbounded integer, so a string is the only lossless choice this
+ * package can make for a collection it owns. A collection it is adopting may
+ * already be numeric, and writing strings into it would break every reader that
+ * has always worked.
+ */
+function encodeAmount(value: number, fields: ResolvedFieldMap): string | number {
+  return fields.amountEncoding === 'number' ? value : String(value)
 }
 
-function fromDoc(doc: OptionalId<EntryDoc>): Entry {
+/**
+ * Decode an amount, refusing anything that is not already a whole number of
+ * minor units.
+ *
+ * This is the sequencing guard, expressed as code rather than as a paragraph in
+ * a migration plan. A collection whose amounts are still decimal majors — 12.5
+ * meaning twelve and a half gold — cannot be adopted by converting here: the
+ * multiply would be float arithmetic deciding what someone is owed, silently,
+ * at the boundary nobody reads. Rows have to be integers first.
+ */
+function decodeAmount(raw: unknown, field: string, collection: string): number {
+  const value = Number(raw)
+
+  if (!Number.isFinite(value)) {
+    throw new PrecisionError(
+      `${collection}.${field} holds ${String(raw)}, which is not a number.`,
+    )
+  }
+
+  if (!Number.isInteger(value)) {
+    throw new PrecisionError(
+      `${collection}.${field} holds ${value}, which is not a whole number of minor units. ` +
+        'This collection still stores decimal major units, and converting them here would ' +
+        'be float arithmetic deciding a balance. Migrate the column to signed integer ' +
+        'minor units before pointing this adapter at it.',
+    )
+  }
+
+  return value
+}
+
+function toDoc(entry: ProposedEntry, fields: ResolvedFieldMap): OptionalId<EntryDoc> {
   return {
-    id: String(doc._id),
-    tenantId: doc.tenantId,
-    identityId: doc.identityId,
-    assetId: doc.assetId,
-    amount: minor(Number(doc.amount)),
-    balanceBefore: minor(Number(doc.balanceBefore)),
-    balanceAfter: minor(Number(doc.balanceAfter)),
-    kind: doc.kind,
-    source: doc.source,
-    idempotencyKey: doc.idempotencyKey,
-    occurredAt: doc.occurredAt,
-    previousHash: doc.previousHash,
-    hash: doc.hash,
-    ...(doc.metadata ? { metadata: doc.metadata } : {}),
+    [fields.tenantId]: entry.tenantId,
+    [fields.identityId]: entry.identityId,
+    [fields.assetId]: entry.assetId,
+    [fields.amount]: encodeAmount(entry.amount, fields),
+    [fields.balanceBefore]: encodeAmount(entry.balanceBefore, fields),
+    [fields.balanceAfter]: encodeAmount(entry.balanceAfter, fields),
+    [fields.kind]: entry.kind,
+    ...writeSource(entry.source, fields),
+    [fields.idempotencyKey]: entry.idempotencyKey,
+    [fields.occurredAt]: entry.occurredAt,
+    [fields.previousHash]: entry.previousHash,
+    [fields.hash]: entry.hash,
+    ...(entry.metadata ? { [fields.metadata]: entry.metadata } : {}),
+  } as OptionalId<EntryDoc>
+}
+
+function fromDoc(doc: EntryDoc, fields: ResolvedFieldMap, collection: string): Entry {
+  const raw = doc as unknown as Record<string, unknown>
+
+  return {
+    id: String(raw._id),
+    tenantId: String(raw[fields.tenantId]),
+    identityId: String(raw[fields.identityId]),
+    assetId: String(raw[fields.assetId]),
+    amount: minor(decodeAmount(raw[fields.amount], fields.amount, collection)),
+    balanceBefore: minor(
+      decodeAmount(raw[fields.balanceBefore], fields.balanceBefore, collection),
+    ),
+    balanceAfter: minor(decodeAmount(raw[fields.balanceAfter], fields.balanceAfter, collection)),
+    kind: raw[fields.kind] as EntryKind,
+    source: readSource(raw, fields),
+    idempotencyKey: String(raw[fields.idempotencyKey]),
+    occurredAt: raw[fields.occurredAt] as Date,
+    previousHash: (raw[fields.previousHash] ?? null) as string | null,
+    hash: String(raw[fields.hash]),
+    ...(raw[fields.metadata]
+      ? { metadata: raw[fields.metadata] as Record<string, unknown> }
+      : {}),
   }
 }
 
 export interface MongoLedgerStoreOptions {
   /** Collection name. Defaults to `ledger_entries`. */
   collection?: string
+  /**
+   * Where each field lives, for a collection this package did not design.
+   *
+   * Omit it and the package's own shape is used. Supply it — `GOLD_LEDGER_FIELDS`
+   * is a worked example — and the adapter reads and writes an existing
+   * collection in place, which is what makes adopting a live ledger a
+   * configuration line rather than a data migration.
+   */
+  fields?: FieldMap
   /**
    * A client, required only for multi-entry appends. Transfers need two
    * entries to commit together, which needs a session, which needs the client
@@ -117,10 +183,42 @@ export interface MongoLedgerStoreOptions {
 export class MongoLedgerStore implements TransactionalLedgerStore {
   private readonly entries: Collection<EntryDoc>
   private readonly client?: MongoClient
+  private readonly fields: ResolvedFieldMap
+  private readonly collectionName: string
 
   constructor(db: Db, options: MongoLedgerStoreOptions = {}) {
-    this.entries = db.collection<EntryDoc>(options.collection ?? 'ledger_entries')
+    this.collectionName = options.collection ?? 'ledger_entries'
+    this.entries = db.collection<EntryDoc>(this.collectionName)
     this.client = options.client
+    this.fields = resolveFields(options.fields)
+  }
+
+  /** The scope every query starts from, in the target collection's own names. */
+  private scope(tenantId: string, identityId?: string, assetId?: string) {
+    const f = this.fields
+    return {
+      [f.tenantId]: tenantId,
+      ...(identityId === undefined ? {} : { [f.identityId]: identityId }),
+      ...(assetId === undefined ? {} : { [f.assetId]: assetId }),
+    }
+  }
+
+  /**
+   * Chain order. `_id` is always the tiebreak, never replaced: two entries
+   * written in the same millisecond have no order under a timestamp alone, and
+   * a chain with no order is not a chain.
+   */
+  private order(direction: 1 | -1) {
+    const f = this.fields
+    return f.order === '_id' ? { _id: direction } : { [f.order]: direction, _id: direction }
+  }
+
+  private doc(entry: ProposedEntry) {
+    return toDoc(entry, this.fields)
+  }
+
+  private entry(doc: EntryDoc): Entry {
+    return fromDoc(doc, this.fields, this.collectionName)
   }
 
   /**
@@ -145,8 +243,10 @@ export class MongoLedgerStore implements TransactionalLedgerStore {
       }
     }
 
+    const f = this.fields
+
     await this.entries.createIndex(
-      { tenantId: 1, idempotencyKey: 1 },
+      { [f.tenantId]: 1, [f.idempotencyKey]: 1 },
       { unique: true, name: 'uniq_tenant_idempotency' },
     )
 
@@ -158,13 +258,13 @@ export class MongoLedgerStore implements TransactionalLedgerStore {
     // "one entry with no predecessor" is scoped per chain, which is exactly
     // the constraint wanted, rather than one null across the collection.
     await this.entries.createIndex(
-      { tenantId: 1, identityId: 1, assetId: 1, previousHash: 1 },
+      { [f.tenantId]: 1, [f.identityId]: 1, [f.assetId]: 1, [f.previousHash]: 1 },
       { unique: true, name: 'uniq_tenant_chain_head' },
     )
 
     // Reading a chain in order, and finding its head, are the two hot paths.
     await this.entries.createIndex(
-      { tenantId: 1, identityId: 1, assetId: 1, _id: 1 },
+      { [f.tenantId]: 1, [f.identityId]: 1, [f.assetId]: 1, ...this.order(1) },
       { name: 'tenant_chain_order' },
     )
   }
@@ -174,9 +274,9 @@ export class MongoLedgerStore implements TransactionalLedgerStore {
     if (existing) return { entry: existing, deduplicated: true }
 
     try {
-      const doc = toDoc(proposed)
+      const doc = this.doc(proposed)
       const { insertedId } = await this.entries.insertOne(doc)
-      return { entry: fromDoc({ ...doc, _id: insertedId }), deduplicated: false }
+      return { entry: this.entry({ ...doc, _id: insertedId }), deduplicated: false }
     } catch (err) {
       if (!isDuplicateKey(err)) throw err
 
@@ -228,17 +328,23 @@ export class MongoLedgerStore implements TransactionalLedgerStore {
 
         for (const candidate of proposed) {
           const existing = await this.entries.findOne(
-            { tenantId: candidate.tenantId, idempotencyKey: candidate.idempotencyKey },
+            {
+              ...this.scope(candidate.tenantId),
+              [this.fields.idempotencyKey]: candidate.idempotencyKey,
+            },
             { session },
           )
           if (existing) {
-            results.push({ entry: fromDoc(existing), deduplicated: true })
+            results.push({ entry: this.entry(existing), deduplicated: true })
             continue
           }
 
-          const doc = toDoc(candidate)
+          const doc = this.doc(candidate)
           const { insertedId } = await this.entries.insertOne(doc, { session })
-          results.push({ entry: fromDoc({ ...doc, _id: insertedId }), deduplicated: false })
+          results.push({
+            entry: this.entry({ ...doc, _id: insertedId }),
+            deduplicated: false,
+          })
         }
       })
 
@@ -249,28 +355,29 @@ export class MongoLedgerStore implements TransactionalLedgerStore {
   }
 
   async readState({ tenantId, identityId, assetId }: AccountRef): Promise<LedgerState> {
-    const head = await this.entries.findOne(
-      { tenantId, identityId, assetId },
-      { sort: { _id: -1 } },
-    )
+    const head = await this.entries.findOne(this.scope(tenantId, identityId, assetId), {
+      sort: this.order(-1),
+    })
 
     if (!head) return { balance: ZERO, headHash: null }
 
-    return {
-      balance: minor(Number(head.balanceAfter)),
-      headHash: head.hash,
-    }
+    const entry = this.entry(head)
+    return { balance: entry.balanceAfter, headHash: entry.hash }
   }
 
   async readEntries({ tenantId, identityId, assetId }: HistoryRef): Promise<readonly Entry[]> {
-    const filter =
-      assetId === undefined ? { tenantId, identityId } : { tenantId, identityId, assetId }
-    const docs = await this.entries.find(filter).sort({ _id: 1 }).toArray()
-    return docs.map(fromDoc)
+    const docs = await this.entries
+      .find(this.scope(tenantId, identityId, assetId))
+      .sort(this.order(1))
+      .toArray()
+    return docs.map((doc) => this.entry(doc))
   }
 
   async findByIdempotencyKey(tenantId: string, key: string): Promise<Entry | null> {
-    const doc = await this.entries.findOne({ tenantId, idempotencyKey: key })
-    return doc ? fromDoc(doc) : null
+    const doc = await this.entries.findOne({
+      ...this.scope(tenantId),
+      [this.fields.idempotencyKey]: key,
+    })
+    return doc ? this.entry(doc) : null
   }
 }
