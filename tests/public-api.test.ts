@@ -55,6 +55,10 @@ const RUNTIME_EXPORTS = [
   'InsufficientForConsumptionError',
   // ports
   'isTransactional',
+  // adopting a collection this package did not design
+  'DEFAULT_FIELDS',
+  'GOLD_LEDGER_FIELDS',
+  'resolveFields',
   // adapters
   'InMemoryLedgerStore',
   'MongoLedgerStore',

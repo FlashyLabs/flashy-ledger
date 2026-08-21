@@ -79,6 +79,11 @@ export { InMemoryLedgerStore } from './adapters/memory.js'
 export { MongoLedgerStore } from './adapters/mongo.js'
 export type { MongoLedgerStoreOptions } from './adapters/mongo.js'
 
+// Adopting a collection this package did not design: map the field names and
+// the adapter reads and writes it in place, rules and all.
+export { DEFAULT_FIELDS, GOLD_LEDGER_FIELDS, resolveFields } from './adapters/field-map.js'
+export type { FieldMap, ResolvedFieldMap, SplitSource } from './adapters/field-map.js'
+
 // Read-only, and not a LedgerStore. It reads ClaimYour.Gold's existing
 // gold_ledger so consumers can query the live ledger through this package's
 // types before the format migration happens. Writing stays with postEntry

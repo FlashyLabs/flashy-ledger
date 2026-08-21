@@ -38,22 +38,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
-    services:
-      # A SINGLE-NODE REPLICA SET, not a standalone mongod.
-      #
-      # Sessions — and therefore multi-document transactions — require a
-      # replica set. A standalone would pass every test in the conformance
-      # suite except the transfer ones, which is exactly the failure this job
-      # exists to catch: a transfer that writes a debit and loses its credit.
-      mongo:
-        image: mongo:7
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1}).ok' || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
+    # NOT a `services:` container, deliberately.
+    #
+    # Sessions — and therefore the multi-document transactions a transfer needs
+    # — require a replica set, which means mongod has to start with --replSet.
+    # A service container cannot be given command arguments: `options:` reaches
+    # `docker create`, not the container's command. So this job ran a plain
+    # standalone for months while a comment above it said otherwise.
+    #
+    # `docker run` can pass the flag, so it does.
 
     steps:
       - uses: actions/checkout@v4
@@ -63,21 +56,42 @@ jobs:
           cache: npm
       - run: npm ci
 
-      # The service container starts a plain mongod, so the replica set has to
-      # be initiated here. rs.initiate() is idempotent enough to tolerate a
-      # re-run; the wait loop is what makes this reliable rather than racy.
-      - name: Initiate the replica set
+      - name: Start MongoDB as a single-node replica set
         run: |
-          docker exec "$(docker ps -q --filter ancestor=mongo:7)" \
-            mongosh --quiet --eval 'try { rs.initiate() } catch (e) { print(e.message) }'
+          docker run -d --name mongo -p 27017:27017 mongo:7 \
+            --replSet rs0 --bind_ip_all
+
           for i in $(seq 1 30); do
-            if docker exec "$(docker ps -q --filter ancestor=mongo:7)" \
-                 mongosh --quiet --eval 'db.hello().isWritablePrimary' | grep -q true; then
-              echo "replica set is primary"; exit 0
+            if docker exec mongo mongosh --quiet --eval 'db.adminCommand({ping:1}).ok' \
+                 2>/dev/null | grep -q 1; then break; fi
+            sleep 2
+          done
+
+          docker exec mongo mongosh --quiet \
+            --eval 'try { rs.initiate() } catch (e) { print(e.message) }'
+
+          # The gate checks `setName`, not `isWritablePrimary`.
+          #
+          # This is the bug that hid the missing --replSet for months: a
+          # standalone mongod reports isWritablePrimary true, so the old loop
+          # printed "replica set is primary" and exited 0 against a server with
+          # no replication at all. The transfer tests then failed with
+          # "Transaction numbers are only allowed on a replica set member",
+          # which reads like a broken adapter rather than a broken runner.
+          #
+          # setName exists only on a replica set member, so it cannot be true
+          # for the wrong reason.
+          for i in $(seq 1 30); do
+            if docker exec mongo mongosh --quiet --eval 'db.hello().setName' \
+                 2>/dev/null | grep -q rs0; then
+              echo "replica set rs0 is up"; exit 0
             fi
             sleep 2
           done
-          echo "replica set never became primary"; exit 1
+
+          echo "::error::mongod never joined replica set rs0 — transactions would be unavailable"
+          docker logs mongo | tail -20
+          exit 1
 
       - name: Conformance suite
         run: npx vitest run tests/conformance.test.ts
