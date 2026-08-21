@@ -50,6 +50,11 @@ const RUNTIME_EXPORTS = [
   'balanceOf',
   'balancesByAsset',
   'stateFrom',
+  // identity — opaque, tenant-scoped, never a natural key
+  'NaturalKeyError',
+  'assertOpaqueIdentity',
+  'looksLikeNaturalKey',
+  'surrogateIdentity',
   // errors
   'LedgerError',
   'InsufficientForConsumptionError',

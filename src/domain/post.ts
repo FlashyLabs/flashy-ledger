@@ -3,6 +3,7 @@ import type { Entry, EntryKind, EntrySource, HashableEntry } from './entry.js'
 import { hashEntry } from './entry.js'
 import { add, isZero, isNegative, negate, type Minor } from './money.js'
 import { insufficientBalance, missingIdempotencyKey, zeroAmount } from './errors.js'
+import { assertOpaqueIdentity } from './identity.js'
 
 /**
  * The decision function at the centre of the ledger.
@@ -41,6 +42,9 @@ export type ProposedEntry = Omit<Entry, 'id'>
 
 export function post(state: LedgerState, command: PostCommand): ProposedEntry {
   if (!command.idempotencyKey) throw missingIdempotencyKey()
+  // Before anything is hashed. An identity that names a person cannot be taken
+  // back out of a chain, so the only place to stop it is on the way in.
+  assertOpaqueIdentity(command.identityId)
   if (isZero(command.amount)) throw zeroAmount()
 
   const balanceAfter = add(state.balance, command.amount)
