@@ -22,7 +22,7 @@
  */
 
 export type { Asset, AssetClass } from './domain/asset.js'
-export { assetRegistry, isTransferable } from './domain/asset.js'
+export { assetRegistry } from './domain/asset.js'
 
 export type { Minor } from './domain/money.js'
 export {
@@ -39,18 +39,6 @@ export {
 
 export type { ChainVerdict, Entry, EntryKind, EntrySource, HashableEntry } from './domain/entry.js'
 export { hashEntry, verifyChain, verifyEntry } from './domain/entry.js'
-
-export type {
-  LedgerState,
-  PostCommand,
-  ProposedEntry,
-  TransferCommand,
-  TransferParty,
-} from './domain/post.js'
-export { post, postTransfer, reverse } from './domain/post.js'
-
-export { balanceOf, balancesByAsset, stateFrom } from './domain/fold.js'
-
 export type { SkillKey } from './domain/experience.js'
 export {
   SKILL_KEYS,
@@ -61,8 +49,31 @@ export {
   xpIdempotencyKey,
 } from './domain/experience.js'
 
-export { LedgerError } from './domain/errors.js'
-export type { LedgerErrorCode } from './domain/errors.js'
+export type {
+  LedgerState,
+  PostCommand,
+  ProposedEntry,
+  TransferCommand,
+  TransferParty,
+} from './domain/post.js'
+export { post, postTransfer, reverse } from './domain/post.js'
+
+export type { ConsumeCommand, ConsumptionCost } from './domain/consume.js'
+export { canConsume, postConsume, shortfalls } from './domain/consume.js'
+
+export { balanceOf, balancesByAsset, stateFrom } from './domain/fold.js'
+
+// The identity rule: opaque, tenant-scoped, never a natural key. Enforced in
+// post(), so no entry can be written that skips it.
+export {
+  NaturalKeyError,
+  assertOpaqueIdentity,
+  looksLikeNaturalKey,
+  surrogateIdentity,
+} from './domain/identity.js'
+
+export { InsufficientForConsumptionError, LedgerError } from './domain/errors.js'
+export type { LedgerErrorCode, Shortfall } from './domain/errors.js'
 
 export type {
   AccountRef,
@@ -76,6 +87,11 @@ export { isTransactional } from './ports/store.js'
 export { InMemoryLedgerStore } from './adapters/memory.js'
 export { MongoLedgerStore } from './adapters/mongo.js'
 export type { MongoLedgerStoreOptions } from './adapters/mongo.js'
+
+// Adopting a collection this package did not design: map the field names and
+// the adapter reads and writes it in place, rules and all.
+export { DEFAULT_FIELDS, GOLD_LEDGER_FIELDS, resolveFields } from './adapters/field-map.js'
+export type { FieldMap, ResolvedFieldMap, SplitSource } from './adapters/field-map.js'
 
 // Read-only, and not a LedgerStore. It reads ClaimYour.Gold's existing
 // gold_ledger so consumers can query the live ledger through this package's

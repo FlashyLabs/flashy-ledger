@@ -5,50 +5,89 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.3.0] — 2026-08-21
+## [0.5.0] — 2026-08-21
 
 ### Added
 
-- **Experience settles on these books.** Five `SKILL_XP` assets — `xp-int`,
-  `xp-str`, `xp-ins`, `xp-inf`, `xp-com` — with `skillAsset`, `skillAssets`,
-  `skillAssetRegistry` and `skillForAssetId`. Zero decimals, because XP is
-  indivisible. Nothing in the engine knows what "Intelligence" means; a skill is
-  a configuration record, exactly like wheat.
+- **`MongoLedgerStore` can address a collection it did not design.** A `FieldMap`
+  names where each field lives, so the adapter reads and writes an existing
+  collection in place instead of requiring its rows to be copied into a new one.
+  That is the difference between a migration and a swap: a migration against
+  live money is a project with a rollback plan, a swap is a configuration line.
+  `GOLD_LEDGER_FIELDS` maps ClaimYour.Gold's `gold_ledger`.
 
-  The asset ids are stable machine names rather than database ids, and they are
-  pinned by a test written out in literals. They go into every entry hash, so
-  renaming one does not migrate a chain — it invalidates one.
+  Three refusals are deliberate. Two fields mapped to one key (the second write
+  overwrites the first and the entry read back is not the entry written). A
+  timestamp replacing `_id` as the chain order (two entries in the same
+  millisecond have no order, so `_id` stays as the tiebreak). And an amount that
+  is not already a whole number of minor units — converting decimal majors here
+  would be float arithmetic deciding a balance, at the boundary nobody reads, so
+  it throws and names the migration that has to happen first.
 
-- **`xpIdempotencyKey(product, activity, entityId, identityId)`.** The key
-  convention in one function so every product in the network derives it
-  identically. This is what makes one hunter's XP the same hunter's XP across
-  ClaimYour.Gold, Flashy Academy and whatever ships next: two products awarding
-  the same lesson collide on the key and the store's uniqueness constraint pays
-  once. A convention documented in prose is a convention two teams implement
-  differently.
+  Every query and every index routes through the map. A map covering reads but
+  not indexes would leave tenant isolation unenforced on the adopted collection,
+  which is the worst outcome available: it would look adopted.
 
-- **`isTransferable(asset)`, and `postTransfer` now enforces it.** Skill assets
-  cannot move between identities and the attempt raises
-  `ASSET_NOT_TRANSFERABLE`.
+### Changed — BREAKING
 
-  Experience is a claim about who earned something. The moment it can be handed
-  to someone else it is a market, and a market in status is a currency by
-  another name — which is the exact thing the XP/gold separation exists to
-  prevent. The previous statement of this rule was a sentence in a doc comment
-  claiming the ledger enforced it while no code did.
+- **`identityId` must be opaque.** `post()` now refuses an identity that looks
+  like a natural key — an email address, an E.164 phone number, an EVM or TON
+  wallet address, or a public key — before anything is hashed. See I-8.
 
-  Currency, commodities and partner credit are unaffected: raids and the
-  marketplace need commodities to move.
+  This is breaking for any consumer passing one of those today. It is breaking
+  on purpose: such a value identifies a person, correlates across tenants with
+  no shared namespace at all, and cannot be removed from a chain once hashed
+  into it. `surrogateIdentity(value, tenantSalt)` derives a replacement, and its
+  per-tenant salt gives the pairwise property for free.
 
-### Note on provenance
+  The patterns are narrow by design. ObjectIds, ULIDs, UUIDs, nanoids and bare
+  integers are untouched, and base58 is not attempted, because a guard with
+  false positives gets switched off and then nothing is checked.
 
-This release folds in the experience domain from an unreleased fork that
-shipped as `@flashy/ledger@0.2.0` — the same version number as this package's
-0.2.0 and different contents, because it branched before the tenant-isolation
-work. The fork's consumer only ever used the pure domain functions (`post`,
-`minor`, `skillAsset`), so 0.2.0's breaking changes to the store read
-signatures do not affect it. The fork is superseded; the vendored tarball
-carrying it should be deleted wherever it appears.
+### Fixed
+
+- **The conformance job runs against an actual replica set.** It had been
+  failing for months on a standalone mongod: a `services:` container cannot take
+  command arguments, so `--replSet` was never passed, while the readiness gate
+  checked `isWritablePrimary` — which a standalone reports true. It announced
+  success against a server with no replication, and the suite then failed on
+  "Transaction numbers are only allowed on a replica set member", which reads
+  like a broken adapter. The gate now checks `setName`.
+
+- vitest and `@vitest/coverage-v8` to 4.1.11, clearing a critical advisory in
+  the vitest UI server and a high path-traversal advisory in the vite it pulls.
+  Dev-only; neither ships in the package.
+
+## [0.3.0] — 2026-08-20
+
+### Added
+
+- **`postConsume` — multi-asset consumption, all or nothing.** The primitive
+  building needs: a bill of several assets at once, where an unaffordable build
+  spends nothing. Sufficiency is decided for every cost before a single entry is
+  produced, and the error carries every shortfall rather than the first, so
+  nobody discovers their own bill one line at a time.
+
+  `shortfalls()` and `canConsume()` are exported so a caller can ask before it
+  commits. The preview and the rule are the same function, so they cannot
+  disagree.
+
+  Three deliberate refusals: the same asset twice (both lines would check
+  against one balance and both entries would chain onto one head, forking that
+  asset's chain — sum them before calling), a zero or negative line, and debt.
+  `allowNegative` is not part of `ConsumeCommand` at all; a build financed by
+  credit is a product decision that should have to be written.
+
+  Completeness of an *affordable* build belongs to the store: pass the entries
+  to `appendAll` on a `TransactionalLedgerStore`, never to `append` in a loop.
+
+- `InsufficientForConsumptionError`, carrying a `Shortfall[]`, and the
+  `INSUFFICIENT_FOR_CONSUMPTION` and `DUPLICATE_ASSET_IN_COMMAND` codes.
+
+- **`docs/INVARIANTS.md`** — the seven guarantees this package makes, numbered
+  so they can be cited, each mapped to the test that proves it.
+  `tests/invariants.test.ts` fails the build if the document cites a test that
+  no longer exists, so a rename cannot quietly hollow out the spec.
 
 ## [0.2.0] — 2026-08-14
 

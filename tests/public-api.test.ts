@@ -27,7 +27,6 @@ const RUNTIME_EXPORTS = [
   'PrecisionError',
   // assets
   'assetRegistry',
-  'isTransferable',
   // entries
   'hashEntry',
   'verifyChain',
@@ -36,21 +35,35 @@ const RUNTIME_EXPORTS = [
   'post',
   'postTransfer',
   'reverse',
-  // folds
-  'balanceOf',
-  'balancesByAsset',
-  'stateFrom',
-  // experience — the five skill assets and the shared key convention
+  // experience — added in 0.4.0: the five skills as SKILL_XP assets
   'SKILL_KEYS',
   'skillAsset',
   'skillAssetRegistry',
   'skillAssets',
   'skillForAssetId',
   'xpIdempotencyKey',
+  // consumption — added in 0.3.0 for multi-asset builds
+  'canConsume',
+  'postConsume',
+  'shortfalls',
+  // folds
+  'balanceOf',
+  'balancesByAsset',
+  'stateFrom',
+  // identity — opaque, tenant-scoped, never a natural key
+  'NaturalKeyError',
+  'assertOpaqueIdentity',
+  'looksLikeNaturalKey',
+  'surrogateIdentity',
   // errors
   'LedgerError',
+  'InsufficientForConsumptionError',
   // ports
   'isTransactional',
+  // adopting a collection this package did not design
+  'DEFAULT_FIELDS',
+  'GOLD_LEDGER_FIELDS',
+  'resolveFields',
   // adapters
   'InMemoryLedgerStore',
   'MongoLedgerStore',

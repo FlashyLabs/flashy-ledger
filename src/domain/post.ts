@@ -1,13 +1,9 @@
-import { isTransferable, type Asset } from './asset.js'
+import type { Asset } from './asset.js'
 import type { Entry, EntryKind, EntrySource, HashableEntry } from './entry.js'
 import { hashEntry } from './entry.js'
 import { add, isZero, isNegative, negate, type Minor } from './money.js'
-import {
-  assetNotTransferable,
-  insufficientBalance,
-  missingIdempotencyKey,
-  zeroAmount,
-} from './errors.js'
+import { insufficientBalance, missingIdempotencyKey, zeroAmount } from './errors.js'
+import { assertOpaqueIdentity } from './identity.js'
 
 /**
  * The decision function at the centre of the ledger.
@@ -46,6 +42,9 @@ export type ProposedEntry = Omit<Entry, 'id'>
 
 export function post(state: LedgerState, command: PostCommand): ProposedEntry {
   if (!command.idempotencyKey) throw missingIdempotencyKey()
+  // Before anything is hashed. An identity that names a person cannot be taken
+  // back out of a chain, so the only place to stop it is on the way in.
+  assertOpaqueIdentity(command.identityId)
   if (isZero(command.amount)) throw zeroAmount()
 
   const balanceAfter = add(state.balance, command.amount)
@@ -98,13 +97,6 @@ export function postTransfer(
 ): readonly [ProposedEntry, ProposedEntry] {
   if (isNegative(command.amount) || isZero(command.amount)) {
     throw zeroAmount()
-  }
-
-  // Some assets record who earned something rather than who holds it. Moving
-  // one is not a transfer, it is a forgery — and the rule belongs here, where
-  // no product can forget it, rather than in each product's review checklist.
-  if (!isTransferable(command.asset)) {
-    throw assetNotTransferable(command.asset.slug, command.asset.class)
   }
 
   const debit = post(from.state, {
