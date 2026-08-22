@@ -50,7 +50,7 @@ variant and no separate debit function.
 
 **Why.** So that `SUM(amount)` means something. The predecessor had services
 writing debits both ways, which made the sum meaningless and is precisely why
-the reconciliation invariant on flashy.network cannot yet run.
+the reconciliation invariant on flashynetwork.com cannot yet run.
 
 **Enforced by.** `post()` derives `balanceAfter` from the signed amount. There is
 no API that takes a magnitude and a direction.
