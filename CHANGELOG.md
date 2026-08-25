@@ -5,6 +5,18 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.3] — 2026-08-25
+
+### Changed
+
+- **The release that finally goes end-to-end.** 0.6.1 and 0.6.2 were both
+  claimed on GitHub Packages by manual publishes from an operator machine
+  during token rotation, before the workflow could release them — so neither
+  reached the npm mirror or got a tag, and the workflow rightly refuses to
+  publish over an existing version. The publish step now authenticates with
+  the workflow's own GITHUB_TOKEN (nothing left to rotate); 0.6.3 is the
+  same tree, released once, through one pipeline, to both registries.
+
 ## [0.6.2] — 2026-08-25
 
 ### Changed
