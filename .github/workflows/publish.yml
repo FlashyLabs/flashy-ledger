@@ -92,6 +92,26 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
 
+      # The same version, mirrored to the PUBLIC npm registry so consumers
+      # install with zero auth — GitHub Packages requires a token even for
+      # public packages, and the whole point of the open rules is a stranger
+      # can take them. publishConfig pins GH Packages and wins over CLI
+      # flags, so it's flipped for this step only (the checkout is discarded
+      # with the runner). Skips with a visible notice until the NPM_TOKEN
+      # secret exists, so wiring this never broke a release.
+      - name: Mirror to the public npm registry
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "::notice::NPM_TOKEN secret not set — skipped the public-registry mirror. Add an npm token with read-write on @flashylabs to publish there too."
+            exit 0
+          fi
+          npm pkg set publishConfig.registry=https://registry.npmjs.org publishConfig.access=public
+          echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" >> ~/.npmrc
+          npm publish
+          echo "::notice::Mirrored to registry.npmjs.org as public."
+
       # Only after the publish succeeded, so a failed publish leaves no tag
       # claiming a release that never happened.
       - name: Tag the released version (dispatch flow only)
