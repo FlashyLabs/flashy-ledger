@@ -5,6 +5,18 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.1] — 2026-08-25
+
+### Changed
+
+- **First dual-registry release.** No code change. With the `NPM_TOKEN`
+  repository secret in place, the publish workflow's mirror step stops
+  skipping: this and every future release lands on GitHub Packages (the
+  authenticated home) and on the public npm registry as
+  [`@flashylabs/ledger`](https://www.npmjs.com/package/@flashylabs/ledger),
+  so a stranger can take the open ledger rules with zero auth — which was
+  the point of opening them.
+
 ## [0.6.0] — 2026-08-25
 
 ### Added
