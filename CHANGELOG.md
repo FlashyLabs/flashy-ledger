@@ -5,6 +5,17 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.2] — 2026-08-25
+
+### Changed
+
+- **Re-cut of 0.6.1, identical contents.** 0.6.1's release run died between
+  registries: the version reached GitHub Packages (a manual publish while the
+  repo tokens were being rotated) but never the npm mirror, and never got its
+  tag. Rather than publish two different artifacts under one number, 0.6.2 is
+  the same tree released properly through the workflow — both registries, one
+  tag.
+
 ## [0.6.1] — 2026-08-25
 
 ### Changed
