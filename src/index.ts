@@ -24,6 +24,17 @@
 export type { Asset, AssetClass } from './domain/asset.js'
 export { assetRegistry } from './domain/asset.js'
 
+export type { AssetDefinition } from './domain/registry.js'
+export {
+  FLASHY_ASSET_DEFINITIONS,
+  FLASHY_GOLD,
+  FLASHY_WORK_UNIT,
+  assetDefinition,
+  defineAsset,
+  flashyAssets,
+  materialize,
+} from './domain/registry.js'
+
 export type { Minor } from './domain/money.js'
 export {
   ZERO,

@@ -126,15 +126,47 @@ research project. `verifyChain()` is what an auditor runs.
 
 ## Adding an asset
 
-Register it. There is no second step.
+Declare it in the registry. There is no second step.
 
 ```ts
-const wheat: Asset = {
-  id: 'asset_wht', slug: 'wheat', symbol: 'WHT',
+export const WHEAT = defineAsset({
+  slug: 'wheat', symbol: 'WHT', name: 'Wheat',
   decimals: 0,                    // whole units only
-  class: 'COMMODITY_UNIT', tenantId: 'flashy',
-}
+  class: 'COMMODITY_UNIT',
+  description: 'A bushel of wheat, settled on the same books as everything else.',
+})
 ```
+
+Add it to `FLASHY_ASSET_DEFINITIONS` and every consumer sees it — the public
+asset page, the read API, the balances endpoint. `defineAsset` validates the
+shape at module load, so a malformed declaration is a startup failure in every
+consumer at once rather than a wrong number in one of them later.
+
+### Definition, then materialize
+
+An `AssetDefinition` holds what is true everywhere: slug, symbol, name,
+decimals, class. An `Asset` adds `id` and `tenantId`, which describe where a
+copy of it lives:
+
+```ts
+const gold = materialize(FLASHY_GOLD, {
+  id: process.env.FLASHY_GOLD_ASSET_ID!, tenantId: 'flashy',
+})
+```
+
+The id is supplied at the edge and has no default. In production it is the
+ObjectId of a row in ClaimYour.Gold's `assets` collection; entries are keyed on
+it, and putting a slug in that field is the exact bug that once made four
+payouts fail silently with no type error to catch it. `materialize` throws on
+an empty id for the same reason.
+
+### Why the registry exists at all
+
+Flashy Gold used to be declared independently in four places. Three said
+`decimals: 2`. One said `decimals: 4` — and it was the one published on the
+settlement record, so an integrator following the public registry rendered
+every balance a hundred times wrong. That class of bug is not fixed by
+correcting the four. It is fixed by there being one.
 
 Precision is per asset and enforced at the boundary: `fromDecimal(0.5, 0)`
 throws rather than rounding, because rounding somebody's holding is not a thing
