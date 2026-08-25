@@ -27,6 +27,16 @@ const RUNTIME_EXPORTS = [
   'PrecisionError',
   // assets
   'assetRegistry',
+  // the Flashy asset registry — one declaration per asset, and the only place
+  // a consumer should learn what an asset's decimals are. Flashy Gold was
+  // declared in four repositories and one of them said 4 instead of 2.
+  'FLASHY_ASSET_DEFINITIONS',
+  'FLASHY_GOLD',
+  'FLASHY_WORK_UNIT',
+  'assetDefinition',
+  'defineAsset',
+  'flashyAssets',
+  'materialize',
   // entries
   'hashEntry',
   'verifyChain',
