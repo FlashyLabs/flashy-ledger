@@ -1,8 +1,22 @@
 # @flashylabs/ledger
 
-An append-only, multi-asset settlement ledger. Flashy Gold is the first asset on
-it, not the thing itself — ore, stone and wheat are configuration records, not
-new code paths.
+```
+        ██
+       ██
+      ██████
+        ██
+       ██
+      ██
+```
+
+An append-only, multi-asset settlement ledger, open under Apache-2.0. Flashy
+Gold is the first asset on it, not the thing itself — ore, stone and wheat are
+configuration records, not new code paths.
+
+This is the verification layer of the [Flashy](https://flashygroup.com)
+estate — the rules that [flashynetwork.com](https://flashynetwork.com) checks
+the books against, published so nobody has to take "verifiable" on faith.
+Read the rules you are trusting. That is the whole point of them being here.
 
 The domain is pure. It reads no database, calls no clock, and generates no
 randomness. Everything that touches storage sits behind one interface, which is
@@ -207,3 +221,27 @@ not change between them: `collection`, `createIndex`, `insertOne`, `findOne`,
 which silences every peer conflict in the tree rather than the one that was
 actually understood.
 
+## ⚡ The Strike
+
+This README commits to a secret, the way this ledger commits to everything:
+
+```
+sha256: 101609b65c4dc55f049e6609c2d8435c9a143bebc488cba73b05d65c630fdfa5
+```
+
+The preimage is already on this page — a single sentence a careful reader of
+the five invariants can reconstruct exactly. Recover it, verify the hash
+yourself (never trust, verify — that includes us), and open an issue titled
+`⚡ STRIKE` containing the preimage. First verified striker per release gets
+their name sealed into [STRIKERS.md](./STRIKERS.md) — the only file in this
+repository that is append-only by tradition rather than by code.
+
+No prize, no token, no airdrop. Bragging rights on a settlement ledger are
+denominated in proofs.
+
+## License
+
+[Apache-2.0](./LICENSE). The rules are open; the books they settle are not —
+the Flashy network's ledger data lives in its infrastructure, not in this
+repository, which is exactly the boundary you would want from a settlement
+layer: fork the rules, run your own books, verify ours.
