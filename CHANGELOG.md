@@ -5,6 +5,43 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-08-25
+
+### Added
+
+- **One asset registry, so decimals cannot disagree** (`domain/registry.ts`).
+  Flashy Gold was declared independently in four places: this package's
+  examples, flashy-gold, flashynetwork.com, and a row in ClaimYour.Gold's
+  `assets` collection. Three said `decimals: 2`. One said `4` — and it was the
+  one published on the settlement record, so an integrator following the public
+  registry rendered every balance a hundred times wrong. Nothing failed, and
+  nothing disagreed with them loudly enough to notice.
+
+  - `AssetDefinition` holds what is true everywhere: slug, symbol, name,
+    decimals, class, description. `Asset` adds `id` and `tenantId`, which
+    describe where a copy lives — deliberately not in the definition, because
+    in production the id is an environment-specific ObjectId and a slug in that
+    field writes entries nothing can read back, with no type error to catch it.
+  - `defineAsset()` validates at module load, so a malformed declaration is a
+    startup failure in every consumer at once rather than a wrong number in one
+    of them later.
+  - `materialize()` supplies the id at the edge and refuses an empty one.
+  - `flashyAssets()` omits an asset the environment has not provisioned rather
+    than inventing an id.
+  - Minting a new asset is one entry in `FLASHY_ASSET_DEFINITIONS`.
+
+  Nineteen tests, one of which exists solely to pin FG at two decimal places:
+  if it ever needs changing, the change is a migration of every entry ever
+  written, not an edit to a line.
+
+### Note on versioning
+
+This is 0.6.0 rather than 0.5.0. The registry work was branched from the 0.4.0
+line while main independently released 0.5.0, so both arrived claiming the same
+version — and 0.5.0 was already published, from a build without the registry in
+it. Skipping to 0.6.0 keeps the registry's published version honest rather than
+re-using a number that already means something else.
+
 ## [0.5.0] — 2026-08-21
 
 ### Added
