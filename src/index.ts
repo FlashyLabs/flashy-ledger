@@ -79,8 +79,11 @@ export { balanceOf, balancesByAsset, stateFrom } from './domain/fold.js'
 // entry's membership against a published root — trusting only the math.
 export type { InclusionProof, ProofStep } from './domain/merkle.js'
 export {
+  RECEIPT_VERSION,
   auditReceipt,
   checkpointRoot,
+  decodeReceipt,
+  encodeReceipt,
   inclusionProof,
   leafHash,
   merkleRoot,

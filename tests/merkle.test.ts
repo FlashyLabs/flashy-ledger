@@ -4,6 +4,8 @@ import {
   auditReceipt,
   checkpointRoot,
   ZERO,
+  decodeReceipt,
+  encodeReceipt,
   fromDecimal,
   inclusionProof,
   leafHash,
@@ -234,5 +236,70 @@ describe('checkpointRoot / auditReceipt over real entries', () => {
     const tampered = entries.map((e, i) => (i === 2 ? { ...e, hash: leafHash('rewritten') } : e))
     const newRoot = checkpointRoot(tampered)
     expect(newRoot).not.toBe(receipt.root)
+  })
+})
+
+describe('encodeReceipt / decodeReceipt', () => {
+  it('round-trips a receipt through JSON and still verifies', () => {
+    const proof = inclusionProof(HASHES(11), 7)
+    const decoded = decodeReceipt(encodeReceipt(proof))
+    expect(decoded).toEqual(proof)
+    expect(verifyInclusion(decoded)).toBe(true)
+  })
+
+  it('round-trips a lone-leaf receipt with an empty path', () => {
+    const proof = inclusionProof(['only'], 0)
+    expect(verifyInclusion(decodeReceipt(encodeReceipt(proof)))).toBe(true)
+  })
+
+  it('carries a version tag', () => {
+    const wire = JSON.parse(encodeReceipt(inclusionProof(HASHES(4), 1))) as { v: number }
+    expect(wire.v).toBe(1)
+  })
+
+  it('rejects non-JSON', () => {
+    expect(() => decodeReceipt('not json')).toThrow(LedgerError)
+    try {
+      decodeReceipt('not json')
+    } catch (err) {
+      expect((err as LedgerError).code).toBe('MALFORMED_RECEIPT')
+    }
+  })
+
+  it('rejects a wrong or missing version', () => {
+    const good = JSON.parse(encodeReceipt(inclusionProof(HASHES(4), 1))) as Record<string, unknown>
+    expect(() => decodeReceipt(JSON.stringify({ ...good, v: 2 }))).toThrow(/version is 2/)
+    expect(() => decodeReceipt(JSON.stringify({ ...good, v: undefined }))).toThrow(LedgerError)
+  })
+
+  it('rejects a JSON array or primitive', () => {
+    expect(() => decodeReceipt('[]')).toThrow(/not a JSON object/)
+    expect(() => decodeReceipt('42')).toThrow(LedgerError)
+  })
+
+  it('rejects each malformed field', () => {
+    const good = JSON.parse(encodeReceipt(inclusionProof(HASHES(4), 1))) as Record<string, unknown>
+    expect(() => decodeReceipt(JSON.stringify({ ...good, leaf: 1 }))).toThrow(/leaf/)
+    expect(() => decodeReceipt(JSON.stringify({ ...good, root: null }))).toThrow(/root/)
+    expect(() => decodeReceipt(JSON.stringify({ ...good, index: -1 }))).toThrow(/index/)
+    expect(() => decodeReceipt(JSON.stringify({ ...good, index: 1.5 }))).toThrow(/index/)
+    expect(() => decodeReceipt(JSON.stringify({ ...good, size: 0 }))).toThrow(/size/)
+    expect(() => decodeReceipt(JSON.stringify({ ...good, path: 'nope' }))).toThrow(/path/)
+  })
+
+  it('rejects a malformed proof step', () => {
+    const good = JSON.parse(encodeReceipt(inclusionProof(HASHES(4), 1))) as Record<string, unknown>
+    expect(() => decodeReceipt(JSON.stringify({ ...good, path: [{ sibling: 'x' }] }))).toThrow(/side/)
+    expect(() => decodeReceipt(JSON.stringify({ ...good, path: [{ sibling: 1, side: 'left' }] }))).toThrow(/sibling/)
+    expect(() => decodeReceipt(JSON.stringify({ ...good, path: [{ sibling: 'x', side: 'up' }] }))).toThrow(/side/)
+    expect(() => decodeReceipt(JSON.stringify({ ...good, path: ['nope'] }))).toThrow(/not an object/)
+  })
+
+  it("a decoded receipt whose root was swapped in transit fails verification", () => {
+    // Tamper survives decode (it is well-formed) but fails the math, which is
+    // exactly the division of labour: decode checks shape, verify checks truth.
+    const good = JSON.parse(encodeReceipt(inclusionProof(HASHES(8), 3))) as Record<string, unknown>
+    const decoded = decodeReceipt(JSON.stringify({ ...good, root: leafHash('forged') }))
+    expect(verifyInclusion(decoded)).toBe(false)
   })
 })

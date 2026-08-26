@@ -18,7 +18,8 @@ export type LedgerErrorCode =
   | 'DUPLICATE_ASSET_IN_COMMAND'
   | 'NATURAL_KEY_IDENTITY'
   | 'EMPTY_MERKLE_TREE'
-  | 'MERKLE_INDEX_OUT_OF_RANGE';
+  | 'MERKLE_INDEX_OUT_OF_RANGE'
+  | 'MALFORMED_RECEIPT';
 
 export const insufficientBalance = (available: number, requested: number): LedgerError =>
   new LedgerError(

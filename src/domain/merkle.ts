@@ -203,3 +203,86 @@ export function auditReceipt(entries: readonly Entry[], index: number): Inclusio
     index,
   )
 }
+
+/**
+ * The receipt is only worth something if it can leave the process that made it:
+ * a counterparty in another organization holds it, stores it for years, and
+ * parses it back with no shared code but this format. So it carries a version
+ * tag, and decoding validates the shape strictly rather than trusting it — a
+ * malformed receipt is a hard error, never a silently-wrong verification.
+ */
+export const RECEIPT_VERSION = 1 as const
+
+interface WireReceipt {
+  readonly v: typeof RECEIPT_VERSION
+  readonly leaf: string
+  readonly index: number
+  readonly size: number
+  readonly path: readonly ProofStep[]
+  readonly root: string
+}
+
+/** Serialize a receipt to canonical JSON a holder can keep and forward. */
+export function encodeReceipt(proof: InclusionProof): string {
+  const wire: WireReceipt = {
+    v: RECEIPT_VERSION,
+    leaf: proof.leaf,
+    index: proof.index,
+    size: proof.size,
+    path: proof.path.map((step) => ({ sibling: step.sibling, side: step.side })),
+    root: proof.root,
+  }
+  return JSON.stringify(wire)
+}
+
+function malformed(detail: string): LedgerError {
+  return new LedgerError(
+    'MALFORMED_RECEIPT',
+    `This is not a receipt this verifier can trust: ${detail}. A receipt that does not parse ` +
+      'cleanly must be rejected, never verified on a guess.',
+  )
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function decodeStep(value: unknown, i: number): ProofStep {
+  if (!isRecord(value)) throw malformed(`path[${i}] is not an object`)
+  const { sibling, side } = value
+  if (typeof sibling !== 'string') throw malformed(`path[${i}].sibling is not a string`)
+  if (side !== 'left' && side !== 'right') throw malformed(`path[${i}].side is not "left" or "right"`)
+  return { sibling, side }
+}
+
+/**
+ * Parse a receipt back from JSON, validating every field. The returned proof is
+ * structurally sound but not yet trusted — the holder still runs
+ * `verifyInclusion` against the root they read off the public chain. This step
+ * only guarantees the bytes are a receipt of a version this verifier speaks.
+ */
+export function decodeReceipt(json: string): InclusionProof {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(json)
+  } catch {
+    throw malformed('it is not valid JSON')
+  }
+  if (!isRecord(parsed)) throw malformed('it is not a JSON object')
+  if (parsed.v !== RECEIPT_VERSION) {
+    throw malformed(`its version is ${String(parsed.v)}, not ${RECEIPT_VERSION}`)
+  }
+  const { leaf, index, size, path, root } = parsed
+  if (typeof leaf !== 'string') throw malformed('leaf is not a string')
+  if (typeof root !== 'string') throw malformed('root is not a string')
+  if (!Number.isInteger(index) || (index as number) < 0) throw malformed('index is not a non-negative integer')
+  if (!Number.isInteger(size) || (size as number) < 1) throw malformed('size is not a positive integer')
+  if (!Array.isArray(path)) throw malformed('path is not an array')
+  return {
+    leaf,
+    index: index as number,
+    size: size as number,
+    path: path.map(decodeStep),
+    root,
+  }
+}

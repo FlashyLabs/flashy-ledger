@@ -67,6 +67,9 @@ const RUNTIME_EXPORTS = [
   'verifyInclusion',
   'checkpointRoot',
   'auditReceipt',
+  'RECEIPT_VERSION',
+  'encodeReceipt',
+  'decodeReceipt',
   // identity — opaque, tenant-scoped, never a natural key
   'NaturalKeyError',
   'assertOpaqueIdentity',
