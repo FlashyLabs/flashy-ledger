@@ -198,6 +198,30 @@ not invent a rate.
 - **Not on a chain, and not pretending to be.** It is built so that becoming so
   is a storage decision rather than a rewrite.
 
+## Where this is going
+
+Every meaningful autonomous action becomes a proof:
+
+```
+agent → signed intent → authorization → execution → Flashy Ledger event → proof
+```
+
+This package is the foundation of that chain — the immutable, hash-chained,
+deterministically replayable half that ships today. The rest is a four-phase
+arc: cryptographic **agent and organization signatures** on every event; the
+**Flashy Anchor Protocol**, which writes Merkle checkpoint roots to public
+blockchains so history is *auditable by an adversary*, chain-neutrally
+(Ethereum, Base, Bitcoin, or a Web2 org's own choice); an **interorganizational
+ledger** where two autonomous organizations exchange signed messages and both
+hold mutually verifiable receipts; and, only once that traffic is real,
+**federated validators** over an established permissioned BFT/PoA network. Not
+another L1 — a chain-neutral proof layer for autonomous work.
+
+The full sequence, with each phase's honest status, is in
+[`docs/ROADMAP.md`](./docs/ROADMAP.md). Foundation is live and checkable with
+[`@flashyos/verify`](https://www.npmjs.com/package/@flashyos/verify); everything
+past it is labelled North Star until its code ships.
+
 ## Status
 
 Pre-1.0. The entry format and hash input are not yet frozen — changing either
