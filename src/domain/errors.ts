@@ -16,7 +16,9 @@ export type LedgerErrorCode =
   | 'MISSING_IDEMPOTENCY_KEY'
   | 'INSUFFICIENT_FOR_CONSUMPTION'
   | 'DUPLICATE_ASSET_IN_COMMAND'
-  | 'NATURAL_KEY_IDENTITY';
+  | 'NATURAL_KEY_IDENTITY'
+  | 'EMPTY_MERKLE_TREE'
+  | 'MERKLE_INDEX_OUT_OF_RANGE';
 
 export const insufficientBalance = (available: number, requested: number): LedgerError =>
   new LedgerError(

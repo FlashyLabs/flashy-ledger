@@ -74,6 +74,19 @@ export { canConsume, postConsume, shortfalls } from './domain/consume.js'
 
 export { balanceOf, balancesByAsset, stateFrom } from './domain/fold.js'
 
+// The proof layer's `root` object: a Merkle root over a batch of entries and the
+// short inclusion proof (audit receipt) a counterparty holds to verify one
+// entry's membership against a published root — trusting only the math.
+export type { InclusionProof, ProofStep } from './domain/merkle.js'
+export {
+  auditReceipt,
+  checkpointRoot,
+  inclusionProof,
+  leafHash,
+  merkleRoot,
+  verifyInclusion,
+} from './domain/merkle.js'
+
 // The identity rule: opaque, tenant-scoped, never a natural key. Enforced in
 // post(), so no entry can be written that skips it.
 export {

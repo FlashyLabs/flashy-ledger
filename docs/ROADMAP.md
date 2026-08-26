@@ -42,9 +42,14 @@ Phase 1 completes the primitive around **agents as first-class signers**.
 - **Signed-intent envelope** — the `intent → authorization → execution` chain
   recorded, so a reader verifies the agent was authorized *before* it acted.
   *(NORTH STAR)*
-- **Merkle roots + audit receipts** — every event yields a receipt; every batch
-  yields a root. The receipt is what an agent, auditor or counterparty holds.
-  *(NORTH STAR)*
+- **Merkle roots + audit receipts** — every batch yields a root; every entry
+  yields a receipt the holder verifies against it with only the math, trusting
+  no operator. The root-and-receipt primitive itself now ships: `merkleRoot`,
+  `checkpointRoot`, `inclusionProof`/`auditReceipt`, and `verifyInclusion`, with
+  RFC 6962 leaf/node domain separation so a proof cannot be forged from an
+  internal node. *Publishing* that root to a public chain is Phase 2; until then
+  a receipt proves membership in a batch, not yet anchoring in the open.
+  *(PRIMITIVE LIVE · anchoring NORTH STAR)*
 - **Key rotation + permissions** — agent identity that survives a rotated key,
   and a permission model over which agent may sign which event class. This
   answers the revocation question in cryptography, not just a database row.

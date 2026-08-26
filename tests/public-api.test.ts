@@ -60,6 +60,13 @@ const RUNTIME_EXPORTS = [
   'balanceOf',
   'balancesByAsset',
   'stateFrom',
+  // the proof layer's `root` object — Merkle root + inclusion proof (receipt)
+  'leafHash',
+  'merkleRoot',
+  'inclusionProof',
+  'verifyInclusion',
+  'checkpointRoot',
+  'auditReceipt',
   // identity — opaque, tenant-scoped, never a natural key
   'NaturalKeyError',
   'assertOpaqueIdentity',
