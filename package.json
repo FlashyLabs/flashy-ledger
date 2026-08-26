@@ -46,12 +46,12 @@
     "bolt": "node scripts/bolt.mjs"
   },
   "devDependencies": {
-    "@eslint/js": "^9.17.0",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^26.2.0",
     "@vitest/coverage-v8": "^4.1.11",
-    "eslint": "^9.17.0",
-    "mongodb": "^6.21.0",
-    "typescript": "^5.7.3",
+    "eslint": "^10.9.0",
+    "mongodb": "^7.5.0",
+    "typescript": "^7.0.2",
     "typescript-eslint": "^8.19.0",
     "vitest": "^4.1.11"
   },
