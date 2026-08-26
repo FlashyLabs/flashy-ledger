@@ -1,0 +1,16 @@
+# Dependabot — automated dependency + action updates.
+# Part of the estate-wide hardening baseline (tier-1: catch advisories the day they publish).
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
