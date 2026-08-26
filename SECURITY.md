@@ -6,12 +6,12 @@ Report suspected vulnerabilities to **security@flashy.network** rather than a
 public issue. We acknowledge within 72 hours and tell you what we are doing.
 
 This is the same address and the same commitment published at
-https://flashy.network/security/ . One disclosure route across the estate is
+https://flashynetwork.com/security/ . One disclosure route across the estate is
 deliberate: a researcher who finds two and picks the worse one has been failed
 by us, not by their choice.
 
 If a report reveals a discrepancy in a ledger, it appears on
-https://flashy.network/incidents/ once corrected — including the ones we would
+https://flashynetwork.com/incidents/ once corrected — including the ones we would
 rather not publish.
 
 ## What this package guarantees
