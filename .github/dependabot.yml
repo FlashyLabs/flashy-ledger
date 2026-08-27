@@ -1,0 +1,25 @@
+version: 2
+
+# Grouped and weekly, deliberately. Ungrouped Dependabot on an estate this size
+# produces more pull requests than anyone reads, and a queue nobody reads is
+# indistinguishable from no updates at all — except that it also hides the
+# security ones. One reviewable pull request per ecosystem per week.
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      production:
+        dependency-type: production
+      development:
+        dependency-type: development
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]

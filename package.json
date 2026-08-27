@@ -1,8 +1,22 @@
 {
   "name": "@flashylabs/ledger",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Append-only, multi-asset settlement ledger. Storage-agnostic by construction.",
-  "license": "UNLICENSED",
+  "keywords": [
+    "settlement ledger",
+    "agent settlement",
+    "audit receipt",
+    "append-only ledger",
+    "hash chain",
+    "merkle anchoring",
+    "chain-neutral",
+    "interorganizational ledger",
+    "AAO settlement",
+    "Flashy Anchor Protocol",
+    "verifiable autonomous action",
+    "proof of authorization"
+  ],
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist-cjs/index.js",
   "types": "./dist/index.d.ts",
@@ -28,7 +42,8 @@
     "coverage": "vitest run --coverage",
     "lint": "eslint src tests",
     "check": "npm run typecheck && npm run lint && npm run coverage",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "bolt": "node scripts/bolt.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

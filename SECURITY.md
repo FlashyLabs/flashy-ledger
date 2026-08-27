@@ -6,12 +6,12 @@ Report suspected vulnerabilities to **security@flashy.network** rather than a
 public issue. We acknowledge within 72 hours and tell you what we are doing.
 
 This is the same address and the same commitment published at
-https://flashy.network/security/ . One disclosure route across the estate is
+https://flashynetwork.com/security/ . One disclosure route across the estate is
 deliberate: a researcher who finds two and picks the worse one has been failed
 by us, not by their choice.
 
 If a report reveals a discrepancy in a ledger, it appears on
-https://flashy.network/incidents/ once corrected — including the ones we would
+https://flashynetwork.com/incidents/ once corrected — including the ones we would
 rather not publish.
 
 ## What this package guarantees
@@ -37,3 +37,14 @@ rather not publish.
 Changing the fields hashed by `hashEntry`, or their order, invalidates every
 chain written before the change. Treat it as a breaking migration with a
 re-hashing plan, not as a refactor.
+
+## Response and disclosure windows
+
+Acknowledgement within 72 hours, a status update at least every 7 days
+until resolution, and coordinated disclosure: give us 90 days — or agree a
+different window with us — before publishing.
+
+## Supported versions
+
+The latest published minor. Older versions get fixes only when the finding
+is severe and the upgrade path is breaking.

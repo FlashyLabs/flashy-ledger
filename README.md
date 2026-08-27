@@ -1,8 +1,22 @@
 # @flashylabs/ledger
 
-An append-only, multi-asset settlement ledger. Flashy Gold is the first asset on
-it, not the thing itself — ore, stone and wheat are configuration records, not
-new code paths.
+```
+        ██
+       ██
+      ██████
+        ██
+       ██
+      ██
+```
+
+An append-only, multi-asset settlement ledger, open under Apache-2.0. Flashy
+Gold is the first asset on it, not the thing itself — ore, stone and wheat are
+configuration records, not new code paths.
+
+This is the verification layer of the [Flashy](https://flashygroup.com)
+estate — the rules that [flashynetwork.com](https://flashynetwork.com) checks
+the books against, published so nobody has to take "verifiable" on faith.
+Read the rules you are trusting. That is the whole point of them being here.
 
 The domain is pure. It reads no database, calls no clock, and generates no
 randomness. Everything that touches storage sits behind one interface, which is
@@ -126,15 +140,47 @@ research project. `verifyChain()` is what an auditor runs.
 
 ## Adding an asset
 
-Register it. There is no second step.
+Declare it in the registry. There is no second step.
 
 ```ts
-const wheat: Asset = {
-  id: 'asset_wht', slug: 'wheat', symbol: 'WHT',
+export const WHEAT = defineAsset({
+  slug: 'wheat', symbol: 'WHT', name: 'Wheat',
   decimals: 0,                    // whole units only
-  class: 'COMMODITY_UNIT', tenantId: 'flashy',
-}
+  class: 'COMMODITY_UNIT',
+  description: 'A bushel of wheat, settled on the same books as everything else.',
+})
 ```
+
+Add it to `FLASHY_ASSET_DEFINITIONS` and every consumer sees it — the public
+asset page, the read API, the balances endpoint. `defineAsset` validates the
+shape at module load, so a malformed declaration is a startup failure in every
+consumer at once rather than a wrong number in one of them later.
+
+### Definition, then materialize
+
+An `AssetDefinition` holds what is true everywhere: slug, symbol, name,
+decimals, class. An `Asset` adds `id` and `tenantId`, which describe where a
+copy of it lives:
+
+```ts
+const gold = materialize(FLASHY_GOLD, {
+  id: process.env.FLASHY_GOLD_ASSET_ID!, tenantId: 'flashy',
+})
+```
+
+The id is supplied at the edge and has no default. In production it is the
+ObjectId of a row in ClaimYour.Gold's `assets` collection; entries are keyed on
+it, and putting a slug in that field is the exact bug that once made four
+payouts fail silently with no type error to catch it. `materialize` throws on
+an empty id for the same reason.
+
+### Why the registry exists at all
+
+Flashy Gold used to be declared independently in four places. Three said
+`decimals: 2`. One said `decimals: 4` — and it was the one published on the
+settlement record, so an integrator following the public registry rendered
+every balance a hundred times wrong. That class of bug is not fixed by
+correcting the four. It is fixed by there being one.
 
 Precision is per asset and enforced at the boundary: `fromDecimal(0.5, 0)`
 throws rather than rounding, because rounding somebody's holding is not a thing
@@ -151,6 +197,30 @@ not invent a rate.
 - **Not a pricing engine.** No rates, no conversion, no valuation.
 - **Not on a chain, and not pretending to be.** It is built so that becoming so
   is a storage decision rather than a rewrite.
+
+## Where this is going
+
+Every meaningful autonomous action becomes a proof:
+
+```
+agent → signed intent → authorization → execution → Flashy Ledger event → proof
+```
+
+This package is the foundation of that chain — the immutable, hash-chained,
+deterministically replayable half that ships today. The rest is a four-phase
+arc: cryptographic **agent and organization signatures** on every event; the
+**Flashy Anchor Protocol**, which writes Merkle checkpoint roots to public
+blockchains so history is *auditable by an adversary*, chain-neutrally
+(Ethereum, Base, Bitcoin, or a Web2 org's own choice); an **interorganizational
+ledger** where two autonomous organizations exchange signed messages and both
+hold mutually verifiable receipts; and, only once that traffic is real,
+**federated validators** over an established permissioned BFT/PoA network. Not
+another L1 — a chain-neutral proof layer for autonomous work.
+
+The full sequence, with each phase's honest status, is in
+[`docs/ROADMAP.md`](./docs/ROADMAP.md). Foundation is live and checkable with
+[`@flashyos/verify`](https://www.npmjs.com/package/@flashyos/verify); everything
+past it is labelled North Star until its code ships.
 
 ## Status
 
@@ -207,3 +277,27 @@ not change between them: `collection`, `createIndex`, `insertOne`, `findOne`,
 which silences every peer conflict in the tree rather than the one that was
 actually understood.
 
+## ⚡ The Strike
+
+This README commits to a secret, the way this ledger commits to everything:
+
+```
+sha256: 101609b65c4dc55f049e6609c2d8435c9a143bebc488cba73b05d65c630fdfa5
+```
+
+The preimage is already on this page — a single sentence a careful reader of
+the five invariants can reconstruct exactly. Recover it, verify the hash
+yourself (never trust, verify — that includes us), and open an issue titled
+`⚡ STRIKE` containing the preimage. First verified striker per release gets
+their name sealed into [STRIKERS.md](./STRIKERS.md) — the only file in this
+repository that is append-only by tradition rather than by code.
+
+No prize, no token, no airdrop. Bragging rights on a settlement ledger are
+denominated in proofs.
+
+## License
+
+[Apache-2.0](./LICENSE). The rules are open; the books they settle are not —
+the Flashy network's ledger data lives in its infrastructure, not in this
+repository, which is exactly the boundary you would want from a settlement
+layer: fork the rules, run your own books, verify ours.
