@@ -6,9 +6,11 @@ import {
   SKILL_KEYS,
   assetDefinition,
   defineAsset,
+  isTransferable,
   flashyAssets,
   materialize,
   type AssetDefinition,
+  CIVILIZATION_COMMODITIES,
 } from '../src/index.js'
 
 /**
@@ -70,7 +72,9 @@ describe('the registry as a whole', () => {
 
   it('looks up by slug and reports an unknown one as absent rather than throwing', () => {
     expect(assetDefinition('flashy-gold')).toBe(FLASHY_GOLD)
-    expect(assetDefinition('wheat')).toBeNull()
+    // Not 'wheat' — that is a declared commodity now. An absence test whose
+    // subject quietly becomes real stops testing absence.
+    expect(assetDefinition('unobtainium')).toBeNull()
   })
 
   it('excludes skill XP — status is not a holding, and listing it invites the conversion question', () => {
@@ -80,41 +84,44 @@ describe('the registry as a whole', () => {
 })
 
 describe('defineAsset — minting a new asset is one declaration', () => {
-  const wheat: AssetDefinition = {
-    slug: 'wheat',
-    symbol: 'WHT',
-    name: 'Wheat',
+  // Deliberately not one of the declared assets: this block is about the
+  // minting procedure, and a fixture that shadows a real declaration makes a
+  // failure here read as a problem with that asset.
+  const barley: AssetDefinition = {
+    slug: 'barley',
+    symbol: 'BRL',
+    name: 'Barley',
     decimals: 0,
     class: 'COMMODITY_UNIT',
-    description: 'A bushel of wheat, settled on the same books as everything else.',
+    description: 'A bushel of barley, settled on the same books as everything else.',
   }
 
   it('accepts a well-formed definition — this is the whole procedure for a new asset', () => {
-    const asset = defineAsset(wheat)
-    expect(asset.slug).toBe('wheat')
+    const asset = defineAsset(barley)
+    expect(asset.slug).toBe('barley')
     expect(Object.isFrozen(asset)).toBe(true)
   })
 
   it('rejects a slug that is not lower-case kebab, because slugs reach URLs and machine surfaces', () => {
-    expect(() => defineAsset({ ...wheat, slug: 'Wheat Futures' })).toThrow(/kebab/)
-    expect(() => defineAsset({ ...wheat, slug: 'wheat_futures' })).toThrow(/kebab/)
-    expect(() => defineAsset({ ...wheat, slug: '-wheat' })).toThrow(/kebab/)
+    expect(() => defineAsset({ ...barley, slug: 'Wheat Futures' })).toThrow(/kebab/)
+    expect(() => defineAsset({ ...barley, slug: 'wheat_futures' })).toThrow(/kebab/)
+    expect(() => defineAsset({ ...barley, slug: '-wheat' })).toThrow(/kebab/)
   })
 
   it('rejects a malformed symbol', () => {
-    expect(() => defineAsset({ ...wheat, symbol: 'w' })).toThrow(/symbol/)
-    expect(() => defineAsset({ ...wheat, symbol: 'TOOMANYCHARS' })).toThrow(/symbol/)
+    expect(() => defineAsset({ ...barley, symbol: 'w' })).toThrow(/symbol/)
+    expect(() => defineAsset({ ...barley, symbol: 'TOOMANYCHARS' })).toThrow(/symbol/)
   })
 
   it('rejects decimals that are negative, fractional, or beyond what minor units carry', () => {
-    expect(() => defineAsset({ ...wheat, decimals: -1 })).toThrow(/decimals/)
-    expect(() => defineAsset({ ...wheat, decimals: 2.5 })).toThrow(/decimals/)
-    expect(() => defineAsset({ ...wheat, decimals: 9 })).toThrow(/decimals/)
+    expect(() => defineAsset({ ...barley, decimals: -1 })).toThrow(/decimals/)
+    expect(() => defineAsset({ ...barley, decimals: 2.5 })).toThrow(/decimals/)
+    expect(() => defineAsset({ ...barley, decimals: 9 })).toThrow(/decimals/)
   })
 
   it('insists on a name and a description', () => {
-    expect(() => defineAsset({ ...wheat, name: '  ' })).toThrow(/display name/)
-    expect(() => defineAsset({ ...wheat, description: '' })).toThrow(/description/)
+    expect(() => defineAsset({ ...barley, name: '  ' })).toThrow(/display name/)
+    expect(() => defineAsset({ ...barley, description: '' })).toThrow(/description/)
   })
 })
 
@@ -164,3 +171,42 @@ describe('flashyAssets', () => {
     expect(assets).toHaveLength(SKILL_KEYS.length)
   })
 })
+
+describe('the civilization commodities', () => {
+  it('declares four, all indivisible', () => {
+    expect(CIVILIZATION_COMMODITIES).toHaveLength(4)
+    for (const asset of CIVILIZATION_COMMODITIES) {
+      // Not a display preference: amounts are hashed as minor units, so a
+      // decimals disagreement reinterprets every historical entry.
+      expect(asset.decimals).toBe(0)
+    }
+  })
+
+  it('classes every one as a commodity, never a currency', () => {
+    for (const asset of CIVILIZATION_COMMODITIES) {
+      expect(asset.class).toBe('COMMODITY_UNIT')
+    }
+  })
+
+  it('pins the slugs, because they resolve to ids that enter every hash', () => {
+    expect(CIVILIZATION_COMMODITIES.map((a) => a.slug)).toEqual(['wheat', 'wood', 'stone', 'iron'])
+  })
+
+  it('gives each a distinct symbol', () => {
+    const symbols = CIVILIZATION_COMMODITIES.map((a) => a.symbol)
+    expect(new Set(symbols).size).toBe(symbols.length)
+  })
+
+  it('lists them among the assets the economy settles', () => {
+    for (const asset of CIVILIZATION_COMMODITIES) {
+      expect(assetDefinition(asset.slug)).toEqual(asset)
+    }
+  })
+
+  it('keeps them transferable — raids and a marketplace need them to move', () => {
+    for (const definition of CIVILIZATION_COMMODITIES) {
+      expect(isTransferable(materialize(definition, { id: `id_${definition.slug}`, tenantId: 'flashy' }))).toBe(true)
+    }
+  })
+})
+

@@ -137,6 +137,63 @@ export const FLASHY_WORK_UNIT = defineAsset({
 })
 
 /**
+ * The four civilization commodities.
+ *
+ * Zero decimals, all of them: a third of a stone is not a thing anyone mined.
+ * That is not a display preference — the amounts are hashed as minor units, so
+ * a decimals disagreement silently reinterprets every historical entry, which
+ * is the failure this registry exists to prevent.
+ *
+ * `COMMODITY_UNIT` and never anything else. They buy buildings, upgrades and
+ * marketplace goods; there is no path from any of them to Flashy Gold under
+ * any name. Gold may buy commodities — that direction is a sink for a currency
+ * people can redeem, and it is the only direction that exists.
+ */
+export const WHEAT = defineAsset({
+  slug: 'wheat',
+  symbol: 'WHT',
+  name: 'Wheat',
+  decimals: 0,
+  class: 'COMMODITY_UNIT',
+  description: 'A civilization resource. Feeds buildings and armies; produced by farmhouses.',
+})
+
+export const WOOD = defineAsset({
+  slug: 'wood',
+  symbol: 'WOD',
+  name: 'Wood',
+  decimals: 0,
+  class: 'COMMODITY_UNIT',
+  description: 'A civilization resource. The primary construction material; produced by lumber camps.',
+})
+
+export const STONE = defineAsset({
+  slug: 'stone',
+  symbol: 'STN',
+  name: 'Stone',
+  decimals: 0,
+  class: 'COMMODITY_UNIT',
+  description: 'A civilization resource. Fortification and heavy construction; produced by quarries.',
+})
+
+export const IRON = defineAsset({
+  slug: 'iron',
+  symbol: 'IRN',
+  name: 'Iron',
+  decimals: 0,
+  class: 'COMMODITY_UNIT',
+  description: 'A civilization resource. Weapons, armour and advanced construction; produced by forges.',
+})
+
+/** The civilization commodities, in the order a hunter unlocks them. */
+export const CIVILIZATION_COMMODITIES: readonly AssetDefinition[] = Object.freeze([
+  WHEAT,
+  WOOD,
+  STONE,
+  IRON,
+])
+
+/**
  * Every asset the Flashy economy settles, excluding skill XP.
  *
  * XP is kept out of this list on purpose. The five skills are assets to the
@@ -147,6 +204,7 @@ export const FLASHY_WORK_UNIT = defineAsset({
 export const FLASHY_ASSET_DEFINITIONS: readonly AssetDefinition[] = Object.freeze([
   FLASHY_GOLD,
   FLASHY_WORK_UNIT,
+  ...CIVILIZATION_COMMODITIES,
 ])
 
 /** Look a definition up by its slug. Null rather than throw: callers publish absences. */

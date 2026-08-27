@@ -31,9 +31,14 @@ const RUNTIME_EXPORTS = [
   // the Flashy asset registry — one declaration per asset, and the only place
   // a consumer should learn what an asset's decimals are. Flashy Gold was
   // declared in four repositories and one of them said 4 instead of 2.
+  'CIVILIZATION_COMMODITIES',
   'FLASHY_ASSET_DEFINITIONS',
   'FLASHY_GOLD',
   'FLASHY_WORK_UNIT',
+  'IRON',
+  'STONE',
+  'WHEAT',
+  'WOOD',
   'assetDefinition',
   'defineAsset',
   'flashyAssets',

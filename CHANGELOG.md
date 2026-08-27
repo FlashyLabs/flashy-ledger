@@ -7,6 +7,23 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.7.0] — 2026-08-27
 
+### Added — the four civilization commodities
+
+- **`WHEAT`, `WOOD`, `STONE`, `IRON`**, and `CIVILIZATION_COMMODITIES` listing
+  them in unlock order. All four are `COMMODITY_UNIT` at `decimals: 0`, and all
+  four now appear in `FLASHY_ASSET_DEFINITIONS`.
+
+  ClaimYour.Gold has carried these as four `Asset` rows and a hand-written slug
+  map since before this registry existed. That is the shape this registry was
+  built to end: the same asset declared in two places is the same asset until
+  somebody edits one of them. Zero decimals in particular is not a display
+  preference — amounts are hashed as minor units, so a decimals disagreement
+  silently reinterprets every historical entry.
+
+  There is no conversion path from any of them to Flashy Gold, under any name.
+  Gold may buy commodities; that direction is a sink for a currency people can
+  redeem, and it is the only direction that exists.
+
 ### Added — enforcement of a rule that was already written down
 
 - **`isTransferable(asset)`, and `postTransfer` now enforces it.** A `SKILL_XP`

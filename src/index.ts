@@ -27,8 +27,13 @@ export { assetRegistry, isTransferable } from './domain/asset.js'
 export type { AssetDefinition } from './domain/registry.js'
 export {
   FLASHY_ASSET_DEFINITIONS,
+  CIVILIZATION_COMMODITIES,
   FLASHY_GOLD,
   FLASHY_WORK_UNIT,
+  IRON,
+  STONE,
+  WHEAT,
+  WOOD,
   assetDefinition,
   defineAsset,
   flashyAssets,
