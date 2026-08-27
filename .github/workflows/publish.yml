@@ -83,16 +83,21 @@ jobs:
             exit 1
           fi
 
-      # GITHUB_TOKEN first, PAT as fallback. The old "installation does not
-      # exist" failures that forced a classic PAT here predate the scope fix:
-      # they were @flashy not matching the FlashyLabs account (see the 0.1.2
-      # release note), not a GITHUB_TOKEN gap. GITHUB_TOKEN + the packages:
-      # write permission above needs no secret to rotate — which matters,
-      # because PACKAGES_TOKEN has now broken twice in one evening of token
-      # rotation (E401 at 20:05 and again at 20:47, valid only in between).
+      # PAT first, GITHUB_TOKEN as fallback. The GITHUB_TOKEN-first ordering
+      # was justified by run 12 "reaching E409 instead of E401" — but the
+      # registry checks version-existence before it verifies the token, so
+      # E409 proved nothing about auth. Every publish since that flip (0.6.3,
+      # 0.8.0) has died with the same E401 on the PUT, while reads in the very
+      # same runs resolved fine: GITHUB_TOKEN can read this package but cannot
+      # publish to it, because @flashylabs/ledger was created by manual PAT
+      # publishes and the package's own access list — not the workflow's
+      # permissions block — decides who may PUT new versions. Until the
+      # package grants this repo's Actions write access (package settings →
+      # Manage Actions access), the PAT is the only token the registry
+      # accepts for publish.
       - run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN || secrets.PACKAGES_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
 
       # The same version, mirrored to the PUBLIC npm registry so consumers
       # install with zero auth — GitHub Packages requires a token even for
