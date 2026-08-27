@@ -5,6 +5,29 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-08-27
+
+### Added — the Merkle spec moves into the package
+
+- **`src/domain/merkle.ts`**, ported verbatim from flashy-network's
+  `src/lib/merkle.ts`: `canonical`, `leafHash`, `nodeHash`, `sortEntries`,
+  `merkleRoot`, `inclusionProof`, `verifyInclusion`, `toJsonl`, `commit`,
+  `sha256Hex`, plus the `SnapshotEntry`, `Commitment`, `InclusionProof` types.
+
+  The producer (ClaimYour.Gold's nightly anchor) and the verifier
+  (flashynetwork.com) must hash identically or every published root stops
+  verifying. Two copies of "the same" spec is how that failure arrives
+  silently; one package is how it cannot.
+
+  Domain separation (0x00 leaves / 0x01 nodes), byte-wise id sort, and
+  promoted-not-duplicated odd nodes are unchanged. One mechanical delta:
+  index reads are guarded for this package's noUncheckedIndexedAccess —
+  the pinned-vector tests prove the bytes did not move.
+
+- **Pinned vectors.** `tests/merkle.test.ts` hard-codes the canonical string,
+  a leaf digest and a three-entry root. A failure there is a breaking change
+  to a published format, whatever the changelog says.
+
 ## [0.7.0] — 2026-08-27
 
 ### Added — the four civilization commodities

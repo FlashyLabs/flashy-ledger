@@ -28,6 +28,19 @@ const RUNTIME_EXPORTS = [
   // assets
   'assetRegistry',
   'isTransferable',
+  // merkle — the anchor spec
+  'canonical',
+  'commit',
+  'fromHex',
+  'inclusionProof',
+  'leafHash',
+  'merkleRoot',
+  'nodeHash',
+  'sha256Hex',
+  'sortEntries',
+  'toHex',
+  'toJsonl',
+  'verifyInclusion',
   // the Flashy asset registry — one declaration per asset, and the only place
   // a consumer should learn what an asset's decimals are. Flashy Gold was
   // declared in four repositories and one of them said 4 instead of 2.

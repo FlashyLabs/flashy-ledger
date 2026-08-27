@@ -79,6 +79,25 @@ export { canConsume, postConsume, shortfalls } from './domain/consume.js'
 
 export { balanceOf, balancesByAsset, stateFrom } from './domain/fold.js'
 
+// The Merkle spec: the tree the nightly anchor commits a day of entries to,
+// and the proofs a stranger verifies against it. One implementation, shared by
+// the producer and the reader — see the provenance note in the module.
+export type { Commitment, Hex, InclusionProof, ProofStep, SnapshotEntry } from './domain/merkle.js'
+export {
+  canonical,
+  commit,
+  fromHex,
+  inclusionProof,
+  leafHash,
+  merkleRoot,
+  nodeHash,
+  sha256Hex,
+  sortEntries,
+  toHex,
+  toJsonl,
+  verifyInclusion,
+} from './domain/merkle.js'
+
 // The identity rule: opaque, tenant-scoped, never a natural key. Enforced in
 // post(), so no entry can be written that skips it.
 export {
