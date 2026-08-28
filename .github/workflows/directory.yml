@@ -1,0 +1,33 @@
+# Validates this repository's directory fragment.
+#
+# The estate-wide merge catches contested authority and dangling references
+# across repositories, but it runs elsewhere and cannot say which repository
+# caused them. This runs here, so a bad fragment fails at the point it is made.
+name: Directory
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  fragment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The emitter reads the charter, so a fragment that disagrees with the
+      # charter is a fragment that was edited by hand.
+      - name: Emit
+        run: node scripts/directory.mjs
+
+      - name: Check
+        run: node scripts/check-directory.mjs --external person/michael
+
+      # A committed fragment that differs from a freshly emitted one means
+      # someone edited the JSON instead of the source it comes from.
+      - name: Committed fragment matches the emitter
+        run: git diff --exit-code -- directory.fragment.json
