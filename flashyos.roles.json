@@ -1,30 +1,30 @@
 {
-  "_comment": [
+  "x-comment": [
     "The roles Flashy Ledger declares, and the minimal form of its AAO charter.",
     "",
     "A role is a standing responsibility that exists whether or not work is in",
-    "flight. A branch is an assignment — the work itself — and lives under its",
+    "flight. A branch is an assignment \u2014 the work itself \u2014 and lives under its",
     "role as <role>/<workstream>. Roles never get a branch of their own: git",
     "stores refs as files, so a branch 'settlement' and a branch 'settlement/x'",
     "cannot coexist in either order.",
     "",
     "WHERE THIS SITS. Three organizations touch settlement and they are not the",
     "same job. FlashyOS seals and publishes the record when a cross-organization",
-    "obligation resolves — it holds no balances. Flashy Ledger, here, holds the",
+    "obligation resolves \u2014 it holds no balances. Flashy Ledger, here, holds the",
     "entries: append-only, multi-asset, multi-tenant, storage-agnostic by",
     "construction. Flashy Network orders and anchors them. Value lives in this",
     "repository; the ordering of it does not.",
     "",
     "`correctness` is the role this product is sold on. The eight numbered",
     "invariants in docs/INVARIANTS.md are the artifact an auditor asks for, and",
-    "each one names the test that proves it — a guarantee with no test behind it",
+    "each one names the test that proves it \u2014 a guarantee with no test behind it",
     "is a preference. Whoever holds this role holds that.",
     "",
     "Two families are empty: growth and revenue. This is infrastructure before",
     "it is a business, and an empty family is honest. Inventing a role to fill a",
     "column is the roster inflation this standard exists to stop.",
     "",
-    "Three names — developer-experience, release and intelligence — are",
+    "Three names \u2014 developer-experience, release and intelligence \u2014 are",
     "deliberately shared with FlashyOS, and `support` with Flashy.Academy. A role",
     "means the same thing in every organization that declares it; a stranger",
     "reading two rosters should not have to learn two vocabularies.",
@@ -42,7 +42,14 @@
     {
       "name": "flashy-ledger",
       "url": "github.com/FlashyLabs/flashy-ledger",
-      "holds": ["domain", "ports", "adapters", "invariants", "sdk", "docs"],
+      "holds": [
+        "domain",
+        "ports",
+        "adapters",
+        "invariants",
+        "sdk",
+        "docs"
+      ],
       "default": true
     }
   ],
@@ -52,81 +59,135 @@
       "family": "finance",
       "purpose": "Moves value when an obligation completes, exactly once, and never by editing what is already written.",
       "measure": "Entries posted with no duplicate surviving an idempotency replay",
-      "capabilities": ["post", "reverse", "fold"],
+      "capabilities": [
+        "post",
+        "reverse",
+        "fold"
+      ],
       "humanApprovalAtOrAbove": "CRITICAL",
-      "worksIn": ["flashy-ledger"]
+      "worksIn": [
+        "flashy-ledger"
+      ]
     },
     {
       "name": "correctness",
       "family": "risk",
       "purpose": "Keeps the eight numbered invariants true, and provable by a test that anyone outside can run.",
       "measure": "Invariants with an executable check behind them, over invariants claimed",
-      "capabilities": ["specify", "prove", "audit"],
+      "capabilities": [
+        "specify",
+        "prove",
+        "audit"
+      ],
       "humanApprovalAtOrAbove": "CRITICAL",
-      "worksIn": ["flashy-ledger"]
+      "worksIn": [
+        "flashy-ledger"
+      ]
     },
     {
       "name": "tenancy",
       "family": "operations",
       "purpose": "Keeps one customer's books unreachable from another's, by construction rather than by query discipline.",
       "measure": "Cross-tenant reads reaching data, which must stay zero",
-      "capabilities": ["isolate", "provision", "revoke"],
+      "capabilities": [
+        "isolate",
+        "provision",
+        "revoke"
+      ],
       "humanApprovalAtOrAbove": "HIGH",
-      "worksIn": ["flashy-ledger"]
+      "worksIn": [
+        "flashy-ledger"
+      ]
     },
     {
       "name": "storage",
       "family": "engineering",
       "purpose": "Keeps the domain free of storage, so moving onto new infrastructure is a new adapter rather than a rewrite.",
       "measure": "Domain code that touches a database, a clock or a random source, which must stay zero",
-      "capabilities": ["adapt", "migrate", "benchmark"],
+      "capabilities": [
+        "adapt",
+        "migrate",
+        "benchmark"
+      ],
       "humanApprovalAtOrAbove": "MEDIUM",
-      "worksIn": ["flashy-ledger"]
+      "worksIn": [
+        "flashy-ledger"
+      ]
     },
     {
       "name": "developer-experience",
       "family": "product",
       "purpose": "Makes the package the shortest path from an idea to books that balance.",
       "measure": "Minutes from install to a first posted entry",
-      "capabilities": ["document", "sample", "release"],
+      "capabilities": [
+        "document",
+        "sample",
+        "release"
+      ],
       "humanApprovalAtOrAbove": "LOW",
-      "worksIn": ["flashy-ledger"]
+      "worksIn": [
+        "flashy-ledger"
+      ]
     },
     {
       "name": "release",
       "family": "engineering",
       "purpose": "Publishes versions without breaking the tenants already running on them.",
       "measure": "Releases requiring no consumer change for a patch or minor bump",
-      "capabilities": ["version", "publish", "deprecate"],
+      "capabilities": [
+        "version",
+        "publish",
+        "deprecate"
+      ],
       "humanApprovalAtOrAbove": "HIGH",
-      "worksIn": ["flashy-ledger"]
+      "worksIn": [
+        "flashy-ledger"
+      ]
     },
     {
       "name": "support",
       "family": "support",
       "purpose": "Answers the teams running their books on this, and fixes what keeps generating the same question.",
       "measure": "Questions resolved without a second reply",
-      "capabilities": ["answer", "escalate", "document"],
+      "capabilities": [
+        "answer",
+        "escalate",
+        "document"
+      ],
       "humanApprovalAtOrAbove": "LOW",
-      "worksIn": ["flashy-ledger"]
+      "worksIn": [
+        "flashy-ledger"
+      ]
     },
     {
       "name": "intelligence",
       "family": "data",
       "purpose": "Says what the ledger did this week and names where it is stuck.",
       "measure": "Weekly brief published on time, with a named bottleneck",
-      "capabilities": ["measure", "aggregate", "publish"],
+      "capabilities": [
+        "measure",
+        "aggregate",
+        "publish"
+      ],
       "humanApprovalAtOrAbove": "LOW",
-      "worksIn": ["flashy-ledger"]
+      "worksIn": [
+        "flashy-ledger"
+      ]
     },
     {
       "name": "coordination",
       "family": "governance",
       "purpose": "Settles conflicts between roles and sharpens their proposals before they reach a person.",
       "measure": "Decisions resolved without reaching the accountable human",
-      "capabilities": ["arbitrate", "escalate", "record"],
+      "capabilities": [
+        "arbitrate",
+        "escalate",
+        "record"
+      ],
       "humanApprovalAtOrAbove": "MEDIUM",
-      "worksIn": ["flashy-ledger"]
+      "worksIn": [
+        "flashy-ledger"
+      ]
     }
   ]
 }

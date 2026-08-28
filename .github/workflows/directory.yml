@@ -24,6 +24,11 @@ jobs:
       - name: Emit
         run: node scripts/directory.mjs
 
+      # The estate authors the AAO standard. Every charter in it was
+      # non-conformant until this ran.
+      - name: Charter conforms
+        run: node scripts/check-charter.mjs
+
       - name: Check
         run: node scripts/check-directory.mjs --external person/michael
 
