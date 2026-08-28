@@ -72,5 +72,7 @@
     }
   },
   "module": "./dist/index.js",
-  "packageManager": "npm@10.9.8"
+  "packageManager": "npm@10.9.8",
+  "homepage": "https://flashylabs.com/packages/ledger/",
+  "author": "Flashy Labs <labs@flashylabs.com> (https://flashylabs.com)"
 }
