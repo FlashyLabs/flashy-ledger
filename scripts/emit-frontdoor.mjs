@@ -13,7 +13,7 @@
 //   node scripts/emit-frontdoor.mjs --check    render to memory, write nothing
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname } from 'node:path'
 
 const NOT_AUTHORITY =
   'A rung buys a reply and a place in a queue. It never buys authority, money, or access. ' +

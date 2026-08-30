@@ -27,7 +27,7 @@
 
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname } from 'node:path'
 
 const CONFIG = '.checkpoint/config.json'
 const OUT = 'checkpoint.json'
