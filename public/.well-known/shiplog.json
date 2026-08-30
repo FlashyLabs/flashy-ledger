@@ -2,8 +2,43 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-30T21:44:31.695Z",
+  "generated": "2026-08-30T22:07:07.401Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/bba4649eae9f",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T22:06:06Z",
+      "kind": "other",
+      "title": "Re-vendor the checkpoint and frontdoor emitters",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Two dead imports were found by running a linter over a repository that vendors\nthese files: a `join` from `node:path` in `vendor-checkpoint.mjs` and another\nin `vendor-emit-frontdoor.mjs`. Both are fixed at their source in flashyos and\ncopied here byte-identical.\n\nNeither changes behaviour. The reason to carry the copy anyway is the estate\nrule that produced the fix: a vendored file that disagrees with its source does\nnot fail, it disagrees — silently, about whichever field somebody has just\nchanged — and `estate-hygiene` compares these byte-for-byte precisely so a copy\ncannot quietly fall behind.\n\nKind: chore\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01BEaXzktRU5ZPe3R2NY7CKD",
+      "refs": {
+        "commit": "bba4649eae9f7582a0c2212623212a7739f0fde7"
+      },
+      "digest": "90961a42eef56da6ec1e32ddfa1d9d5fcf15e0d4ad6a497c6bee170748bb90b6"
+    },
+    {
+      "id": "ship/flashy-ledger/6b4240a35bf8",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T21:44:31Z",
+      "kind": "infra",
+      "title": "shipped/1: refresh the log, and the checkpoint over it",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "6b4240a35bf845ebdf235f9e2f7a7a139c1dca5a"
+      },
+      "digest": "6cdaeaaa99939f11743d2ccbb9b6654dd1ec6992842dd5544f490f1af81ff3d3"
+    },
     {
       "id": "ship/flashy-ledger/2c92e800ef29",
       "repo": "repo/flashy-ledger",
