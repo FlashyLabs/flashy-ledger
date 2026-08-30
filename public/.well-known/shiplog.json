@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-30T19:25:23.461Z",
+  "generated": "2026-08-30T19:46:27.243Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/6e78df978118",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T19:45:10Z",
+      "kind": "fix",
+      "title": "Re-vendor the charter checker: it had drifted from the spec",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "The vendored checker rejected renamedFrom, which the charter defines and the\nrole-rename sync reads; rejected a digit in a role name, which the spec's own\nregex allows; and enforced no length bound at all, so the 24-character role\nname cap was the one rule this pre-install check could not see.\n\nEleven byte-identical copies across the estate agreed with each other\nperfectly and disagreed with @flashyos/aao in all four places. The monorepo\nnow runs both checkers over the same documents and fails on any disagreement\nabout the verdict.\n\nThis charter still passes.\n\nKind: fix",
+      "refs": {
+        "commit": "6e78df978118d64d51c22bf887a05cf52633abbf"
+      },
+      "digest": "382eaf6a259ce4bbbea86fd88559f7ba9949b8959d1650f4c376f29dd26382cd"
+    },
     {
       "id": "ship/flashy-ledger/4be5c9f6d10f",
       "repo": "repo/flashy-ledger",
