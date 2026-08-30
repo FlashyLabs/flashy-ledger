@@ -6,7 +6,7 @@
   "authors": {
     "noreply@anthropic.com": "agent/claude"
   },
-  "visibility": "private",
+  "visibility": "public",
   "branch": "main",
   "lexicon": "imperative",
   "prBase": "https://github.com/FlashyLabs/flashy-ledger/pull/"

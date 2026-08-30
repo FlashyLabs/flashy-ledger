@@ -225,6 +225,7 @@ export function fromCommits(commits, options) {
     ? buildLexicon(options.lexicon === 'imperative' ? IMPERATIVE_LEXICON : options.lexicon)
     : undefined
   const declaredKinds = options.kinds ?? {}
+  const held = options.held ?? {}
   const nodeFor = (email) => {
     const mapped = authors[email.toLowerCase()]
     if (mapped) return mapped
@@ -268,7 +269,21 @@ export function fromCommits(commits, options) {
       by: by.length ? by : [options.defaultAuthor],
       asserted,
       assertedBy: options.assertedBy,
-      visibility: options.visibility ?? 'private',
+      // A repository publishes; an entry may still be held back.
+      //
+      // `visibility` is one field and it turns a whole log public. That is the
+      // right shape for the decision — but it is not the only decision. An
+      // entry can describe a security gap that is still open: this estate has
+      // one saying which file in which repository carried a live signing
+      // secret, that the secret is in git history on two repositories, and
+      // that it has not been rotated. Publishing the log publishes the
+      // exploitation route.
+      //
+      // So `.shiplog/held.json` lists shas that stay private whatever the
+      // repository default is. Held rather than deleted: the entry is still in
+      // the repository's own full record, still sealed, still countable. What
+      // changes is only whether a stranger can read it.
+      visibility: held[commit.sha] || held[commit.sha.slice(0, 12)] ? 'private' : (options.visibility ?? 'private'),
     }
     const detail = (commit.body ?? '').trim()
     if (detail) entry.detail = detail.slice(0, 2000)
@@ -333,6 +348,10 @@ const CONFIG = '.shiplog/config.json'
 // sha → kind, for the third of real history that is a noun phrase with no verb
 // to read. A person decides once and it is written down here.
 const KINDS = '.shiplog/kinds.json'
+// Shas held private regardless of the repository's `visibility`. Values are the
+// reason, so the file says why rather than just listing hashes somebody must
+// then go and reconstruct.
+const HELD = '.shiplog/held.json'
 const FORMAT = '%H%x1f%aI%x1f%aE%x1f%s%x1f%b%x1e'
 
 /**
@@ -394,7 +413,8 @@ function run(argv) {
   const raw = readGitLog({ rev: flag('rev') ?? revOf(config), since: flag('since') })
   // A recorded human decision per commit, for the ones nothing can read.
   const kinds = existsSync(KINDS) ? JSON.parse(readFileSync(KINDS, 'utf8')) : {}
-  const derived = fromCommits(parseGitLog(raw), { ...deriveOptionsFrom(config), kinds })
+  const held = existsSync(HELD) ? JSON.parse(readFileSync(HELD, 'utf8')) : {}
+  const derived = fromCommits(parseGitLog(raw), { ...deriveOptionsFrom(config), kinds, held })
   const { unmapped } = derived
   const out = flag('out') ?? 'shiplog.fragment.json'
 
