@@ -2,8 +2,43 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-30T17:59:01.865Z",
+  "generated": "2026-08-30T18:01:25.614Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/0962abf4dc28",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T17:59:02+00:00",
+      "kind": "fix",
+      "title": "Carry the current vendored emitters",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "A stale copy fails silently and in the dangerous direction: it does not know\nabout rules added since it was vendored, so it ignores them rather than\nerroring. Re-emitted and re-verified against the refreshed copies.\n\nKind: fix",
+      "refs": {
+        "commit": "0962abf4dc289cd854aee42519bbc2b4c1b399eb"
+      },
+      "digest": "702b59a2597ca813ba3d8399f85acb690ab32babc31ef283a75573c7cf0aa082"
+    },
+    {
+      "id": "ship/flashy-ledger/0c0d65227fdc",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T17:38:45+00:00",
+      "kind": "infra",
+      "title": "shipped/1: refresh the log, and the checkpoint over it",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "0c0d65227fdc499f658b290cbda1eeecf1e25060"
+      },
+      "digest": "b7ed74ccda78bc15d97c17e78012f67e70f48c055a7218809bd2f92c0f575161"
+    },
     {
       "id": "ship/flashy-ledger/c05ef1e25410",
       "repo": "repo/flashy-ledger",

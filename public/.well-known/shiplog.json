@@ -2,20 +2,47 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-<<<<<<< HEAD
-  "generated": "2026-08-30T17:38:44.929Z",
-=======
-  "generated": "2026-08-30T17:59:01.867Z",
->>>>>>> ea10a88 (Carry the current vendored emitters)
+  "generated": "2026-08-30T18:01:25.616Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/0962abf4dc28",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T17:59:02+00:00",
+      "kind": "fix",
+      "title": "Carry the current vendored emitters",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "A stale copy fails silently and in the dangerous direction: it does not know\nabout rules added since it was vendored, so it ignores them rather than\nerroring. Re-emitted and re-verified against the refreshed copies.\n\nKind: fix",
+      "refs": {
+        "commit": "0962abf4dc289cd854aee42519bbc2b4c1b399eb"
+      },
+      "digest": "702b59a2597ca813ba3d8399f85acb690ab32babc31ef283a75573c7cf0aa082"
+    },
+    {
+      "id": "ship/flashy-ledger/0c0d65227fdc",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T17:38:45+00:00",
+      "kind": "infra",
+      "title": "shipped/1: refresh the log, and the checkpoint over it",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "0c0d65227fdc499f658b290cbda1eeecf1e25060"
+      },
+      "digest": "b7ed74ccda78bc15d97c17e78012f67e70f48c055a7218809bd2f92c0f575161"
+    },
     {
       "id": "ship/flashy-ledger/c05ef1e25410",
       "repo": "repo/flashy-ledger",
-<<<<<<< HEAD
-      "at": "2026-08-30T17:38:31Z",
-=======
       "at": "2026-08-30T17:38:31+00:00",
->>>>>>> ea10a88 (Carry the current vendored emitters)
       "kind": "fix",
       "title": "Fail loudly on a fragment that exists and cannot be parsed",
       "by": [
@@ -28,20 +55,12 @@
       "refs": {
         "commit": "c05ef1e254106753aa60502540b1443cccb1ffb6"
       },
-<<<<<<< HEAD
-      "digest": "3a2df176688146a1134c525e3013e43ba4bcb5fb9cab0a4064704884b12ab256"
-=======
       "digest": "24c2631a6b014d85e0d4790a359658b5c1d69a0b3a135725db4000d4d43f7c9b"
->>>>>>> ea10a88 (Carry the current vendored emitters)
     },
     {
       "id": "ship/flashy-ledger/fddf555654e7",
       "repo": "repo/flashy-ledger",
-<<<<<<< HEAD
-      "at": "2026-08-30T17:22:54Z",
-=======
       "at": "2026-08-30T17:22:54+00:00",
->>>>>>> ea10a88 (Carry the current vendored emitters)
       "kind": "other",
       "title": "Re-emit the log and its checkpoint after rebase",
       "by": [
@@ -54,11 +73,7 @@
       "refs": {
         "commit": "fddf555654e74aaa8770ee80c010adc116bca65f"
       },
-<<<<<<< HEAD
-      "digest": "a3e602ab910205d7b5688d32806be412111a02db8b200f3790a7a72ad6c7d2b3"
-=======
       "digest": "2ed297bb26f3a90f442f463f5deed608887c22c83d05dd9d04a839cc74738e5e"
->>>>>>> ea10a88 (Carry the current vendored emitters)
     },
     {
       "id": "ship/flashy-ledger/4851f8997206",
