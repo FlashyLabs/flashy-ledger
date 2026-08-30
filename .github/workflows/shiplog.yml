@@ -15,7 +15,6 @@ name: Shiplog
 
 on:
   push:
-    branches: ['main']
     paths-ignore:
       - 'shiplog.fragment.json'
       - 'public/.well-known/shiplog.json'
@@ -35,6 +34,7 @@ concurrency:
 jobs:
   emit:
     runs-on: ubuntu-latest
+    if: github.event_name != 'push' || github.ref_name == github.event.repository.default_branch
     steps:
       - uses: actions/checkout@v4
         with:

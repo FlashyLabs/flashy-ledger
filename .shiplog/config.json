@@ -5,7 +5,6 @@
   "defaultAuthor": "person/michael",
   "authors": {},
   "visibility": "private",
-  "branch": "main",
   "lexicon": "imperative",
   "prBase": "https://github.com/FlashyLabs/flashy-ledger/pull/",
   "serve": "public/.well-known/shiplog.json"
