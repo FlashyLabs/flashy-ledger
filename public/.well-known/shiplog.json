@@ -2,8 +2,43 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-30T19:46:27.243Z",
+  "generated": "2026-08-30T20:27:41.547Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/68ce392f8e0b",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T20:27:29Z",
+      "kind": "feature",
+      "title": "Publish a front door, and serve the charter it points at",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "This repository publishes a handshake and a shiplog and had no door: nothing\nsaying which lanes it opens, what it asks at each, or what it owes in return.\nAn organisation reachable on the mesh with no stated way in is a doorbell\nwired to nothing.\n\nThe lanes are chosen from what this property actually is rather than copied\nfrom a sibling. It opens the lanes it can answer and does not advertise one it\ncannot.\n\nTwo things vendored byte-identical from the estate: the emitter and the\nchecker. `notAuthority` is carried verbatim and the checker rejects any door\nthat paraphrases it — a door quietly read as an authorisation is how this\nstops being a front door and becomes a vulnerability.\n\nThe workflow also required something this repository did not do: serve the\ncharter. It existed at the repository root only, where a static deploy never\nserves it, so `/flashyos.roles.json` would have 404d while the standard this\nestate publishes tells everyone else to put exactly that path there. The\nserved copy is now committed and the workflow holds the two identical.\n\nEvery step of the workflow was run locally first, so it arrives green rather\nthan as an alarm on arrival.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01BEaXzktRU5ZPe3R2NY7CKD",
+      "refs": {
+        "commit": "68ce392f8e0bc3081f073024fab4fe57b9156a3d"
+      },
+      "digest": "7e9a28ce12cb5dbf4fb71b4a7689f26e9db79ad4796152d6acc504247d90fa43"
+    },
+    {
+      "id": "ship/flashy-ledger/26839fd7446c",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T19:46:27Z",
+      "kind": "infra",
+      "title": "shipped/1: refresh the log, and the checkpoint over it",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "26839fd7446c2308aca91b249967e01abd6c334f"
+      },
+      "digest": "c071f0449c040634d59d3f42ec1e29294a3d6fb0e0a513fd273b56f72b0b9a04"
+    },
     {
       "id": "ship/flashy-ledger/6e78df978118",
       "repo": "repo/flashy-ledger",
