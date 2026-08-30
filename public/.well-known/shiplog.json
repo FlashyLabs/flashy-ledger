@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-30T16:52:05.215Z",
+  "generated": "2026-08-30T17:22:53.945Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/4851f8997206",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T17:18:12+00:00",
+      "kind": "feature",
+      "title": "Adopt checkpoint/1 — a tree head over what this repository seals",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "An RFC 6962 Merkle root over the sealed claims already published here, served\nbeside them. Anyone holding the fragments can recompute it and see whether the\nrecord still describes what it said it did.\n\nThe head is deliberately unsigned. A signature over a root computed and checked\nby the same party is ceremony without a property — what makes history provably\nappend-only is a witness who is not us, and that is not built. The root catches\ndrift and after-the-fact edits, and nothing here claims more.\n\nIt is refreshed by the shiplog workflow rather than its own, so the head and\nthe log it commits to always move in one commit. A separate workflow would\nleave a window in which the published root and the published record disagree,\nand a reader hitting that window sees a forged-looking estate.\n\nKind: feature",
+      "refs": {
+        "commit": "4851f8997206eeaa9336701264b329b145a988d4"
+      },
+      "digest": "7605bd343d7660dbcb0f0392bba0f3510f342dab2263d50f08090d1feb51c835"
+    },
     {
       "id": "ship/flashy-ledger/10178cf6e269",
       "repo": "repo/flashy-ledger",
