@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-30T18:01:25.616Z",
+  "generated": "2026-08-30T18:01:34.436Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/0219e06d2460",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T18:01:25Z",
+      "kind": "other",
+      "title": "Re-emit against the rebased tree",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Kind: chore",
+      "refs": {
+        "commit": "0219e06d246059e445f38bae3cb5a8c1621260b0"
+      },
+      "digest": "5e2892de984728e37fe9d3cd849c42505241c77d818c20726987a0fbde70f49a"
+    },
     {
       "id": "ship/flashy-ledger/0962abf4dc28",
       "repo": "repo/flashy-ledger",
