@@ -2,8 +2,43 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-30T18:01:34.435Z",
+  "generated": "2026-08-30T19:25:23.459Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/4be5c9f6d10f",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T19:25:14Z",
+      "kind": "fix",
+      "title": "Name a copyright holder, and stop granting what was never ours",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Two errors from the licence sweep of 2026-08-30, found by putting the\nestate's licences in one register and comparing.\n\nA LICENCE THAT NAMED NOBODY\n\nEleven repositories carried a bare Apache-2.0 text with no copyright line\nat all. That is not a missing file — it is a file that answers the\nquestion wrongly. It reads as a grant, and no reader can tell who made it\nor whether they were entitled to. Every LICENSE now opens with the holder\nand one line saying what the repository is.\n\nAN OPEN LICENCE ON SOMEBODY ELSE'S PROPERTY\n\nkopman-build and buildos are a construction firm's marketing site and the\napplication behind that engagement. Both carried AGPL-3.0-only, which\noffers a client's own site to anyone willing to publish their changes.\nNobody decided that; it was the default that got reached for. Both are now\nall rights reserved, held by Kopman Build, with a line saying ownership is\ngoverned by the agreement between the firm and the studio rather than by\nthe file.\n\nThe same care had already been taken for marco.law an hour earlier and\nthen not taken here, which is the argument for a register rather than for\nbeing more careful next time.\n\nEight further repositories moved from an unattributed Apache-2.0 to all\nrights reserved: the org profile, the Terraform that can delete\nproduction, three brand properties and the three Life repositories.\nflashy-sdk is among them and its package.json already said UNLICENSED —\nthe LICENSE file had been contradicting its own manifest.\n\n`tools/estate-licences.mjs` in flashyos is now the one declaration, and it\nreports a checkout and a default branch separately, because conflating\nthose is the mistake this estate's tooling keeps making.\n\nKind: fix",
+      "refs": {
+        "commit": "4be5c9f6d10fc51bd8837d48a27939774c32187b"
+      },
+      "digest": "4f0562393ebce38e5f52d3f50ad2067cbf3f9d69684655de36aa0e4f2c4370bf"
+    },
+    {
+      "id": "ship/flashy-ledger/50bae4c329ff",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T18:01:34Z",
+      "kind": "infra",
+      "title": "shipped/1: refresh the log, and the checkpoint over it",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "50bae4c329ffd3b5c82d1112c6a4e2581cbdc3f1"
+      },
+      "digest": "cbe3ac4c5cc4c107738396f401f9b428dcc3ddcaa5261655a7ee09a03a279536"
+    },
     {
       "id": "ship/flashy-ledger/0219e06d2460",
       "repo": "repo/flashy-ledger",
