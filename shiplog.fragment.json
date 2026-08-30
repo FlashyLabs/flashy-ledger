@@ -2,8 +2,44 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-30T17:22:53.943Z",
+  "generated": "2026-08-30T17:38:44.927Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/c05ef1e25410",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T17:38:31Z",
+      "kind": "fix",
+      "title": "Fail loudly on a fragment that exists and cannot be parsed",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "The emitter treated an unparseable fragment as an absent one and built a head\nover whatever else it could read. A conflicted fragment produced a\nvalid-looking head over nothing.\n\nKind: fix",
+      "refs": {
+        "commit": "c05ef1e254106753aa60502540b1443cccb1ffb6"
+      },
+      "digest": "3a2df176688146a1134c525e3013e43ba4bcb5fb9cab0a4064704884b12ab256"
+    },
+    {
+      "id": "ship/flashy-ledger/fddf555654e7",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T17:22:54Z",
+      "kind": "other",
+      "title": "Re-emit the log and its checkpoint after rebase",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Kind: chore",
+      "refs": {
+        "commit": "fddf555654e74aaa8770ee80c010adc116bca65f"
+      },
+      "digest": "a3e602ab910205d7b5688d32806be412111a02db8b200f3790a7a72ad6c7d2b3"
+    },
     {
       "id": "ship/flashy-ledger/4851f8997206",
       "repo": "repo/flashy-ledger",
