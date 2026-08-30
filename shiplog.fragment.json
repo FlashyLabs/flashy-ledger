@@ -2,12 +2,30 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-30T16:24:08.299Z",
+  "generated": "2026-08-30T16:24:26.316Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/00e4f23e6486",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T16:24:16Z",
+      "kind": "other",
+      "title": "Re-emit the log with authorship mapped",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "Kind: chore",
+      "refs": {
+        "commit": "00e4f23e64865d55458fc332707e4bfedd24d834"
+      },
+      "digest": "cf0ffcacde1dde614feb10f9c97a478d271317c998e7b0b4cae340e7e090515e"
+    },
     {
       "id": "ship/flashy-ledger/d2bfaab67d44",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-30T16:23:34+00:00",
+      "at": "2026-08-30T16:23:34Z",
       "kind": "other",
       "title": "Re-emit after rebase",
       "by": [
@@ -20,12 +38,12 @@
       "refs": {
         "commit": "d2bfaab67d448cc287f84cdd8faab2d453c6c45e"
       },
-      "digest": "4a6ba41f87eebd086e37cfd6e2962ec28637c952d15874c237830b4b68328708"
+      "digest": "f9dd0bf573167e899725d3f05efe9d7e933e2db7b2d748cce6e53a0fd624103a"
     },
     {
       "id": "ship/flashy-ledger/768658cca11d",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-30T15:46:50+00:00",
+      "at": "2026-08-30T15:46:50Z",
       "kind": "infra",
       "title": "shipped/1: refresh the log",
       "by": [
@@ -37,12 +55,12 @@
       "refs": {
         "commit": "768658cca11d4f36e6d973a1000e4e8541c5666c"
       },
-      "digest": "fa3292a1db4330a71d808ce16dace7712b9238beceacd0f5a56fc9784e3fec3e"
+      "digest": "c04e5686de8f8fa81c335ddd0ffeda5c84371a45f69d7cf660025391c201bcd7"
     },
     {
       "id": "ship/flashy-ledger/f4d436fb879a",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-30T15:46:15+00:00",
+      "at": "2026-08-30T15:46:15Z",
       "kind": "fix",
       "title": "Stop pinning the shiplog and backlog workflows to a branch name",
       "by": [
@@ -55,12 +73,12 @@
       "refs": {
         "commit": "f4d436fb879a0c741d2d04064cbc299e1282553e"
       },
-      "digest": "8916c031446b73237e1b8538b1a46682db1ff5f95a70e5b9a620182489b3831a"
+      "digest": "54b45ab743036f2fec8f8a611d97b66f33fdeaccc7abb4934580e27d9fee9d34"
     },
     {
       "id": "ship/flashy-ledger/347e87099d05",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-30T13:23:53+00:00",
+      "at": "2026-08-30T13:23:53Z",
       "kind": "infra",
       "title": "backlog/1: refresh the fragment",
       "by": [
@@ -72,12 +90,12 @@
       "refs": {
         "commit": "347e87099d051274e121a56d4c33813c3ca56df8"
       },
-      "digest": "69910dd98bb944cb74d4904696c4421f51369988067b81990548b49c8e546759"
+      "digest": "9d491124ee25a07446cd0c5d34a0a4a8b698a1cb5406eadca4b2ae2c19862ab7"
     },
     {
       "id": "ship/flashy-ledger/1afe30f6c43d",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-30T13:21:23+00:00",
+      "at": "2026-08-30T13:21:23Z",
       "kind": "infra",
       "title": "Reclassify the log against the convention this estate writes in",
       "by": [
@@ -90,12 +108,12 @@
       "refs": {
         "commit": "1afe30f6c43dead0c0d1802c690e14b903f2f896"
       },
-      "digest": "0d0db843ca9aabac2a6c71c836f534eeef6a958c81db612902e1a4f48087fdbf"
+      "digest": "643d045a92880e9f618d2309faef5ede81d51e7e9d6d9000f9107771bf5b943f"
     },
     {
       "id": "ship/flashy-ledger/308767436b00",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-30T05:45:17+00:00",
+      "at": "2026-08-30T05:45:17Z",
       "kind": "feature",
       "title": "Adopt backlog/1 and shipped/1",
       "by": [
@@ -108,12 +126,12 @@
       "refs": {
         "commit": "308767436b005f85b9ef7257fa60c70b82815a4d"
       },
-      "digest": "e793d8afb1815ba88fb4054f940e030a6aeb5397cc8232a5a8b620a299404225"
+      "digest": "d8b1eac076003d87261f5879b94377a26128dde2d75f0fe5006ed522c604bdb0"
     },
     {
       "id": "ship/flashy-ledger/b495325de576",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-30T01:35:04+00:00",
+      "at": "2026-08-30T01:35:04Z",
       "kind": "feature",
       "title": "Serve the directory fragment, which this property was not doing",
       "by": [
@@ -126,12 +144,12 @@
       "refs": {
         "commit": "b495325de5762f80a6f09961aa14b0c665eae5c5"
       },
-      "digest": "6035527610d585b09121643d713c2e0e5b2b4ba58e585fadba43885aa6e4b0d4"
+      "digest": "a23fdebd3892b2511d68103b2fc2a27e996568c8f4114beb766cbae77d3150ca"
     },
     {
       "id": "ship/flashy-ledger/0bd60ffa2df3",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-28T19:51:38+00:00",
+      "at": "2026-08-28T19:51:38Z",
       "kind": "infra",
       "title": "Make every charter in the estate conform, and gate it",
       "by": [
@@ -144,12 +162,12 @@
       "refs": {
         "commit": "0bd60ffa2df330788d75d632c6e17600f859ba75"
       },
-      "digest": "a5ba27c166ef90c443571870612aaacf22e7f5e7ae651c0ba9371e9fce3e3bdc"
+      "digest": "6573de5451e698839aaba2b6a8d9140f45552031f57119baf8245650fd32461a"
     },
     {
       "id": "ship/flashy-ledger/e54b641d5623",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-28T18:04:19+00:00",
+      "at": "2026-08-28T18:04:19Z",
       "kind": "infra",
       "title": "Gate the directory fragment in CI, in the repository that produces it",
       "by": [
@@ -162,12 +180,12 @@
       "refs": {
         "commit": "e54b641d562343cbfcb4239841eb7cb40b994754"
       },
-      "digest": "1b8c99bcdd5566d5b0ee0ae322156e5953fac75ce4201e94478d2909001cf1e6"
+      "digest": "ddb520e44ab62f755f110a7fded0b63014ebfaeff861ca05206ea90898352021"
     },
     {
       "id": "ship/flashy-ledger/f5ab2e1e89c5",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-28T17:23:52+00:00",
+      "at": "2026-08-28T17:23:52Z",
       "kind": "feature",
       "title": "Emit this repository's directory fragment",
       "by": [
@@ -180,12 +198,12 @@
       "refs": {
         "commit": "f5ab2e1e89c5ac55020201d32a7b11a214afc915"
       },
-      "digest": "2753d7e85e148ae0f389b29b928f47b9145740459e481271ee13549948302ab1"
+      "digest": "9b76629cec6615c8f6158f46d14c1094dc178b0a347ea2ae51abf1aa5f85eb78"
     },
     {
       "id": "ship/flashy-ledger/10b71b4156e2",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-27T23:02:42+00:00",
+      "at": "2026-08-27T23:02:42Z",
       "kind": "feature",
       "title": "Publish with the PAT again; E409 never proved GITHUB_TOKEN could publish",
       "by": [
@@ -198,12 +216,12 @@
       "refs": {
         "commit": "10b71b4156e2b8afac02c77e245571e0fe4c3db4"
       },
-      "digest": "1270df15c39958e4797d3d71141444396a459911ee8894a0b50ea9ee6d3fa514"
+      "digest": "0e94afe165efae02ab3b6607570649576d8ef6a60d3103af01461e26fb85db70"
     },
     {
       "id": "ship/flashy-ledger/e52704b9f2c2",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-27T22:13:17+00:00",
+      "at": "2026-08-27T22:13:17Z",
       "kind": "other",
       "title": "0.8.0 — the Merkle spec becomes the package's, not one repo's",
       "by": [
@@ -216,12 +234,12 @@
       "refs": {
         "commit": "e52704b9f2c2eca1072cc1172b53eabae8db86af"
       },
-      "digest": "25ff5e6290d99d5069fa35632a6eab3ff53bc0d35e1d23f25fac90983d8d54c8"
+      "digest": "1bc03d258ea12989d1d42af9f958b2ee8f1b47a1a8b038207078be20f9eece7d"
     },
     {
       "id": "ship/flashy-ledger/6af5ee1064e0",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-27T14:14:44+00:00",
+      "at": "2026-08-27T14:14:44Z",
       "kind": "other",
       "title": "0.7.0 — declare the civilization commodities, and stop XP changing hands",
       "by": [
@@ -234,12 +252,12 @@
       "refs": {
         "commit": "6af5ee1064e036fc960a3b71dfa51608626cf097"
       },
-      "digest": "55563148be9ffaae8099d4f907a098e46a62eaf88945c891d2750eb231026d20"
+      "digest": "5c7ab9b560da0fb9c943702da7343d6a1a78d3366f58d3161a5288c4a6ef5bc7"
     },
     {
       "id": "ship/flashy-ledger/6aac70903b2d",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-21T15:46:03+00:00",
+      "at": "2026-08-21T15:46:03Z",
       "kind": "other",
       "title": "0.6.0 — a skill asset cannot change hands",
       "by": [
@@ -252,12 +270,12 @@
       "refs": {
         "commit": "6aac70903b2d57efcc2d97c15c7f51e328016ae0"
       },
-      "digest": "f5f40964f9a244d74a01e7da58c4a569da31ce63fd05b8d0b58e3e61f1715d1d"
+      "digest": "6b42c524211d945cf6f1bb1755420946feed7b639dca30dbf1ee3efafa1deb82"
     },
     {
       "id": "ship/flashy-ledger/dabe8f0f590d",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-21T13:48:37+00:00",
+      "at": "2026-08-21T13:48:37Z",
       "kind": "other",
       "title": "0.3.0 — experience settles on these books, and XP cannot be given away",
       "by": [
@@ -270,12 +288,12 @@
       "refs": {
         "commit": "dabe8f0f590d0c7253b59bffb97140e5ec096ddb"
       },
-      "digest": "58b80bdc5b1cbd5cd3ecf9fce710bf915615ff36ccd4f0adb5f01722cb22da84"
+      "digest": "443d03120af82f32e879a1831c325ef33f07368b937f113fd43249f7e66e27a8"
     },
     {
       "id": "ship/flashy-ledger/cd236f379dc5",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-20T12:58:37+00:00",
+      "at": "2026-08-20T12:58:37Z",
       "kind": "infra",
       "title": "Align the package name across docs, and backfill the released versions",
       "by": [
@@ -289,12 +307,12 @@
       "refs": {
         "commit": "cd236f379dc5e3d317254a5c1ac3167344803a55"
       },
-      "digest": "1394cc135bee0bcb389d683023bd3c0c6f335f0aa4be9efdc73f9234f45c5d91"
+      "digest": "ceb3b93a98dffd38ca4a32c7f1de22e8129a6d6748635884acef974a06591ebf"
     },
     {
       "id": "ship/flashy-ledger/274729d182d7",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-20T12:56:47+00:00",
+      "at": "2026-08-20T12:56:47Z",
       "kind": "infra",
       "title": "Drop the release workflow; main already publishes via publish.yml",
       "by": [
@@ -306,12 +324,12 @@
       "refs": {
         "commit": "274729d182d7ed2c6779e56858a360ced5d25562"
       },
-      "digest": "6ede35f481ee90da0e255e490f993673587efbf8a083c72584c4ca232e9701e5"
+      "digest": "0a2fcafbd16aee3d2ee1a4ff84c5ac86cd912acaa16be49b78f204048536a658"
     },
     {
       "id": "ship/flashy-ledger/9480b7ccd5ac",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-20T12:54:38+00:00",
+      "at": "2026-08-20T12:54:38Z",
       "kind": "infra",
       "title": "Make tenancy a boundary instead of a label",
       "by": [
@@ -325,12 +343,12 @@
       "refs": {
         "commit": "9480b7ccd5acf31a1dfcbf5cdc1bb90c9eba32e4"
       },
-      "digest": "f379323dd2db3325f999188b8ee8a7206736efa7d182b3f4778058e8f1c1997b"
+      "digest": "780e0419134f7a13069acb91865c62b56228f2790c31748e91e63b36d3a32d31"
     },
     {
       "id": "ship/flashy-ledger/a558791e8638",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-19T16:43:01+00:00",
+      "at": "2026-08-19T16:43:01Z",
       "kind": "infra",
       "title": "rename scope to @flashylabs to match the GitHub account",
       "by": [
@@ -343,12 +361,12 @@
       "refs": {
         "commit": "a558791e863835d5e0cd3332c7553ca1a946442b"
       },
-      "digest": "de6c3d6e36e7635eb96e1af5067e16303d0999f745be9416ce6e5d0c743f3636"
+      "digest": "c9039943710cd32f45a3c20335178faa3e6c3da6847d449152221d701fedcfa8"
     },
     {
       "id": "ship/flashy-ledger/74a2b5c30888",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-19T16:03:24+00:00",
+      "at": "2026-08-19T16:03:24Z",
       "kind": "infra",
       "title": "Bump @flashy/ledger to 0.1.1 to cut a clean release tag",
       "by": [
@@ -361,12 +379,12 @@
       "refs": {
         "commit": "74a2b5c30888f9c583efc4bf31d9c7194a35574b"
       },
-      "digest": "70fe6b2ab54542d5a2095557b8ecc66dd282343755bfecafaf768df5e98bebc7"
+      "digest": "2132a81883a33c577f38e675512fcba5cc2531505df0d7983570b659a8efb1b8"
     },
     {
       "id": "ship/flashy-ledger/fc2dfefe3e53",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-19T16:02:27+00:00",
+      "at": "2026-08-19T16:02:27Z",
       "kind": "release",
       "title": "CUT-1: publish with a PAT instead of GITHUB_TOKEN",
       "by": [
@@ -379,12 +397,12 @@
       "refs": {
         "commit": "fc2dfefe3e53dd1f757af3b914cde73770a4b4e1"
       },
-      "digest": "3e74f9e9bd29d4759f79c7cfd1079cd3064506dc7e667466f2115b64b8d0f422"
+      "digest": "7a1d690b7b99da651e4f6a961dedc8fcf16449c781a89b8e5f90b4a2877c12b6"
     },
     {
       "id": "ship/flashy-ledger/5fda67f0cc8d",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-19T13:54:35+00:00",
+      "at": "2026-08-19T13:54:35Z",
       "kind": "release",
       "title": "CUT-1: automate publishing @flashy/ledger to GitHub Packages",
       "by": [
@@ -397,12 +415,12 @@
       "refs": {
         "commit": "5fda67f0cc8de603bd7fe9d62e2ec198fac86a02"
       },
-      "digest": "fd77cac0838d064265beb8664f5d6d730dcbc9f11c65aa5f88ae653850233dcc"
+      "digest": "87a26a891ee55c6e9d4dbc4216aab191fbf3200ad1e1bbfcbb920f4736eb8cb3"
     },
     {
       "id": "ship/flashy-ledger/d28b7eab1396",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-14T22:57:32+00:00",
+      "at": "2026-08-14T22:57:32Z",
       "kind": "feature",
       "title": "Ship a CommonJS build alongside the ESM one",
       "by": [
@@ -415,12 +433,12 @@
       "refs": {
         "commit": "d28b7eab1396e79824e5ed1ab8462283920477d3"
       },
-      "digest": "e766e2c08308f4341037c65749ee47c6bf13b00bd147ccdd9a422a3fa2f307b0"
+      "digest": "1dc9df7f0b50a3ddcd0ef10fb08f3fbbdb8c7f74da233eb827e1adb1a4421036"
     },
     {
       "id": "ship/flashy-ledger/449b0d724fa6",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-14T22:51:44+00:00",
+      "at": "2026-08-14T22:51:44Z",
       "kind": "infra",
       "title": "Accept mongodb 7, and make the peer optional",
       "by": [
@@ -433,12 +451,12 @@
       "refs": {
         "commit": "449b0d724fa6000553ca7c28c2a6e99ab697e72f"
       },
-      "digest": "4a0b48a9a09f2b1a32c7222a9d6fa3e6d60fafda1b776d19a40a04d622e1ca8e"
+      "digest": "024f7f7c3345531db37bc52ada93ac187d55fbc6c2218a6accc798cd177fe32e"
     },
     {
       "id": "ship/flashy-ledger/329884999fd5",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-14T20:09:36+00:00",
+      "at": "2026-08-14T20:09:36Z",
       "kind": "other",
       "title": "Type the test's index access instead of destructuring it",
       "by": [
@@ -451,12 +469,12 @@
       "refs": {
         "commit": "329884999fd59c25e6675eddd087bb0c52edecc5"
       },
-      "digest": "7816a7bcbba8932ec64a14c8878fb672f2087f9e20b9219824ba774f5d230767"
+      "digest": "d8ce815a88e0a3b86b6833c733cba6d4628c9873cad92bc427e5f7208ecbe97d"
     },
     {
       "id": "ship/flashy-ledger/c448f23a2620",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-14T20:03:16+00:00",
+      "at": "2026-08-14T20:03:16Z",
       "kind": "feature",
       "title": "Add a read-only reader over ClaimYour.Gold's existing ledger",
       "by": [
@@ -469,12 +487,12 @@
       "refs": {
         "commit": "c448f23a2620af52e38ad7a9a433465ae5a4af37"
       },
-      "digest": "c43c5dea338650847e2ca75be6fcb5fe74a6a9c8d804ec8b8f57786e1fe9efe3"
+      "digest": "96aed1b12fa45e6f1e1bc480175ab2f5caec5f8a4c0a592423f1f0504af29d6d"
     },
     {
       "id": "ship/flashy-ledger/a1b2dd56a8e5",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-14T18:50:09+00:00",
+      "at": "2026-08-14T18:50:09Z",
       "kind": "infra",
       "title": "Make the package installable",
       "by": [
@@ -487,12 +505,12 @@
       "refs": {
         "commit": "a1b2dd56a8e53716b1a3ae7ed8f27e837c337f1e"
       },
-      "digest": "9b412970ecf7f61a367eac12bfc428b1831724dda45f168054a2efbb0206cdfb"
+      "digest": "4904387ebb5033bf2c7f8968d8ae91d0cd6559854a3c9c2b72c8ffb4c6d5bdf9"
     },
     {
       "id": "ship/flashy-ledger/36e3944e091b",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-13T18:30:41+00:00",
+      "at": "2026-08-13T18:30:41Z",
       "kind": "feature",
       "title": "Add the MongoDB adapter, and a conformance suite that proves it interchangeable",
       "by": [
@@ -505,12 +523,12 @@
       "refs": {
         "commit": "36e3944e091b38a4f1a453a41046463d22181b1d"
       },
-      "digest": "d520556d3b63748db41d0b1e54bbe0b0e4ed47ed457a663b6493043e3edf91cd"
+      "digest": "bd7832668d0267fb939bb3b6856722e8172762f45b6d2a59a7afc8e6b2e2ad93"
     },
     {
       "id": "ship/flashy-ledger/a18cfaddd5c5",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-12T04:45:54+00:00",
+      "at": "2026-08-12T04:45:54Z",
       "kind": "infra",
       "title": "Initial ledger: pure domain, storage behind a port",
       "by": [
@@ -523,7 +541,7 @@
       "refs": {
         "commit": "a18cfaddd5c537965720aae0f5960c3d1fc59747"
       },
-      "digest": "331a1bca519a0cfb0c8264d29f2ff0476f21c5558ea20d632e6f141a7d833247"
+      "digest": "903cdc335b641c2fede14821026b44a9aaf508155ee004611d97b8215de72340"
     }
   ]
 }
