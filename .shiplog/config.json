@@ -1,0 +1,11 @@
+{
+  "source": "repo/flashy-ledger",
+  "org": "org/flashy-ledger",
+  "assertedBy": "agent/flashy-ledger-ci",
+  "defaultAuthor": "person/michael",
+  "authors": {},
+  "visibility": "private",
+  "branch": "main",
+  "prBase": "https://github.com/FlashyLabs/flashy-ledger/pull/",
+  "serve": "public/.well-known/shiplog.json"
+}

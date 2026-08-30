@@ -1,0 +1,7 @@
+{
+  "source": "repo/flashy-ledger",
+  "org": "org/flashy-ledger",
+  "agent": "agent/flashy-ledger-bot",
+  "branch": "main",
+  "serve": "public/.well-known/backlog.json"
+}
