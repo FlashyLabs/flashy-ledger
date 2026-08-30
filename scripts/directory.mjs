@@ -43,27 +43,36 @@ for (const r of charter.roles) {
 }
 
 // What this repository is additionally the authority for.
-// The machines that sign this repository's records.
+// The machine that signs this repository's records.
 //
-// Declared because they already sign them: every sealed entry and every
-// fragment carries `assertedBy: agent/<slug>-ci`, and until 2026-08-30 that
-// was an id nothing in the estate defined — 2,478 edges across thirty
-// properties citing an agent that formally did not exist. An `assertedBy`
-// naming an id nothing declares is a citation to nothing: it reads as
-// provenance and carries none, which is worse than leaving the field empty.
+// Declared because it already signs them: every sealed entry carries
+// `assertedBy`, and until 2026-08-30 that named an id nothing in the estate
+// defined — 2,478 edges across thirty properties citing an agent that formally
+// did not exist. An `assertedBy` naming an id nothing declares is a citation to
+// nothing: it reads as provenance and carries none, which is worse than leaving
+// the field empty.
+//
+// The id is READ from `.shiplog/config.json` rather than derived from the
+// charter slug. The first version of this block assumed `${charter.slug}-ci`
+// and was wrong in two repositories out of ten — ClaimYour.Gold signs
+// `agent/claimyour.gold-ci` against a charter slug of `claimyour-gold`, and
+// dais-global signs `agent/dais-global-ci` against a slug of `dais`. Both
+// declared an agent that matched nothing, which looks identical to success.
+// The file that stamps the id is the only honest source for it.
 //
 // Not a charter role. A role is a governance label the org answers for and it
 // is rendered into the handshake's advertised capabilities — declaring "ci"
-// there would tell the network this org does continuous integration for
-// people. An emitter is a machine the org operates, which is what `operates`
-// is for. `@flashyos/directory`'s `declareEmitters` is the canonical form;
-// this is inlined because the template stays dependency-free by design, and
-// `tools/emitter-declaration.test.mjs` in flashyos asserts the two agree.
-const CI = node('Agent', 'agent', `${charter.slug}-ci`, 'Record emitter', {
+// there would tell the network this org does continuous integration for other
+// people. An emitter is a machine the org operates.
+const shiplog = JSON.parse(readFileSync(join(ROOT, '.shiplog', 'config.json'), 'utf8'))
+const CI_ID = shiplog.assertedBy ?? `agent/${charter.slug}-ci`
+if (!CI_ID.startsWith('agent/'))
+  throw new Error(`.shiplog/config.json agent must be an agent/<slug> id, got "${CI_ID}"`)
+const CI = node('Agent', 'agent', CI_ID.slice('agent/'.length), 'Record emitter', {
   description:
     `The workflow that derives and seals this repository's record. It emits ` +
     `shipped/1 and backlog/1 on the default branch and signs each entry as ` +
-    `agent/${charter.slug}-ci.`,
+    `${CI_ID}.`,
 })
 edge('operates', ORG, CI, { scope: ['shipped/1', 'backlog/1'] })
 
