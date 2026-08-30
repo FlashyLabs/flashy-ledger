@@ -43,7 +43,9 @@
     "lint": "eslint src tests",
     "check": "npm run typecheck && npm run lint && npm run coverage",
     "prepare": "npm run build",
-    "bolt": "node scripts/bolt.mjs"
+    "bolt": "node scripts/bolt.mjs",
+    "directory": "node scripts/directory.mjs",
+    "directory:check": "node scripts/directory.mjs && node scripts/check-directory.mjs --external person/michael"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

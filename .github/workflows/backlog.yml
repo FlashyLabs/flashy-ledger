@@ -11,9 +11,9 @@ name: Backlog
 
 on:
   push:
-    branches: ['main']
     paths-ignore:
       - 'backlog.fragment.json'
+      - 'public/.well-known/backlog.json'
   pull_request:
   schedule:
     # Daily. Items decay, so a fragment that is a month old under-reports how
@@ -31,6 +31,7 @@ concurrency:
 jobs:
   emit:
     runs-on: ubuntu-latest
+    if: github.event_name != 'push' || github.ref_name == github.event.repository.default_branch
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

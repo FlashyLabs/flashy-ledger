@@ -1,0 +1,255 @@
+{
+ "directory": "0.1",
+ "source": "repo/flashy-ledger",
+ "generated": "2026-08-28",
+ "nodes": [
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "id": "agent/flashy-ledger-coordination",
+   "kind": "Agent",
+   "name": "coordination",
+   "description": "Settles conflicts between roles and sharpens their proposals before they reach a person."
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "id": "agent/flashy-ledger-correctness",
+   "kind": "Agent",
+   "name": "correctness",
+   "description": "Keeps the eight numbered invariants true, and provable by a test that anyone outside can run."
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "id": "agent/flashy-ledger-developer-experience",
+   "kind": "Agent",
+   "name": "developer-experience",
+   "description": "Makes the package the shortest path from an idea to books that balance."
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "id": "agent/flashy-ledger-intelligence",
+   "kind": "Agent",
+   "name": "intelligence",
+   "description": "Says what the ledger did this week and names where it is stuck."
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "id": "agent/flashy-ledger-release",
+   "kind": "Agent",
+   "name": "release",
+   "description": "Publishes versions without breaking the tenants already running on them."
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "id": "agent/flashy-ledger-settlement",
+   "kind": "Agent",
+   "name": "settlement",
+   "description": "Moves value when an obligation completes, exactly once, and never by editing what is already written."
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "id": "agent/flashy-ledger-storage",
+   "kind": "Agent",
+   "name": "storage",
+   "description": "Keeps the domain free of storage, so moving onto new infrastructure is a new adapter rather than a rewrite."
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "id": "agent/flashy-ledger-support",
+   "kind": "Agent",
+   "name": "support",
+   "description": "Answers the teams running their books on this, and fixes what keeps generating the same question."
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "id": "agent/flashy-ledger-tenancy",
+   "kind": "Agent",
+   "name": "tenancy",
+   "description": "Keeps one customer's books unreachable from another's, by construction rather than by query discipline."
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "id": "org/flashy-ledger",
+   "kind": "Organization",
+   "name": "Flashy Ledger",
+   "description": "An append-only, multi-asset settlement ledger, permissioned and offered as a service.",
+   "platform": "infrastructure",
+   "vertical": "flashy"
+  }
+ ],
+ "edges": [
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "declares",
+   "from": "org/flashy-ledger",
+   "to": "agent/flashy-ledger-coordination",
+   "role": "coordination",
+   "scope": [
+    "arbitrate",
+    "escalate",
+    "record"
+   ]
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "declares",
+   "from": "org/flashy-ledger",
+   "to": "agent/flashy-ledger-correctness",
+   "role": "correctness",
+   "scope": [
+    "specify",
+    "prove",
+    "audit"
+   ]
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "declares",
+   "from": "org/flashy-ledger",
+   "to": "agent/flashy-ledger-developer-experience",
+   "role": "developer-experience",
+   "scope": [
+    "document",
+    "sample",
+    "release"
+   ]
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "declares",
+   "from": "org/flashy-ledger",
+   "to": "agent/flashy-ledger-intelligence",
+   "role": "intelligence",
+   "scope": [
+    "measure",
+    "aggregate",
+    "publish"
+   ]
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "declares",
+   "from": "org/flashy-ledger",
+   "to": "agent/flashy-ledger-release",
+   "role": "release",
+   "scope": [
+    "version",
+    "publish",
+    "deprecate"
+   ]
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "declares",
+   "from": "org/flashy-ledger",
+   "to": "agent/flashy-ledger-settlement",
+   "role": "settlement",
+   "scope": [
+    "post",
+    "reverse",
+    "fold"
+   ]
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "declares",
+   "from": "org/flashy-ledger",
+   "to": "agent/flashy-ledger-storage",
+   "role": "storage",
+   "scope": [
+    "adapt",
+    "migrate",
+    "benchmark"
+   ]
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "declares",
+   "from": "org/flashy-ledger",
+   "to": "agent/flashy-ledger-support",
+   "role": "support",
+   "scope": [
+    "answer",
+    "escalate",
+    "document"
+   ]
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "declares",
+   "from": "org/flashy-ledger",
+   "to": "agent/flashy-ledger-tenancy",
+   "role": "tenancy",
+   "scope": [
+    "isolate",
+    "provision",
+    "revoke"
+   ]
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "accountableFor",
+   "from": "person/michael",
+   "to": "org/flashy-ledger"
+  }
+ ]
+}

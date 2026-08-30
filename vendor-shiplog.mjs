@@ -216,6 +216,21 @@ export function isMachineAddress(email) {
   return MACHINE_LOCAL_PARTS.has(address.split('@')[0])
 }
 
+
+/**
+ * A commit this format's own workflows made, refreshing a file they generate.
+ *
+ * The log was recording its own bookkeeping as things that shipped: three
+ * entries in flashy-ledger reading "shipped/1: refresh the log". A generated
+ * file being regenerated is not work, and counting it inflates both the entry
+ * count and the agent share — the two numbers this record exists to make
+ * honest. Anchored to the exact subjects the emitted workflows commit under,
+ * so a person writing about the format is not filtered out.
+ */
+const BOOKKEEPING_RE = /^(shipped\/1: refresh the log|backlog\/1: refresh the fragment)$/
+
+export const isOwnBookkeeping = (subject) => BOOKKEEPING_RE.test((subject ?? '').trim())
+
 export function fromCommits(commits, options) {
   const repoSlug = options.repo.replace(/^repo\//, '')
   const asserted = options.asserted ?? new Date().toISOString().slice(0, 10)
@@ -248,7 +263,7 @@ export function fromCommits(commits, options) {
 
   const shipped = options.keepIntegrationMerges
     ? commits
-    : commits.filter((c) => !isIntegrationMerge(c.subject))
+    : commits.filter((c) => !isIntegrationMerge(c.subject) && !isOwnBookkeeping(c.subject))
 
   const entries = shipped.map((commit) => {
     const message = `${commit.subject}\n${commit.body ?? ''}`

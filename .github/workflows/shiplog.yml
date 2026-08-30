@@ -15,9 +15,9 @@ name: Shiplog
 
 on:
   push:
-    branches: ['main']
     paths-ignore:
       - 'shiplog.fragment.json'
+      - 'public/.well-known/shiplog.json'
   schedule:
     # Daily, so a log stays current even in a quiet week — and so a repository
     # that stops shipping says so by standing still rather than by going stale.
@@ -34,6 +34,7 @@ concurrency:
 jobs:
   emit:
     runs-on: ubuntu-latest
+    if: github.event_name != 'push' || github.ref_name == github.event.repository.default_branch
     steps:
       - uses: actions/checkout@v4
         with:
