@@ -1,0 +1,66 @@
+# shipped/1 — what this repository shipped, derived from its own history.
+#
+# The log is a generated artifact, like a lockfile: it is regenerated here and
+# committed, never hand-edited. `paths-ignore` covers the files this workflow
+# writes, so the commit it makes does not trigger it again.
+#
+# The served copy is the PUBLIC PROJECTION and is written by the emitter, not
+# copied by a step here — a copy step can be forgotten, and forgetting it would
+# publish private entries at a URL.
+#
+# Everything lands `private`. Changing that is one field in
+# .shiplog/config.json, and it is the decision that publishes this repository's
+# shipping to anyone who asks.
+name: Shiplog
+
+on:
+  push:
+    branches: ['main']
+    paths-ignore:
+      - 'shiplog.fragment.json'
+  schedule:
+    # Daily, so a log stays current even in a quiet week — and so a repository
+    # that stops shipping says so by standing still rather than by going stale.
+    - cron: '23 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: shiplog-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  emit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The whole history, because the log is derived from it. A shallow
+          # clone silently produces a log that starts at the last twenty commits.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Emit
+        run: node vendor-shiplog.mjs emit
+
+      # The one check nobody else can do: every digest recomputed from the
+      # entry it claims to cover.
+      - name: Re-verify every seal
+        run: node vendor-shiplog.mjs verify shiplog.fragment.json
+
+      - name: Commit if it changed
+        run: |
+          if git diff --quiet; then
+            echo "no change"
+            exit 0
+          fi
+          git config user.name "shiplog"
+          git config user.email "shiplog@users.noreply.github.com"
+          git add -A
+          git commit -m "shipped/1: refresh the log"
+          git push

@@ -1,0 +1,13 @@
+{
+  "source": "repo/flashy-ledger",
+  "org": "org/flashy-ledger",
+  "assertedBy": "agent/flashy-ledger-ci",
+  "defaultAuthor": "person/michael",
+  "authors": {
+    "noreply@anthropic.com": "agent/claude"
+  },
+  "visibility": "private",
+  "branch": "main",
+  "lexicon": "imperative",
+  "prBase": "https://github.com/FlashyLabs/flashy-ledger/pull/"
+}

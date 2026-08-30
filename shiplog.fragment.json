@@ -1,0 +1,369 @@
+{
+  "shipped": "1",
+  "source": "repo/flashy-ledger",
+  "org": "org/flashy-ledger",
+  "generated": "2026-08-30T16:02:36.637Z",
+  "entries": [
+    {
+      "id": "ship/flashy-ledger/8c105726360e",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T13:06:38+00:00",
+      "kind": "infra",
+      "title": "secret scanning, through the shared workflow",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "Ten of thirty-five repositories in the estate had a secret scan, and each\ncarried its own private copy. flashy-infra's CLAUDE.md said the estate consumed\na shared template; no repository referenced it, and the file was not a reusable\nworkflow anyway.\n\nThis is one file calling one shared definition, so a change to the scan reaches\nevery repository on its next run rather than needing thirty pull requests.\n\nVerified against this repository's working tree before being added: a scan\nswitched on into an existing failure is a red check nobody can act on, which is\nhow a check becomes one everybody learns to ignore.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0114eERowmBzsxqy4tBNm6a5",
+      "refs": {
+        "commit": "8c105726360e25aa59c72dc28982c13ee48a5f3b"
+      },
+      "digest": "1621e86837be24a1fbaa8bce8859099c9028b020bd7374477e396afdd8ba532a"
+    },
+    {
+      "id": "ship/flashy-ledger/10b71b4156e2",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-27T23:02:42+00:00",
+      "kind": "feature",
+      "title": "Publish with the PAT again; E409 never proved GITHUB_TOKEN could publish",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "The registry checks version-existence before it verifies the token, so\nrun 12 reaching E409 proved nothing about auth. Every dispatch since\nthe GITHUB_TOKEN-first flip (0.6.3, 0.8.0) died with the same E401 on\nthe PUT while npm ci in the same runs read the package fine: the token\ncan read but not publish, because the package was created by manual PAT\npublishes and its own access list decides who may PUT new versions.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YNESB1KMv7EFEYFFYU5JWY",
+      "refs": {
+        "commit": "10b71b4156e2b8afac02c77e245571e0fe4c3db4"
+      },
+      "digest": "1270df15c39958e4797d3d71141444396a459911ee8894a0b50ea9ee6d3fa514"
+    },
+    {
+      "id": "ship/flashy-ledger/e52704b9f2c2",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-27T22:13:17+00:00",
+      "kind": "other",
+      "title": "0.8.0 — the Merkle spec becomes the package's, not one repo's",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "Ported verbatim from flashy-network's src/lib/merkle.ts. The producer\n(ClaimYour.Gold's nightly anchor) and the verifier (flashynetwork.com)\nmust hash identically or every published root stops verifying; two\ncopies of the same spec is how that failure arrives silently, and one\npackage is how it cannot.\n\nDomain separation, byte-wise id sort and promoted-not-duplicated odd\nnodes are unchanged. Index reads are guarded for this package's\nnoUncheckedIndexedAccess; the pinned-vector tests hard-code the\ncanonical string, a leaf digest and a three-entry root, so any change\nto the bytes fails loudly as the format break it would be.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YNESB1KMv7EFEYFFYU5JWY",
+      "refs": {
+        "commit": "e52704b9f2c2eca1072cc1172b53eabae8db86af"
+      },
+      "digest": "25ff5e6290d99d5069fa35632a6eab3ff53bc0d35e1d23f25fac90983d8d54c8"
+    },
+    {
+      "id": "ship/flashy-ledger/6af5ee1064e0",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-27T14:14:44+00:00",
+      "kind": "other",
+      "title": "0.7.0 — declare the civilization commodities, and stop XP changing hands",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "Two additions, both moving a rule out of prose and into the package.\n\nWHEAT, WOOD, STONE and IRON join the registry. ClaimYour.Gold has\ncarried them as four Asset rows and a hand-written slug map since before\nthis registry existed, which is the exact shape the registry was built\nto end: the same asset declared twice is the same asset until somebody\nedits one of them. Zero decimals is not a display preference — amounts\nare hashed as minor units, so a disagreement there reinterprets every\nhistorical entry.\n\npostTransfer refuses a non-transferable asset class. The asset-class\ncomment has said XP is never convertible since the experience domain\nlanded and nothing checked it; a sentence in a comment and a check in\npostTransfer are not the same artefact, and only one survives a\ncontributor who has not read the comment.\n\nRe-cut from 0.6.0 to 0.7.0: main released an asset registry as 0.6.0\nwhile this was in flight and has since reached 0.6.3.\n\nTwo existing tests needed fixing rather than working around. One used\n'wheat' as its example of an unknown slug — an absence test whose subject\nquietly becomes real stops testing absence. The other built a defineAsset\nfixture called wheat that now shadows a declared asset; it is barley.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YNESB1KMv7EFEYFFYU5JWY",
+      "refs": {
+        "commit": "6af5ee1064e036fc960a3b71dfa51608626cf097"
+      },
+      "digest": "55563148be9ffaae8099d4f907a098e46a62eaf88945c891d2750eb231026d20"
+    },
+    {
+      "id": "ship/flashy-ledger/6aac70903b2d",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-21T15:46:03+00:00",
+      "kind": "other",
+      "title": "0.6.0 — a skill asset cannot change hands",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "The asset-class comment has said XP is 'never convertible' since the\nexperience domain landed, and experience.ts states the ledger enforces\nthe half it can see. Nothing did.\n\npostTransfer now rejects any asset whose class is not transferable, and\nproduces no entries when it does. SKILL_XP is the only such class today;\ncurrency, commodities and partner credit still move, because raids and a\nmarketplace need them to.\n\nConsumption is left open on purpose. Whether XP can be spent is a product\ndecision somebody should have to write down; what this forecloses is XP\nchanging hands.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YNESB1KMv7EFEYFFYU5JWY",
+      "refs": {
+        "commit": "6aac70903b2d57efcc2d97c15c7f51e328016ae0"
+      },
+      "digest": "f5f40964f9a244d74a01e7da58c4a569da31ce63fd05b8d0b58e3e61f1715d1d"
+    },
+    {
+      "id": "ship/flashy-ledger/dabe8f0f590d",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-21T13:48:37+00:00",
+      "kind": "other",
+      "title": "0.3.0 — experience settles on these books, and XP cannot be given away",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "Folds the experience domain in from an unreleased fork that shipped as\n@flashy/ledger@0.2.0: the same version number as this package's 0.2.0\nwith different contents, because it branched before tenant isolation.\nIts consumer only used the pure domain functions, so 0.2.0's breaking\nstore changes do not touch it.\n\nFive SKILL_XP assets at zero decimals, ids pinned by a literal test\nbecause they go into every entry hash. xpIdempotencyKey() puts the key\nconvention in one function so ClaimYour.Gold and Flashy Academy derive\nit identically and the second product to award a lesson collides rather\nthan pays again.\n\npostTransfer now rejects non-transferable classes. The fork carried a\ndoc comment saying the ledger enforced the XP/currency separation while\nno code did; skill assets moving between identities is a market in\nstatus, which is a currency by another name.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YNESB1KMv7EFEYFFYU5JWY",
+      "refs": {
+        "commit": "dabe8f0f590d0c7253b59bffb97140e5ec096ddb"
+      },
+      "digest": "58b80bdc5b1cbd5cd3ecf9fce710bf915615ff36ccd4f0adb5f01722cb22da84"
+    },
+    {
+      "id": "ship/flashy-ledger/cd236f379dc5",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-20T12:58:37+00:00",
+      "kind": "infra",
+      "title": "Align the package name across docs, and backfill the released versions",
+      "by": [
+        "person/michael",
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "main renamed the package to @flashylabs/ledger in package.json only, so the\nREADME and the entry-point docblock still told a reader to install a scope that\ndoes not exist. Anyone copy-pasting the install line got nothing.\n\nThe changelog also claimed 0.1.0 was the first tagged release, which was true\nwhen this branch was cut and stopped being true while it was open — v0.1.0,\nv0.1.1 and v0.1.2 are all published. Backfilled from the commits on main so the\n0.2.0 entry sits on an accurate history rather than an invented one.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01X8LDnsexvNjSkqc2ihZR7U",
+      "refs": {
+        "commit": "cd236f379dc5e3d317254a5c1ac3167344803a55"
+      },
+      "digest": "1394cc135bee0bcb389d683023bd3c0c6f335f0aa4be9efdc73f9234f45c5d91"
+    },
+    {
+      "id": "ship/flashy-ledger/274729d182d7",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-20T12:56:47+00:00",
+      "kind": "infra",
+      "title": "Drop the release workflow; main already publishes via publish.yml",
+      "by": [
+        "person/michael"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "refs": {
+        "commit": "274729d182d7ed2c6779e56858a360ced5d25562"
+      },
+      "digest": "6ede35f481ee90da0e255e490f993673587efbf8a083c72584c4ca232e9701e5"
+    },
+    {
+      "id": "ship/flashy-ledger/9480b7ccd5ac",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-20T12:54:38+00:00",
+      "kind": "infra",
+      "title": "Make tenancy a boundary instead of a label",
+      "by": [
+        "person/michael",
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "tenantId was written onto every asset and every entry — the comment above it\nalready read \"which network's books this asset belongs to\" — and used in no\nquery, no index and no type signature. With one tenant that is harmless. With\ntwo it is three money bugs, and two of them are unique indexes on a collection\nthat would by then hold production entries.\n\nThe worst was idempotency. Keys derive from source events; this package's own\nexample is quest:q_9:identity_1, so two networks running similar mechanics\ncollide by construction. Globally scoped, a second tenant's legitimate award\nfound the first tenant's entry and returned it as a successful deduplication —\na lost award and a cross-tenant disclosure in the same code path, reporting\nsuccess. The chain-head constraint had the same shape: two tenants' first\nentries for one identity both carry previousHash null, and the second was\nrefused as a duplicate. And reads folded across tenants, so a balance became\nthe sum of two networks' books.\n\nReads now take a scope object rather than positional strings. Three same-typed\nparameters are transposable and this one decides whose money you are looking at,\nso AccountRef and HistoryRef make the tenant impossible to omit and impossible\nto put in the wrong slot. There is no overload without one.\n\nensureIndexes() drops the pre-0.2 indexes by name before creating the scoped\nones. This is the part that would otherwise have been missed: a surviving\nuniq_idempotency still rejects a second tenant's legitimate write even though\nthe new index permits it, so creating the new indexes without removing the old\nwould look like a migration and behave like none.\n\nSix isolation cases in the conformance suite, run against every adapter —\nisolation is a property of the port, and a reference implementation that\nisolates while the database adapter does not is worse than neither doing it.\nFour of the six were verified to fail against the pre-fix implementation by\nreverting the change and watching them go r",
+      "refs": {
+        "commit": "9480b7ccd5acf31a1dfcbf5cdc1bb90c9eba32e4"
+      },
+      "digest": "f379323dd2db3325f999188b8ee8a7206736efa7d182b3f4778058e8f1c1997b"
+    },
+    {
+      "id": "ship/flashy-ledger/a558791e8638",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-19T16:43:01+00:00",
+      "kind": "infra",
+      "title": "rename scope to @flashylabs to match the GitHub account",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "Every publish attempt so far has failed on the actual npm publish step,\neven with a correctly-scoped PACKAGES_TOKEN (repo + write:packages).\nGitHub Packages requires the npm scope to exactly match the GitHub\naccount that owns the repo — this repo is under FlashyLabs, not flashy,\nso @flashy/ledger could never resolve to a real installation. Testing\nthe fix on this package alone before renaming @flashy/identity and\nanything downstream.",
+      "refs": {
+        "commit": "a558791e863835d5e0cd3332c7553ca1a946442b"
+      },
+      "digest": "de6c3d6e36e7635eb96e1af5067e16303d0999f745be9416ce6e5d0c743f3636"
+    },
+    {
+      "id": "ship/flashy-ledger/74a2b5c30888",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-19T16:03:24+00:00",
+      "kind": "infra",
+      "title": "Bump @flashy/ledger to 0.1.1 to cut a clean release tag",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "v0.1.0 was tagged before the PACKAGES_TOKEN publish fix existed, and\nmoving that tag over an unreliable connection kept failing silently.\nA fresh version+tag avoids re-pushing over an existing ref.",
+      "refs": {
+        "commit": "74a2b5c30888f9c583efc4bf31d9c7194a35574b"
+      },
+      "digest": "70fe6b2ab54542d5a2095557b8ecc66dd282343755bfecafaf768df5e98bebc7"
+    },
+    {
+      "id": "ship/flashy-ledger/fc2dfefe3e53",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-19T16:02:27+00:00",
+      "kind": "release",
+      "title": "CUT-1: publish with a PAT instead of GITHUB_TOKEN",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "GITHUB_TOKEN's Packages authorization was returning 403 'The requested\ninstallation does not exist' on every publish attempt, identically on\nthis repo and on flashy-contracts, despite an otherwise correct\nworkflow. Switching NODE_AUTH_TOKEN to a classic PAT (PACKAGES_TOKEN\nsecret, write:packages scope) to get past it.",
+      "refs": {
+        "commit": "fc2dfefe3e53dd1f757af3b914cde73770a4b4e1"
+      },
+      "digest": "3e74f9e9bd29d4759f79c7cfd1079cd3064506dc7e667466f2115b64b8d0f422"
+    },
+    {
+      "id": "ship/flashy-ledger/5fda67f0cc8d",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-19T13:54:35+00:00",
+      "kind": "release",
+      "title": "CUT-1: automate publishing @flashy/ledger to GitHub Packages",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "The package itself was already publish-ready — package.json already had\nthe right name, publishConfig (npm.pkg.github.com, restricted access),\nand repository field. What was missing was any way to actually run\n`npm publish` without someone doing it by hand from a machine with a\npersonal GH Packages token.\n\nTag-triggered (push a v0.1.0-shaped tag), not push-to-main-triggered —\na merge shouldn't be indistinguishable from a release. Uses the\nworkflow's own GITHUB_TOKEN with an explicit packages: write\npermission rather than a manually-created NPM_TOKEN secret — nothing\nto provision, rotate, or leak. Verifies the tag matches package.json's\nversion before publishing, so a forgotten version bump fails the job\ninstead of shipping under the wrong version number.\n\nThis is CUT-2's actual prerequisite: flashygoldams currently vendors\nthis package's build output into vendor/flashy-ledger specifically\nbecause it isn't published anywhere reachable. Once a tag is pushed\nand this runs once, that vendoring (and flashy-network's separate\ngithub:-URL + Vercel GIT_CREDENTIALS workaround) can be retired.",
+      "refs": {
+        "commit": "5fda67f0cc8de603bd7fe9d62e2ec198fac86a02"
+      },
+      "digest": "fd77cac0838d064265beb8664f5d6d730dcbc9f11c65aa5f88ae653850233dcc"
+    },
+    {
+      "id": "ship/flashy-ledger/d28b7eab1396",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-14T22:57:32+00:00",
+      "kind": "feature",
+      "title": "Ship a CommonJS build alongside the ESM one",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "ClaimYour.Gold runs Jest with ts-jest, which transforms .ts and leaves .js\nin node_modules alone. An ESM-only package therefore fails at parse time\nwith \"Unexpected token 'export'\" pointing at the importing test file, not\nat the package — and relaxing transformIgnorePatterns does not help,\nbecause ts-jest has no .js transform to apply.\n\nWidening the peer range let the package install; this is what lets it be\nused. Both were blocking the same consumer.\n\ndist-cjs gets its own package.json declaring \"type\": \"commonjs\". The root\ndeclares \"type\": \"module\", which applies to every .js beneath it, so Node\nwould otherwise load the CommonJS output as ESM and fail with \"exports is\nnot defined\" — a message that reads like a bug in the package rather than a\nbuild configuration problem. The alternative was renaming every emitted\nfile to .cjs and rewriting its internal requires.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_019pUgSYP9uuYUPC3BJUmCxo",
+      "refs": {
+        "commit": "d28b7eab1396e79824e5ed1ab8462283920477d3"
+      },
+      "digest": "e766e2c08308f4341037c65749ee47c6bf13b00bd147ccdd9a422a3fa2f307b0"
+    },
+    {
+      "id": "ship/flashy-ledger/449b0d724fa6",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-14T22:51:44+00:00",
+      "kind": "infra",
+      "title": "Accept mongodb 7, and make the peer optional",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "ClaimYour.Gold is on mongodb 7 and this package peered on ^6.21.0, so the\ninstall failed outright — the first real consumer could not take the\ndependency at all.\n\nThe range now spans both majors because the adapters use only driver APIs\nthat did not change between them: collection, createIndex, insertOne,\nfindOne, find/sort/limit/toArray, startSession, withTransaction,\nendSession. Checked rather than assumed. The alternative on the consumer\nside was --legacy-peer-deps, which silences every peer conflict in the tree\ninstead of the one that was actually understood.\n\nOptional, because the domain imports no driver at all. post, postTransfer,\nhashEntry, verifyChain and the money helpers are pure. A consumer that\nwants the rules and brings its own storage should not have to install a\ndatabase driver to get them — which is precisely ClaimYour.Gold's case: it\ncomputes hash chains with this package and writes through Prisma.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_019pUgSYP9uuYUPC3BJUmCxo",
+      "refs": {
+        "commit": "449b0d724fa6000553ca7c28c2a6e99ab697e72f"
+      },
+      "digest": "4a0b48a9a09f2b1a32c7222a9d6fa3e6d60fafda1b776d19a40a04d622e1ca8e"
+    },
+    {
+      "id": "ship/flashy-ledger/329884999fd5",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-14T20:09:36+00:00",
+      "kind": "other",
+      "title": "Type the test's index access instead of destructuring it",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "noUncheckedIndexedAccess is on, and `const [entry] = ...` hides a possibly\nundefined behind an assertion failure on a property of undefined. The\nhelper fails with a message that says what actually went wrong.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_019pUgSYP9uuYUPC3BJUmCxo",
+      "refs": {
+        "commit": "329884999fd59c25e6675eddd087bb0c52edecc5"
+      },
+      "digest": "7816a7bcbba8932ec64a14c8878fb672f2087f9e20b9219824ba774f5d230767"
+    },
+    {
+      "id": "ship/flashy-ledger/c448f23a2620",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-14T20:03:16+00:00",
+      "kind": "feature",
+      "title": "Add a read-only reader over ClaimYour.Gold's existing ledger",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "MongoLedgerStore writes this package's own format: hash-chained entries in\nledger_entries, integer minor units. ClaimYour.Gold's live ledger is not\nin that format — gold_ledger has floating-point amounts, no chain, and a\ndifferent column set, holding years of real money. The two cannot be\nswapped by changing a connection string.\n\nThe decision taken was to chain forward: new entries adopt the chained\nformat from a marked cutover; historical rows keep their shape and do not\nclaim a tamper-evidence they never had. This is the first half — anything\nbuilt on the LedgerStore port can read the live ledger today, with no\nmigration and no second query language.\n\nIt deliberately has no append, so it is not a LedgerStore. postEntry stays\nthe only writer of gold_ledger while both formats coexist, and a consumer\nthat tries to write fails to compile rather than at runtime against money.\n\nheadHash is always null. Inventing one would look like tamper-evidence to\nevery caller while proving nothing.\n\nThe float-to-minor conversion rounds rather than truncates: 12.34 in a\nfloat column reads back as 12.339999999999998, and truncating loses a\nwhole minor unit per entry, always in the same direction.\n\nverifyBalance answers the question nobody has been able to answer against\nproduction data — whether wallet.goldBalance still equals the ledger.\n\n13 tests against a fake collection, 100% line coverage. 55 tests total.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_019pUgSYP9uuYUPC3BJUmCxo",
+      "refs": {
+        "commit": "c448f23a2620af52e38ad7a9a433465ae5a4af37"
+      },
+      "digest": "c43c5dea338650847e2ca75be6fcb5fe74a6a9c8d804ec8b8f57786e1fe9efe3"
+    },
+    {
+      "id": "ship/flashy-ledger/a1b2dd56a8e5",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-14T18:50:09+00:00",
+      "kind": "infra",
+      "title": "Make the package installable",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "private:true meant no repo could depend on this even in principle, which\nis the actual reason \"wire the consumers\" never started — the blocker was\ndistribution, not code.\n\n`prepare` matters more than it looks: npm runs it after installing from a\ngit URL, so dist/ gets built on the consumer's machine. Without it the\ninstall succeeds and every import fails at runtime, a long way from the\ncause.\n\npublishConfig points at GitHub Packages for when a token exists. Git\ndependencies work today with none.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_019pUgSYP9uuYUPC3BJUmCxo",
+      "refs": {
+        "commit": "a1b2dd56a8e53716b1a3ae7ed8f27e837c337f1e"
+      },
+      "digest": "9b412970ecf7f61a367eac12bfc428b1831724dda45f168054a2efbb0206cdfb"
+    },
+    {
+      "id": "ship/flashy-ledger/36e3944e091b",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-13T18:30:41+00:00",
+      "kind": "feature",
+      "title": "Add the MongoDB adapter, and a conformance suite that proves it interchangeable",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "The single largest gap in this package: LedgerStore had one implementation and\nit was in-memory, so nothing could run against real data.\n\nWHAT THE DATABASE ENFORCES, RATHER THAN THIS FILE\n\nThree of the port's guarantees are indexes, not code, because code here runs\nonce per process and an index runs on every write from every process forever:\n\n  - idempotencyKey is unique, so a replay cannot become a second entry even\n    when two processes race the same key at the same instant;\n  - (identityId, assetId, previousHash) is unique, which is what stops two\n    concurrent appends both building on the same chain head and silently\n    forking history. It does not need to be partial: identityId and assetId\n    are in the key, so \"one entry with no predecessor\" is scoped per chain\n    rather than one null across the collection;\n  - nothing updates or deletes, because no code path here issues either.\n\nappendAll refuses a multi-entry batch when constructed without a MongoClient,\nrather than writing a transfer half-way. Sessions need the client, and a torn\ntransfer is worse than a loud failure. Results are rebuilt inside the\ntransaction callback because withTransaction may retry it, and results from an\naborted attempt are not real.\n\nAmounts are stored as strings and converted only at this boundary. Minor units\nare integers that can outgrow a double over a long-lived ledger, and the domain\nnever sees a Mongo type.\n\nTHE CONFORMANCE SUITE\n\ntests/conformance.test.ts runs the identical suite against every adapter. The\nport is the seam the whole migration story rests on — a document database today,\na chain-backed store later, with the domain indifferent. \"Indifferent\" was an\nintention; this makes it a build failure.\n\nIt skips Mongo unless MONGO_URL is set, so a laptop with no database still gets\nthe in-memory pass. CI provides one as a SINGLE-NODE REPLICA SET rather than a\nstandalone: sessions require a replica set, and a standalone would pass every\ntest here except the transfer ones ",
+      "refs": {
+        "commit": "36e3944e091b38a4f1a453a41046463d22181b1d"
+      },
+      "digest": "d520556d3b63748db41d0b1e54bbe0b0e4ed47ed457a663b6493043e3edf91cd"
+    },
+    {
+      "id": "ship/flashy-ledger/a18cfaddd5c5",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-12T04:45:54+00:00",
+      "kind": "infra",
+      "title": "Initial ledger: pure domain, storage behind a port",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "An append-only, multi-asset settlement ledger. Flashy Gold is the first\nasset on it rather than the thing itself; ore, stone and wheat are\nconfiguration records, not new code paths.\n\nEvery design choice here answers a defect found in the predecessor's\nproduction data:\n\n  - Amounts are signed integers in minor units, because Float columns\n    drift and 185 rows carried a sign that contradicted their own balance\n    movement.\n  - Transfers are two entries, because gifts and tips moved both wallets\n    while writing nothing on either side.\n  - Entries are append-only and content-hashed into a per-identity chain,\n    because history you can edit is not evidence.\n  - Writes are idempotent under a stable key, because retries are constant\n    at scale and a double award is unrecoverable.\n\nThe domain is pure — no database, clock or randomness — and a lint rule\nfails the build if that slips. All persistence sits behind LedgerStore,\nwhich is the only thing a move onto different infrastructure, including a\nchain, would have to reimplement.\n\n32 tests, 99% coverage with the gate failing the build below threshold,\nstrict type-checked lint, and three ADRs recording why.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_019pUgSYP9uuYUPC3BJUmCxo",
+      "refs": {
+        "commit": "a18cfaddd5c537965720aae0f5960c3d1fc59747"
+      },
+      "digest": "331a1bca519a0cfb0c8264d29f2ff0476f21c5558ea20d632e6f141a7d833247"
+    }
+  ]
+}

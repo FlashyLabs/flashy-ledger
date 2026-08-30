@@ -1,0 +1,58 @@
+# backlog/1 — what this repository intends to do.
+#
+# The fragment is a generated artifact: it is emitted from .backlog/items.json,
+# which is where items are actually filed, and never hand-edited.
+#
+# The served copy is the PUBLIC PROJECTION and is written by the emitter, not
+# copied by a step here — a copy step can be forgotten, and forgetting it would
+# publish private items at a URL. Nothing reaches it until a named human runs
+# promote, which is the whole consent rule expressed as a file path.
+name: Backlog
+
+on:
+  push:
+    branches: ['main']
+    paths-ignore:
+      - 'backlog.fragment.json'
+  pull_request:
+  schedule:
+    # Daily. Items decay, so a fragment that is a month old under-reports how
+    # much of the plan has quietly stopped claiming to be current.
+    - cron: '41 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: backlog-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  emit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Emit
+        run: node vendor-backlog.mjs emit
+
+      # Structural checks plus the two rules that matter: expiry is the derived
+      # value, and nothing is published without a named human's promotion.
+      - name: Check
+        run: node vendor-backlog.mjs check backlog.fragment.json
+
+      - name: Commit if it changed
+        run: |
+          if git diff --quiet; then
+            echo "no change"
+            exit 0
+          fi
+          git config user.name "backlog"
+          git config user.email "backlog@users.noreply.github.com"
+          git add -A
+          git commit -m "backlog/1: refresh the fragment"
+          git push
