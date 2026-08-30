@@ -8,6 +8,16 @@
    "assertedBy": "person/michael",
    "expires": "2027-08-28",
    "visibility": "public",
+   "id": "agent/flashy-ledger-ci",
+   "kind": "Agent",
+   "name": "Record emitter",
+   "description": "The workflow that derives and seals this repository's record. It emits shipped/1 and backlog/1 on the default branch and signs each entry as agent/flashy-ledger-ci."
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
    "id": "agent/flashy-ledger-coordination",
    "kind": "Agent",
    "name": "coordination",
@@ -240,6 +250,19 @@
     "isolate",
     "provision",
     "revoke"
+   ]
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "operates",
+   "from": "org/flashy-ledger",
+   "to": "agent/flashy-ledger-ci",
+   "scope": [
+    "shipped/1",
+    "backlog/1"
    ]
   },
   {

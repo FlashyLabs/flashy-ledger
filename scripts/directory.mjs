@@ -43,6 +43,30 @@ for (const r of charter.roles) {
 }
 
 // What this repository is additionally the authority for.
+// The machines that sign this repository's records.
+//
+// Declared because they already sign them: every sealed entry and every
+// fragment carries `assertedBy: agent/<slug>-ci`, and until 2026-08-30 that
+// was an id nothing in the estate defined — 2,478 edges across thirty
+// properties citing an agent that formally did not exist. An `assertedBy`
+// naming an id nothing declares is a citation to nothing: it reads as
+// provenance and carries none, which is worse than leaving the field empty.
+//
+// Not a charter role. A role is a governance label the org answers for and it
+// is rendered into the handshake's advertised capabilities — declaring "ci"
+// there would tell the network this org does continuous integration for
+// people. An emitter is a machine the org operates, which is what `operates`
+// is for. `@flashyos/directory`'s `declareEmitters` is the canonical form;
+// this is inlined because the template stays dependency-free by design, and
+// `tools/emitter-declaration.test.mjs` in flashyos asserts the two agree.
+const CI = node('Agent', 'agent', `${charter.slug}-ci`, 'Record emitter', {
+  description:
+    `The workflow that derives and seals this repository's record. It emits ` +
+    `shipped/1 and backlog/1 on the default branch and signs each entry as ` +
+    `agent/${charter.slug}-ci.`,
+})
+edge('operates', ORG, CI, { scope: ['shipped/1', 'backlog/1'] })
+
 for (const [domain, name] of PROPERTIES) {
   const prop = node('Property', 'prop', domain, name, {
     url: `https://${domain}`, tenure: 'freehold', platform: PLATFORM, vertical: VERTICAL,
