@@ -1,0 +1,64 @@
+{
+  "frontdoor": "1",
+  "property": "flashy-ledger",
+  "org": "flashy-labs",
+  "lanes": [
+    {
+      "id": "integrate",
+      "question": "What are you building on this, and what is missing?"
+    },
+    {
+      "id": "machine",
+      "question": "Who delegated this authority, and can the chain be verified?"
+    },
+    {
+      "id": "general"
+    }
+  ],
+  "rungs": [
+    {
+      "n": 0,
+      "id": "open",
+      "name": "Open",
+      "did": "You sent a message",
+      "detail": "The ordinary form. No account, no artifact, no integration.",
+      "cost": "Two minutes",
+      "owed": "We read everything. We do not promise a reply, and we say so here rather than letting silence say it for us.",
+      "sla": "No SLA — and we say so"
+    },
+    {
+      "n": 1,
+      "id": "identified",
+      "name": "Identified",
+      "did": "You published a charter",
+      "detail": "An AAO charter at your own domain, at /flashyos.roles.json. You paste a domain; we fetch and verify it.",
+      "cost": "About twenty minutes",
+      "owed": "A reply within five business days from a named person, not an alias. Your charter is read before the meeting, so the meeting starts further along.",
+      "sla": "Five business days · a named human"
+    },
+    {
+      "n": 2,
+      "id": "connected",
+      "name": "Connected",
+      "did": "You are in the mesh",
+      "detail": "A handshake at /.well-known/flashyos.json and a directory fragment.",
+      "cost": "An afternoon",
+      "owed": "A call, a listing in the public registry, and your record in the estate graph.",
+      "sla": "A call · a registry entry"
+    },
+    {
+      "n": 3,
+      "id": "integrated",
+      "name": "Integrated",
+      "did": "Something of yours runs on something of ours",
+      "detail": "flashyID, FlashyOS, Flashy Network, or a live and settling reward on ClaimYour.Gold. Running, not announced.",
+      "cost": "Real engineering",
+      "owed": "Diligence begins. You are in the pipeline with a decision date rather than a maybe, and a no comes with the reason in writing.",
+      "sla": "Diligence · a decision date · a reasoned no"
+    }
+  ],
+  "endpoint": "https://api.flashyos.com/v1/frontdoor",
+  "ladder": "https://gord.holdings/engage/",
+  "updated": "2026-08-30",
+  "notAuthority": "A rung buys a reply and a place in a queue. It never buys authority, money, or access. Publishing a file at a domain proves that someone can write to that host — it does not prove an organisation is who it says it is, and this door does not treat it as though it did. Where real authority is needed it is delegated and verified through flashyID, and the chain is checked."
+}

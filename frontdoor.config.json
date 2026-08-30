@@ -1,0 +1,64 @@
+{
+  "property": "flashy-ledger",
+  "org": "flashy-labs",
+  "voice": "What are you building on the ledger, and what is missing?",
+  "lanes": [
+    {
+      "id": "integrate",
+      "question": "What are you building on this, and what is missing?"
+    },
+    {
+      "id": "machine",
+      "question": "Who delegated this authority, and can the chain be verified?"
+    },
+    {
+      "id": "general"
+    }
+  ],
+  "rungs": [
+    {
+      "n": 0,
+      "id": "open",
+      "name": "Open",
+      "did": "You sent a message",
+      "detail": "The ordinary form. No account, no artifact, no integration.",
+      "cost": "Two minutes",
+      "owed": "We read everything. We do not promise a reply, and we say so here rather than letting silence say it for us.",
+      "sla": "No SLA \u2014 and we say so"
+    },
+    {
+      "n": 1,
+      "id": "identified",
+      "name": "Identified",
+      "did": "You published a charter",
+      "detail": "An AAO charter at your own domain, at /flashyos.roles.json. You paste a domain; we fetch and verify it.",
+      "cost": "About twenty minutes",
+      "owed": "A reply within five business days from a named person, not an alias. Your charter is read before the meeting, so the meeting starts further along.",
+      "sla": "Five business days \u00b7 a named human"
+    },
+    {
+      "n": 2,
+      "id": "connected",
+      "name": "Connected",
+      "did": "You are in the mesh",
+      "detail": "A handshake at /.well-known/flashyos.json and a directory fragment.",
+      "cost": "An afternoon",
+      "owed": "A call, a listing in the public registry, and your record in the estate graph.",
+      "sla": "A call \u00b7 a registry entry"
+    },
+    {
+      "n": 3,
+      "id": "integrated",
+      "name": "Integrated",
+      "did": "Something of yours runs on something of ours",
+      "detail": "flashyID, FlashyOS, Flashy Network, or a live and settling reward on ClaimYour.Gold. Running, not announced.",
+      "cost": "Real engineering",
+      "owed": "Diligence begins. You are in the pipeline with a decision date rather than a maybe, and a no comes with the reason in writing.",
+      "sla": "Diligence \u00b7 a decision date \u00b7 a reasoned no"
+    }
+  ],
+  "endpoint": "https://api.flashyos.com/v1/frontdoor",
+  "ladder": "https://gord.holdings/engage/",
+  "updated": "2026-08-30",
+  "out": "public/.well-known/frontdoor.json"
+}

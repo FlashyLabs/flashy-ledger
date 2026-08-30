@@ -1,0 +1,41 @@
+# Validates this repository's front door against frontdoor/1.
+#
+# The door is generated and committed. If emitting it here changes the file,
+# the committed copy is stale and the door a machine reads is not the door
+# this repository's config describes.
+#
+# The checker and the emitter are vendored byte-identical across every
+# repository that publishes a door; the canonical copies and the drift test
+# live in @flashyos/frontdoor. Both are dependency-free, so this job needs no
+# install and works the same on a Next.js app and a static generator.
+name: Front door
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  door:
+    name: Door
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Emit
+        run: node scripts/emit-frontdoor.mjs
+      - name: Validate
+        run: node scripts/check-frontdoor.mjs public/.well-known/frontdoor.json
+      - name: The committed door matches its config
+        run: git diff --exit-code -- public/.well-known/frontdoor.json
+      # The charter has to be SERVED, not merely committed. It lived only at the
+      # repository root, where a Next.js app never serves it — so /flashyos.roles.json
+      # returned 404 on nine of the estate's ten live properties while the standard
+      # told everyone else to publish exactly that path. The served copy is checked
+      # against the root copy here so the two cannot drift.
+      - name: The charter is served, and matches the source
+        run: |
+          test -f public/flashyos.roles.json || { echo "the charter is not in the served directory"; exit 1; }
+          diff -q flashyos.roles.json public/flashyos.roles.json
