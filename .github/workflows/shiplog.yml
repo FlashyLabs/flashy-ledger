@@ -54,6 +54,17 @@ jobs:
       - name: Re-verify every seal
         run: node vendor-shiplog.mjs verify shiplog.fragment.json
 
+      # The head must be rebuilt in the same run that rebuilt the fragment, or
+      # it commits to a tree that no longer exists. Emitting it from its own
+      # workflow would leave a window — however short — in which the published
+      # root and the published record disagree, and a reader hitting that
+      # window sees a forged-looking estate.
+      - name: Refresh the checkpoint over the new log
+        if: hashFiles('vendor-checkpoint.mjs') != ''
+        run: |
+          node vendor-checkpoint.mjs emit
+          node vendor-checkpoint.mjs verify
+
       - name: Commit if it changed
         run: |
           if git diff --quiet; then
@@ -63,5 +74,5 @@ jobs:
           git config user.name "shiplog"
           git config user.email "shiplog@users.noreply.github.com"
           git add -A
-          git commit -m "shipped/1: refresh the log"
+          git commit -m "shipped/1: refresh the log, and the checkpoint over it"
           git push

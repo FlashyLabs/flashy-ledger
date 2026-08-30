@@ -1,0 +1,8 @@
+{
+  "origin": "repo/flashy-ledger",
+  "fragments": [
+    "shiplog.fragment.json",
+    "directory.fragment.json"
+  ],
+  "serve": "public/.well-known/checkpoint.json"
+}
