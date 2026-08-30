@@ -2,8 +2,61 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-30T20:27:41.545Z",
+  "generated": "2026-08-30T21:44:31.693Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/2c92e800ef29",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T21:44:17Z",
+      "kind": "fix",
+      "title": "Read the emitter id, do not derive it",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "The declaration added moments ago used `${charter.slug}-ci` and was wrong here:\nthis repository signs its record with an id the charter slug does not produce,\nso it declared an agent that matched no signature anywhere. A declaration that\nmatches nothing is indistinguishable from one that works — every check that\nlooks at shape passes, and the provenance number does not move.\n\nThe id now comes from `.shiplog/config.json`, which is the file that actually\nstamps it. Two of ten repositories were affected: ClaimYour.Gold signs\n`agent/claimyour.gold-ci` against a charter slug of `claimyour-gold`, and\ndais-global signs `agent/dais-global-ci` against a slug of `dais`.\n\n`tools/emitter-declaration.test.mjs` in flashyos now compares the declared id\nagainst the stamped one, which is the check that was missing.\n\nKind: fix\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01FDosmV9fXV6oZ9NXe7PZ76",
+      "refs": {
+        "commit": "2c92e800ef2935f9ada7741a403afa1af00c7d8e"
+      },
+      "digest": "7fd9cd4302e14a60ea670fe6fe16784edaa97df707d163d68bee490c50d71a62"
+    },
+    {
+      "id": "ship/flashy-ledger/7475f50be97a",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T21:38:21Z",
+      "kind": "feature",
+      "title": "Declare the machine that signs this repository's record",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Every sealed entry and every fragment here carries\n`assertedBy: agent/<slug>-ci`, and until now that was an id nothing in the\nestate declared. Across thirty properties it was 2,478 edges citing an agent\nthat formally did not exist — provenance that reads as provenance and carries\nnone, which is worse than an empty field, because the empty field is honest\nabout not knowing who made the claim.\n\nDeclared as an Agent the organisation `operates`, not as a charter role. A\nrole is a governance label the org answers for and it is rendered into the\nhandshake's advertised capabilities, so a \"ci\" role would tell the network\nthis organisation does continuous integration for other people.\n\nThe canonical form is `declareEmitters` in `@flashyos/directory`. It is\ninlined here because `scripts/directory.mjs` is dependency-free by design, and\n`tools/emitter-declaration.test.mjs` in flashyos is the drift test that keeps\nthe two in step.\n\nKind: feature\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01FDosmV9fXV6oZ9NXe7PZ76",
+      "refs": {
+        "commit": "7475f50be97a4a6fe476e7c085eb9009bb3e342f"
+      },
+      "digest": "1c6a0066811ef6c3ca57d196fa67035574991f1dee7f28e3de5f21041050a888"
+    },
+    {
+      "id": "ship/flashy-ledger/be20119735a6",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T20:27:41Z",
+      "kind": "infra",
+      "title": "shipped/1: refresh the log, and the checkpoint over it",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "be20119735a699b10892da247dbf0ad38fd1dd4d"
+      },
+      "digest": "ee46b037b119b1a4980aa599a4ee790d1f972a4dd03d04319aa7f4f59596af35"
+    },
     {
       "id": "ship/flashy-ledger/68ce392f8e0b",
       "repo": "repo/flashy-ledger",
