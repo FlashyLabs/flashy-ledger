@@ -11,6 +11,22 @@
 // so it runs before an install. The published validator remains authoritative;
 // when @flashyos/agent is available, `npx @flashyos/agent conform` supersedes
 // this. Vendored byte-identical across the estate — do not edit per repository.
+//
+// A MIRROR THAT NOTHING COMPARES IS A GUESS. Eleven byte-identical copies of
+// this file sat across the estate and agreed with each other perfectly while
+// disagreeing with the spec in four places: it rejected `renamedFrom`, which
+// the charter defines and the role-rename sync depends on; it rejected a digit
+// in a role name, which the spec's own regex allows; and it enforced no length
+// bound at all, so the 24-character cap — the constant every property's test
+// used to hand-copy — was the one rule the pre-install check could not see.
+// `tools/vendored-checker.test.mjs` now runs this file and the published
+// validator over the same charters and fails on any disagreement.
+//
+// Two rules here are deliberately STRICTER than the spec, and the test names
+// them as expected: the template placeholder address, and a capability that
+// names one of the ten families. Both are estate house rules, and neither can
+// make a spec-valid charter fail somewhere the spec would pass it — they fail
+// it here, before it is published, which is the point of this file.
 import { readFileSync, existsSync } from 'node:fs'
 
 const FAMILIES = ['growth', 'revenue', 'product', 'engineering', 'operations',
@@ -18,8 +34,13 @@ const FAMILIES = ['growth', 'revenue', 'product', 'engineering', 'operations',
 const TOP = new Set(['aao', 'name', 'slug', 'description', 'accountableTo',
   'escalation', 'repositories', 'roles', 'network'])
 const ROLE_KEYS = new Set(['name', 'family', 'purpose', 'measure', 'capabilities',
-  'humanApprovalAtOrAbove', 'worksIn'])
+  'humanApprovalAtOrAbove', 'worksIn', 'renamedFrom'])
 const IMPACT = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
+// The spec's own rule, character for character: lowercase letters and digits,
+// single hyphens, starting with a letter — 3 to 24 characters, at most 3 words.
+const ROLE_NAME_RE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/
+const ROLE_NAME_MIN = 3
+const ROLE_NAME_MAX = 24
 
 const path = process.argv[2] ?? 'flashyos.roles.json'
 if (!existsSync(path)) { console.error(`  no charter at ${path}`); process.exit(2) }
@@ -55,9 +76,12 @@ const names = new Set()
   if (names.has(r.name)) bad(at, `duplicate role name "${r.name}"`)
   names.add(r.name)
   // A role is a standing responsibility named for the function performed.
-  if (!/^[a-z][a-z-]*$/.test(r.name ?? ''))
+  const name = r.name ?? ''
+  if (!ROLE_NAME_RE.test(name))
     bad(at, `"${r.name}" is not a plain lowercase function name`)
-  if ((r.name ?? '').split('-').length > 3) bad(at, `"${r.name}" is too many words for a role name`)
+  else if (name.length < ROLE_NAME_MIN || name.length > ROLE_NAME_MAX)
+    bad(at, `"${r.name}" is ${name.length} characters — a role name is ${ROLE_NAME_MIN} to ${ROLE_NAME_MAX}`)
+  if (name.split('-').length > 3) bad(at, `"${r.name}" is too many words for a role name`)
   if (r.family !== undefined && !FAMILIES.includes(r.family))
     bad(`${at}.family`, `"${r.family}" is not one of the ten declared families`)
   if (!r.purpose?.trim()) bad(at, 'a role with no purpose cannot be delegated')
