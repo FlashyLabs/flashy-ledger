@@ -36,3 +36,11 @@ jobs:
       # someone edited the JSON instead of the source it comes from.
       - name: Committed fragment matches the emitter
         run: git diff --exit-code -- directory.fragment.json
+      # The fragment must be SERVED, not merely committed. It lived only at the
+      # repository root, where a Next.js app never serves it — so the estate's
+      # federated directory could not be assembled by anyone without a git
+      # checkout, which defeats the entire point of federating it.
+      - name: The fragment is served, and matches the source
+        run: |
+          test -f public/directory.fragment.json || { echo "the fragment is not in the served directory"; exit 1; }
+          diff -q directory.fragment.json public/directory.fragment.json
