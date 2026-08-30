@@ -123,8 +123,33 @@ function claimsOf(fragments) {
 
 // ── Runtime ─────────────────────────────────────────────────────────────────
 
+/**
+ * Read a declared fragment, or fail loudly.
+ *
+ * This returned null on any error, which made an unparseable fragment
+ * indistinguishable from an absent one: the head was built over the claims it
+ * could read and printed `ok`. On 2026-08-30 a rebase left conflict markers in
+ * a shipped/1 fragment, and this emitter answered "0 claims, root recomputed
+ * and every leaf proved" — a valid-looking head over nothing, for a repository
+ * with twenty-four sealed entries.
+ *
+ * Absent is a fact the caller reports. Present-and-broken is an error, because
+ * the alternative is a root that silently stops covering the record.
+ */
 const readJson = (p) => {
-  try { return JSON.parse(readFileSync(p, 'utf8')) } catch { return null }
+  let text
+  try {
+    text = readFileSync(p, 'utf8')
+  } catch {
+    return null
+  }
+  try {
+    return JSON.parse(text)
+  } catch (error) {
+    console.error(`${p} is not valid JSON — refusing to build a head that silently omits it`)
+    console.error(`  ${error.message}`)
+    process.exit(1)
+  }
 }
 
 function loadConfig() {
