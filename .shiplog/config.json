@@ -3,7 +3,15 @@
   "org": "org/flashy-ledger",
   "assertedBy": "agent/flashy-ledger-ci",
   "defaultAuthor": "person/michael",
-  "authors": {},
+  "authors": {
+    "121371508+flashylabs@users.noreply.github.com": "person/michael",
+    "121371508+lifeintl@users.noreply.github.com": "person/michael",
+    "claude@anthropic.com": "agent/claude",
+    "michael@flashygroup.com": "person/michael",
+    "michael@gda.capital": "person/michael",
+    "michaelgord@michaels-macbook-pro.local": "person/michael",
+    "noreply@anthropic.com": "agent/claude"
+  },
   "visibility": "private",
   "lexicon": "imperative",
   "prBase": "https://github.com/FlashyLabs/flashy-ledger/pull/",
