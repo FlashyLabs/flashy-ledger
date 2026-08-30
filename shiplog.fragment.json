@@ -2,8 +2,44 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-30T16:50:16.332Z",
+  "generated": "2026-08-30T16:52:05.212Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/10178cf6e269",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T16:50:49Z",
+      "kind": "other",
+      "title": "Merge main, then publish",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Another session adopted these formats here independently. Its author\ntable and its branch-agnostic workflows are better than mine and are\ntaken as-is; the emitter is mine, because it carries three things theirs\ndoes not and one of them is load-bearing under their design.\n\nAn emit is now a union rather than a replacement. Their workflow fires on\nany push and gates the job on the default branch, which is the right fix\nfor the branch-pinning trap — but combined with derive-and-overwrite it\nwould let a feature branch rewrite the trunk’s log with its own\nfirst-parent shape. Together the two changes are safe.\n\nAlso mine: .shiplog/held.json, so publishing a log is not the same\ndecision as publishing every entry in it; a guard that stops an agent’s\ncommits being filed under a person; and a filter for this format’s own\nrefresh commits, which were being recorded as things that shipped.\n\nvisibility is now public. That is the decision that turns an internal\nrecord into a changelog anyone can read.\n\nKind: other",
+      "refs": {
+        "commit": "10178cf6e26990275681254ea762c7faf24db1cc"
+      },
+      "digest": "a40a892146b67cdf60edceffe3a9cdafb214f03f525de837626b253ff2677bc4"
+    },
+    {
+      "id": "ship/flashy-ledger/454ff29c9ad8",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T16:24:30Z",
+      "kind": "feature",
+      "title": "Publish the log: 282 entries across the estate become public",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Everything derived has landed private since adoption. This flips\nvisibility for the estate-owned properties, which is the decision that\nturns an internal record into a public changelog.\n\nTwo entries are held back by .shiplog/held.json, with the reason written\nnext to each: one names a credential that is still unrotated, one is a\nfrank internal note about a durability gap in a live product. Held, not\ndeleted — both are still in this repository’s own record, sealed and\ncounted. Only whether a stranger can read them changes.\n\nThe vendored emitter is re-copied in the same commit. The hold did\nnothing until it was: the previously vendored copy predated the feature\nand published the held entry regardless, silently.\n\nKind: feat",
+      "refs": {
+        "commit": "454ff29c9ad8a642d82c0997e0e02a6a4220de40"
+      },
+      "digest": "02a0dd16cae9d456db6f41d8e27b58fa4e8276d19e4c6764caeac43d123448e0"
+    },
     {
       "id": "ship/flashy-ledger/00e4f23e6486",
       "repo": "repo/flashy-ledger",
@@ -41,6 +77,24 @@
       "digest": "396d127809535a57a6e5378a48905722a74ced309e1838c71bf9ccc78ff1f364"
     },
     {
+      "id": "ship/flashy-ledger/323f2643beb2",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T16:04:31Z",
+      "kind": "feature",
+      "title": "Adopt the two tenses: what this repository intends, and what it shipped",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "`backlog/1` and `shipped/1`, both emitted by a vendored, dependency-free\nscript and refreshed by a workflow on this repository's default branch.\n\nEverything lands private. The served fragment publishes nothing until\nsomebody changes one field, which is the decision that turns an internal\nlog into a public changelog — not a side effect of adopting.\n\nThe log credits the agents that wrote the commits. That needed a fix\nupstream first: with an empty `authors` table every unrecognised address\nfell through to `defaultAuthor`, and the estate's first derived log read\n100% human-authored over a history that was 95/107 agent-authored. `adopt`\nnow seeds the machine addresses it finds in the history.\n\nThe workflow triggers on the branch `git symbolic-ref refs/remotes/origin/HEAD`\nreports, which is not always `main` in this estate and is never the branch\nadoption happened on.\n\nKind: feat",
+      "refs": {
+        "commit": "323f2643beb246368ae127964deeb5141879fddc"
+      },
+      "digest": "abc719c99ee54bc0c6a0a9e05077a2943ffbe1404b8a117f46442cb692325414"
+    },
+    {
       "id": "ship/flashy-ledger/f4d436fb879a",
       "repo": "repo/flashy-ledger",
       "at": "2026-08-30T15:46:15+00:00",
@@ -75,6 +129,24 @@
         "commit": "1afe30f6c43dead0c0d1802c690e14b903f2f896"
       },
       "digest": "ded1d70877118a65ae0ff5ddf184407c434d80c3fce31acaa48c885af8c44331"
+    },
+    {
+      "id": "ship/flashy-ledger/8c105726360e",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T13:06:38Z",
+      "kind": "infra",
+      "title": "secret scanning, through the shared workflow",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Ten of thirty-five repositories in the estate had a secret scan, and each\ncarried its own private copy. flashy-infra's CLAUDE.md said the estate consumed\na shared template; no repository referenced it, and the file was not a reusable\nworkflow anyway.\n\nThis is one file calling one shared definition, so a change to the scan reaches\nevery repository on its next run rather than needing thirty pull requests.\n\nVerified against this repository's working tree before being added: a scan\nswitched on into an existing failure is a red check nobody can act on, which is\nhow a check becomes one everybody learns to ignore.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0114eERowmBzsxqy4tBNm6a5",
+      "refs": {
+        "commit": "8c105726360e25aa59c72dc28982c13ee48a5f3b"
+      },
+      "digest": "7ac3405cf66193ab3647666940a994eef06fd7f08e31237cde6ea8946098ceab"
     },
     {
       "id": "ship/flashy-ledger/308767436b00",
