@@ -240,6 +240,7 @@ export function fromCommits(commits, options) {
     ? buildLexicon(options.lexicon === 'imperative' ? IMPERATIVE_LEXICON : options.lexicon)
     : undefined
   const declaredKinds = options.kinds ?? {}
+  const badKinds = new Map()
   const held = options.held ?? {}
   const nodeFor = (email) => {
     const mapped = authors[email.toLowerCase()]
@@ -271,6 +272,14 @@ export function fromCommits(commits, options) {
     // Precedence, most authoritative first: a person's recorded decision, the
     // author's own trailer, then what can be read off the subject.
     const overridden = declaredKinds[commit.sha] ?? declaredKinds[commit.sha.slice(0, 12)]
+    // A recorded decision that names a kind this format does not have was
+    // silently ignored, which is the worst outcome available: somebody went to
+    // the trouble of deciding and the log carried `other` anyway, with nothing
+    // saying so. Now it is reported. The file is a person's judgement and a
+    // typo in it must not read as an absence of judgement.
+    if (overridden !== undefined && !SHIP_KINDS.includes(overridden)) {
+      badKinds.set(commit.sha.slice(0, 12), overridden)
+    }
     const declared = SHIP_KINDS.includes(overridden) ? overridden : undefined
     const kind = declared ?? parseKindTrailer(commit.body) ?? inferred.kind
     const { title, breaking } = inferred
@@ -311,7 +320,7 @@ export function fromCommits(commits, options) {
     return seal(entry)
   })
 
-  return { entries, unmapped: [...unmapped].sort() }
+  return { entries, unmapped: [...unmapped].sort(), badKinds: [...badKinds] }
 }
 
 /**
@@ -430,7 +439,7 @@ function run(argv) {
   const kinds = existsSync(KINDS) ? JSON.parse(readFileSync(KINDS, 'utf8')) : {}
   const held = existsSync(HELD) ? JSON.parse(readFileSync(HELD, 'utf8')) : {}
   const derived = fromCommits(parseGitLog(raw), { ...deriveOptionsFrom(config), kinds, held })
-  const { unmapped } = derived
+  const { unmapped, badKinds } = derived
   const out = flag('out') ?? 'shiplog.fragment.json'
 
   // Sealed and never decays — which has to survive a regeneration, or it is a
@@ -483,6 +492,12 @@ function run(argv) {
     mkdirSync(dirname(path), { recursive: true })
     writeFileSync(path, `${JSON.stringify(fragmentOf(config, open), null, 2)}\n`)
     console.log(`${' '.repeat(String(entries.length).length)}  → ${path} (served, ${open.length} public of ${entries.length})`)
+  }
+  if (badKinds?.length) {
+    console.log(`\n${badKinds.length} recorded decision${badKinds.length === 1 ? '' : 's'} in ${KINDS} name${badKinds.length === 1 ? 's' : ''} a kind this format does not have:`)
+    for (const [sha, kind] of badKinds) console.log(`  ${sha}  "${kind}"`)
+    console.log(`  valid: ${SHIP_KINDS.join(', ')}`)
+    console.log('  these were ignored, and the entries stayed `other`')
   }
   if (unmapped.length) {
     console.log(`\n${unmapped.length} unmapped author${unmapped.length === 1 ? '' : 's'} — add these to config.authors:`)

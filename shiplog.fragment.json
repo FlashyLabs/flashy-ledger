@@ -2,12 +2,12 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-30T17:38:44.927Z",
+  "generated": "2026-08-30T17:59:01.865Z",
   "entries": [
     {
       "id": "ship/flashy-ledger/c05ef1e25410",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-30T17:38:31Z",
+      "at": "2026-08-30T17:38:31+00:00",
       "kind": "fix",
       "title": "Fail loudly on a fragment that exists and cannot be parsed",
       "by": [
@@ -20,12 +20,12 @@
       "refs": {
         "commit": "c05ef1e254106753aa60502540b1443cccb1ffb6"
       },
-      "digest": "3a2df176688146a1134c525e3013e43ba4bcb5fb9cab0a4064704884b12ab256"
+      "digest": "24c2631a6b014d85e0d4790a359658b5c1d69a0b3a135725db4000d4d43f7c9b"
     },
     {
       "id": "ship/flashy-ledger/fddf555654e7",
       "repo": "repo/flashy-ledger",
-      "at": "2026-08-30T17:22:54Z",
+      "at": "2026-08-30T17:22:54+00:00",
       "kind": "other",
       "title": "Re-emit the log and its checkpoint after rebase",
       "by": [
@@ -38,7 +38,7 @@
       "refs": {
         "commit": "fddf555654e74aaa8770ee80c010adc116bca65f"
       },
-      "digest": "a3e602ab910205d7b5688d32806be412111a02db8b200f3790a7a72ad6c7d2b3"
+      "digest": "2ed297bb26f3a90f442f463f5deed608887c22c83d05dd9d04a839cc74738e5e"
     },
     {
       "id": "ship/flashy-ledger/4851f8997206",
