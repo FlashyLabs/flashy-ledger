@@ -95,19 +95,82 @@ const PREFIX_KINDS = {
 const HEADER_RE = /^([a-z]+)(\([^)]*\))?(!)?:\s*(.+)$/i
 const CLOSES_RE = /(?:closes|closed|fixes|backlog:)\s+(backlog\/[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*)/gi
 const PR_RE = /#(\d+)/
+const INTEGRATION_MERGE_RE = /^merge (remote-tracking )?branch\b/i
+const PR_MERGE_RE = /^merge pull request #\d+/i
 
-export function parseSubject(subject) {
+// A merge of another branch into this line is not a ship. Sixty-five of this
+// estate's first five hundred entries were these, and a reader scanning a
+// changelog does not want "Merge branch 'main'" thirty times.
+export const isIntegrationMerge = (subject) => INTEGRATION_MERGE_RE.test((subject ?? '').trim())
+export const isPullRequestMerge = (subject) => PR_MERGE_RE.test((subject ?? '').trim())
+
+// `Phase 3: gate mesh reporting`, `XP-7: the public Hunter Record page`. The
+// verb that says what happened is on the far side of the colon. Capped so a
+// sentence containing a colon is not mistaken for a prefix.
+export const withoutPrefix = (subject) => {
+  const m = /^[^:]{1,28}:\s*(.+)$/.exec((subject ?? '').trim())
+  return m ? m[1] : (subject ?? '').trim()
+}
+
+// The one mechanism that involves no reading between lines: the author says so.
+export function parseKindTrailer(body) {
+  const m = /^[ \t]*kind:[ \t]*([a-z]+)[ \t]*$/im.exec(body ?? '')
+  const kind = m?.[1]?.toLowerCase()
+  return kind && SHIP_KINDS.includes(kind) ? kind : undefined
+}
+
+// Opt-in, and that is the point: a repository that declares no lexicon still
+// gets `other`, because reading a convention nobody declared is guessing.
+// Ambiguous verbs sit in infra — the safe direction for an unknown is the
+// column nobody quotes.
+export const IMPERATIVE_LEXICON = {
+  feature: 'add publish serve build give advertise join emit declare introduce create ship launch enable expose offer open adopt record show render surface teach let count answer ask send anchor fold bring merge take land start seed scaffold port promote unify consolidate stand match catch close reject refuse deny report state audit review'.split(' '),
+  fix: 'fix stop repair correct prevent unbreak resolve restore guard back revert'.split(' '),
+  docs: 'document write explain describe clarify note spell say recommend brief'.split(' '),
+  infra: 'update bump pin move rename remove delete refactor split extract tidy drop migrate upgrade gate link point align sync make put wire carry name replace switch keep hold set use run retire require derive reconcile scope harden turn rebuild rearchitect return redeploy trigger commit route repoint absorb shuffle rank exit prune trim tighten raise lower skip allow accept rewrite revise refresh rework initial'.split(' '),
+  spec: 'specify define standardise standardize'.split(' '),
+  release: 'release cut tag version'.split(' '),
+}
+
+export function buildLexicon(declared) {
+  const out = new Map()
+  for (const [kind, verbs] of Object.entries(declared ?? {})) {
+    if (!SHIP_KINDS.includes(kind)) continue
+    for (const verb of verbs) {
+      const clean = String(verb).trim().toLowerCase()
+      if (clean && !out.has(clean)) out.set(clean, kind)
+    }
+  }
+  return out
+}
+
+const leadingVerb = (text) => (text ?? '').trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z]/g, '') ?? ''
+
+export function parseSubject(subject, lexicon) {
   const trimmed = (subject ?? '').trim()
   const match = HEADER_RE.exec(trimmed)
-  if (!match) return { kind: 'other', title: trimmed, breaking: false }
-  const [, type, scope, bang, rest] = match
-  const kind = PREFIX_KINDS[type.toLowerCase()] ?? 'other'
-  const scoped = scope?.slice(1, -1).toLowerCase()
-  return {
-    kind: scoped && PREFIX_KINDS[scoped] === 'release' ? 'release' : kind,
-    title: rest.trim(),
-    breaking: bang === '!',
+
+  if (match) {
+    const [, type, scope, bang, rest] = match
+    const known = PREFIX_KINDS[type.toLowerCase()]
+    if (known) {
+      const scoped = scope?.slice(1, -1).toLowerCase()
+      return {
+        kind: scoped && PREFIX_KINDS[scoped] === 'release' ? 'release' : known,
+        title: rest.trim(),
+        breaking: bang === '!',
+      }
+    }
   }
+
+  if (lexicon?.size) {
+    for (const candidate of [trimmed, withoutPrefix(trimmed)]) {
+      const kind = lexicon.get(leadingVerb(candidate))
+      if (kind) return { kind, title: trimmed, breaking: false }
+    }
+  }
+
+  return { kind: 'other', title: trimmed, breaking: false }
 }
 
 export function parseCloses(message) {
@@ -130,6 +193,10 @@ export function fromCommits(commits, options) {
   const asserted = options.asserted ?? new Date().toISOString().slice(0, 10)
   const authors = options.authors ?? {}
   const unmapped = new Set()
+  const lexicon = options.lexicon
+    ? buildLexicon(options.lexicon === 'imperative' ? IMPERATIVE_LEXICON : options.lexicon)
+    : undefined
+  const declaredKinds = options.kinds ?? {}
   const nodeFor = (email) => {
     const mapped = authors[email.toLowerCase()]
     if (mapped) return mapped
@@ -137,9 +204,19 @@ export function fromCommits(commits, options) {
     return options.defaultAuthor
   }
 
-  const entries = commits.map((commit) => {
+  const shipped = options.keepIntegrationMerges
+    ? commits
+    : commits.filter((c) => !isIntegrationMerge(c.subject))
+
+  const entries = shipped.map((commit) => {
     const message = `${commit.subject}\n${commit.body ?? ''}`
-    const { kind, title, breaking } = parseSubject(commit.subject)
+    const inferred = parseSubject(commit.subject, lexicon)
+    // Precedence, most authoritative first: a person's recorded decision, the
+    // author's own trailer, then what can be read off the subject.
+    const overridden = declaredKinds[commit.sha] ?? declaredKinds[commit.sha.slice(0, 12)]
+    const declared = SHIP_KINDS.includes(overridden) ? overridden : undefined
+    const kind = declared ?? parseKindTrailer(commit.body) ?? inferred.kind
+    const { title, breaking } = inferred
     const by = [...new Set([commit.authorEmail, ...(commit.coAuthorEmails ?? [])].filter(Boolean).map(nodeFor))]
     const entry = {
       id: `ship/${repoSlug}/${commit.sha.slice(0, 12).toLowerCase()}`,
@@ -212,6 +289,9 @@ export const deriveOptionsFrom = (config) => ({ ...config, repo: config.source }
 // ── CLI ─────────────────────────────────────────────────────────────────────
 
 const CONFIG = '.shiplog/config.json'
+// sha → kind, for the third of real history that is a noun phrase with no verb
+// to read. A person decides once and it is written down here.
+const KINDS = '.shiplog/kinds.json'
 const FORMAT = '%H%x1f%aI%x1f%aE%x1f%s%x1f%b%x1e'
 
 /**
@@ -251,7 +331,9 @@ function run(argv) {
   if (!existsSync(CONFIG)) throw new Error(`${CONFIG} is missing — see the header of this file for its shape`)
   const config = JSON.parse(readFileSync(CONFIG, 'utf8'))
   const raw = readGitLog({ rev: revOf(config), since: flag('since') })
-  const { entries, unmapped } = fromCommits(parseGitLog(raw), deriveOptionsFrom(config))
+  // A recorded human decision per commit, for the ones nothing can read.
+  const kinds = existsSync(KINDS) ? JSON.parse(readFileSync(KINDS, 'utf8')) : {}
+  const { entries, unmapped } = fromCommits(parseGitLog(raw), { ...deriveOptionsFrom(config), kinds })
   const out = flag('out') ?? 'shiplog.fragment.json'
   // The root output is the repository's own full record — every tier.
   writeFileSync(out, `${JSON.stringify(fragmentOf(config, entries), null, 2)}\n`)
