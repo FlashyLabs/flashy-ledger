@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-30T13:08:49.763Z",
+  "generated": "2026-08-30T13:23:40.152Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/1afe30f6c43d",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T13:21:23+00:00",
+      "kind": "infra",
+      "title": "Reclassify the log against the convention this estate writes in",
+      "by": [
+        "person/michael"
+      ],
+      "asserted": "2026-08-30",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "private",
+      "detail": "The derived log was classified only by conventional-commit prefixes, and\nthis repository writes declarative English. Unclassified went from 96%\nto 21% by reading the estate's declared imperative lexicon, looking\npast a project prefix to the verb behind it, and dropping merges of\nanother branch into this line — which are not things that shipped.\n\nNothing is published: entries remain private and the served copy is the\npublic projection.\n\nKind: infra\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01FDosmV9fXV6oZ9NXe7PZ76",
+      "refs": {
+        "commit": "1afe30f6c43dead0c0d1802c690e14b903f2f896"
+      },
+      "digest": "64d214f42b6e45cb388f4e4d09747803830f84c893b01e83f8eb6e719ad2b8d3"
+    },
     {
       "id": "ship/flashy-ledger/308767436b00",
       "repo": "repo/flashy-ledger",
