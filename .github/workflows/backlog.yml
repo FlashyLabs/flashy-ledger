@@ -46,14 +46,28 @@ jobs:
       - name: Check
         run: node vendor-backlog.mjs check backlog.fragment.json
 
+      # Same retry as Shiplog's: a bare push loses the race when main moves
+      # under the run, and for a derived artifact the honest retry is
+      # regenerate on the new tip, not rebase.
       - name: Commit if it changed
         run: |
-          if git diff --quiet; then
-            echo "no change"
-            exit 0
-          fi
           git config user.name "backlog"
           git config user.email "backlog@users.noreply.github.com"
-          git add -A
-          git commit -m "backlog/1: refresh the fragment [skip ci]"
-          git push
+          for attempt in 1 2 3 4 5; do
+            if git diff --quiet; then
+              echo "no change"
+              exit 0
+            fi
+            git add -A
+            git commit -m "backlog/1: refresh the fragment [skip ci]"
+            if git push; then
+              exit 0
+            fi
+            echo "push rejected (attempt $attempt) — main moved; regenerating on the new tip"
+            git fetch origin main
+            git reset --hard origin/main
+            node vendor-backlog.mjs emit
+            node vendor-backlog.mjs check backlog.fragment.json
+          done
+          echo "main outran five attempts; the next push's run will refresh the fragment"
+          exit 1

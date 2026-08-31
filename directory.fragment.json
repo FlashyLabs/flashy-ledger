@@ -130,6 +130,16 @@
    "assertedBy": "person/michael",
    "expires": "2027-08-28",
    "visibility": "public",
+   "id": "src/flashy-ledger-aao-0-1",
+   "kind": "Source",
+   "name": "aao/0.1 — flashy-ledger",
+   "description": "The aao/0.1 surface this organisation serves."
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
    "id": "src/flashy-ledger-backlog-1",
    "kind": "Source",
    "name": "backlog/1 — flashy-ledger",
@@ -299,6 +309,15 @@
    "visibility": "public",
    "type": "declares",
    "from": "org/flashy-ledger",
+   "to": "src/flashy-ledger-aao-0-1"
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "declares",
+   "from": "org/flashy-ledger",
    "to": "src/flashy-ledger-backlog-1"
   },
   {
@@ -375,6 +394,15 @@
    "scope": [
     "shipped/1"
    ]
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "cites",
+   "from": "src/flashy-ledger-aao-0-1",
+   "to": "std/aao-0-1"
   },
   {
    "asserted": "2026-08-28",

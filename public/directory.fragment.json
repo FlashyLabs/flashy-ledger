@@ -8,10 +8,20 @@
    "assertedBy": "person/michael",
    "expires": "2027-08-28",
    "visibility": "public",
+   "id": "agent/flashy-ledger-bot",
+   "kind": "Agent",
+   "name": "Backlog emitter",
+   "description": "The tool that files and promotes this repository's intentions. It emits backlog/1 and signs each item as agent/flashy-ledger-bot."
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
    "id": "agent/flashy-ledger-ci",
    "kind": "Agent",
    "name": "Record emitter",
-   "description": "The workflow that derives and seals this repository's record. It emits shipped/1 and backlog/1 on the default branch and signs each entry as agent/flashy-ledger-ci."
+   "description": "The workflow that derives and seals this repository's record. It emits shipped/1 on the default branch and signs each entry as agent/flashy-ledger-ci."
   },
   {
    "asserted": "2026-08-28",
@@ -120,10 +130,19 @@
    "assertedBy": "person/michael",
    "expires": "2027-08-28",
    "visibility": "public",
+   "id": "src/flashy-ledger-aao-0-1",
+   "kind": "Source",
+   "name": "aao/0.1 — flashy-ledger",
+   "description": "The aao/0.1 surface this organisation serves."
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
    "id": "src/flashy-ledger-backlog-1",
    "kind": "Source",
    "name": "backlog/1 — flashy-ledger",
-   "url": "https://flashy-ledger/.well-known/backlog.json",
    "description": "The backlog/1 surface this organisation serves."
   },
   {
@@ -134,7 +153,6 @@
    "id": "src/flashy-ledger-checkpoint-1",
    "kind": "Source",
    "name": "checkpoint/1 — flashy-ledger",
-   "url": "https://flashy-ledger/.well-known/checkpoint.json",
    "description": "The checkpoint/1 surface this organisation serves."
   },
   {
@@ -145,7 +163,6 @@
    "id": "src/flashy-ledger-shipped-1",
    "kind": "Source",
    "name": "shipped/1 — flashy-ledger",
-   "url": "https://flashy-ledger/.well-known/shiplog.json",
    "description": "The shipped/1 surface this organisation serves."
   }
  ],
@@ -292,6 +309,15 @@
    "visibility": "public",
    "type": "declares",
    "from": "org/flashy-ledger",
+   "to": "src/flashy-ledger-aao-0-1"
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "declares",
+   "from": "org/flashy-ledger",
    "to": "src/flashy-ledger-backlog-1"
   },
   {
@@ -319,10 +345,21 @@
    "visibility": "public",
    "type": "operates",
    "from": "org/flashy-ledger",
+   "to": "agent/flashy-ledger-bot",
+   "scope": [
+    "backlog/1"
+   ]
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "operates",
+   "from": "org/flashy-ledger",
    "to": "agent/flashy-ledger-ci",
    "scope": [
-    "shipped/1",
-    "backlog/1"
+    "shipped/1"
    ]
   },
   {
@@ -341,11 +378,31 @@
    "visibility": "public",
    "type": "delegatedTo",
    "from": "person/michael",
-   "to": "agent/flashy-ledger-ci",
+   "to": "agent/flashy-ledger-bot",
    "scope": [
-    "shipped/1",
     "backlog/1"
    ]
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "delegatedTo",
+   "from": "person/michael",
+   "to": "agent/flashy-ledger-ci",
+   "scope": [
+    "shipped/1"
+   ]
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "cites",
+   "from": "src/flashy-ledger-aao-0-1",
+   "to": "std/aao-0-1"
   },
   {
    "asserted": "2026-08-28",

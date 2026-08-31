@@ -65,14 +65,34 @@ jobs:
           node vendor-checkpoint.mjs emit
           node vendor-checkpoint.mjs verify
 
+      # The push can be rejected when main moves under the run — flashyos's
+      # copy of this workflow failed three runs straight that way. Rebase is
+      # the wrong retry for a derived artifact — the log derives from the
+      # very history that just moved — so a rejection means regenerate on
+      # the new tip and push that.
       - name: Commit if it changed
         run: |
-          if git diff --quiet; then
-            echo "no change"
-            exit 0
-          fi
           git config user.name "shiplog"
           git config user.email "shiplog@users.noreply.github.com"
-          git add -A
-          git commit -m "shipped/1: refresh the log, and the checkpoint over it [skip ci]"
-          git push
+          for attempt in 1 2 3 4 5; do
+            if git diff --quiet; then
+              echo "no change"
+              exit 0
+            fi
+            git add -A
+            git commit -m "shipped/1: refresh the log, and the checkpoint over it [skip ci]"
+            if git push; then
+              exit 0
+            fi
+            echo "push rejected (attempt $attempt) — main moved; regenerating on the new tip"
+            git fetch origin main
+            git reset --hard origin/main
+            node vendor-shiplog.mjs emit
+            node vendor-shiplog.mjs verify shiplog.fragment.json
+            if [ -f vendor-checkpoint.mjs ]; then
+              node vendor-checkpoint.mjs emit
+              node vendor-checkpoint.mjs verify
+            fi
+          done
+          echo "main outran five attempts; the next push's run will refresh the log"
+          exit 1
