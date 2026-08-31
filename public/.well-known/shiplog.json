@@ -2,8 +2,96 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-31T12:43:33.082Z",
+  "generated": "2026-08-31T17:20:09.404Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/2adae1699fa4",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T17:19:43Z",
+      "kind": "other",
+      "title": "Derived-log workflows survive a moving main; the served fragment matches the record",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "The backlog and shiplog workflows carried a bare 'git push', which loses\nthe race whenever main moves under the run — the failure flashyos hit\nthree runs straight before growing the regenerate-on-the-new-tip retry\nthis ports. Rebase is deliberately not the retry: these artifacts derive\nfrom the very history that moved.\n\nWhere this repository's served public/directory.fragment.json trailed\nthe committed record (the diff the Directory workflow refuses), the two\nare re-synced from the emitter's output, with every directory check run\nlocally before committing.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_019pUgSYP9uuYUPC3BJUmCxo",
+      "refs": {
+        "commit": "2adae1699fa4ae2d61146d4079be3832c3879928"
+      },
+      "digest": "2ee809d66ab0ad40988232cc4a6fd1c3f902b430348c2dc59f75285b0e39b566"
+    },
+    {
+      "id": "ship/flashy-ledger/15ee37b67cee",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T17:07:04Z",
+      "kind": "infra",
+      "title": "backlog/1: refresh the fragment [skip ci]",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "15ee37b67ceeef85c63d45709059ab1c6f73c22b"
+      },
+      "digest": "d18b1543fea47e56f980d76f4ffe8156fdac825bf54c004bde7ade9a9073a972"
+    },
+    {
+      "id": "ship/flashy-ledger/7e790ce4e8f7",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T17:06:50Z",
+      "kind": "fix",
+      "title": "Serve the charter where the checker actually reads it [vercel skip]",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "@flashyos/conformance reads a charter from /.well-known/flashyos-charter.json\nand nowhere else. Holding one in the repository is a different fact from\nserving one, and the estate has now got that wrong three times: nine properties\nwere fixed in August 2026 and the failure written up as closed; a read of every\ndefault branch on 30 August found seven still holding a complete roster and\nserving it nowhere; this property was one of them on 31 August.\n\nNothing failed. A conformance run against this domain simply stopped at L1\nwhile the roster sat in git looking finished.\n\nThe served copy is byte-identical to the one this repository holds, and a test\npins that. Byte-identity rather than field-by-field, deliberately: a test that\nchecks the fields somebody thought to list says nothing about the field added\nnext week.\n\nKind: fix",
+      "refs": {
+        "commit": "7e790ce4e8f73e92ca463a61f30a39316b8fcc3d"
+      },
+      "digest": "338817c6ead7539ec65f7b866cb23910aff46c8677cfbc758746ff6f6b5eb6d5"
+    },
+    {
+      "id": "ship/flashy-ledger/6395fc400858",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T16:42:59Z",
+      "kind": "fix",
+      "title": "An emitted record must not spend a deploy [vercel skip]",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "The emitters commit a refreshed fragment on every push, and each of those is a\ndeployment. On 2026-08-31 the estate landed 594 commits on default branches and\n321 of them — 54% — were emitters refreshing their own output. Vercel's build\nrate limit is 100 a day across the account, so the record-keeping machinery was\nconsuming the whole estate's deploy budget three times over and starving the\npushes people actually made.\n\nIt was invisible everywhere. Each property sat a few revisions behind, gda.group\nhad stopped on 30 August, nothing was red. The one place it was written down was\na commit status on a dependabot PR nobody had opened: \"Deployment rate limited —\nretry in 24 hours.\"\n\n[skip ci] is the marker Vercel and GitHub Actions both honour. The fragment\nstill reaches the domain on the next deploy a real push triggers, which is the\nright cadence for a record of something that already happened.\n\nThis commit carries [vercel skip] rather than [skip ci] so CI still validates\nit without spending one of the deploys it exists to save.\n\nKind: fix",
+      "refs": {
+        "commit": "6395fc4008589a9790f5911f563669bb58172cc9"
+      },
+      "digest": "73f3f855f5fa2f0de63b743154e6e7d17059b4b5438833344430f2ed695694b4"
+    },
+    {
+      "id": "ship/flashy-ledger/f0632ab26a5c",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T12:43:33Z",
+      "kind": "infra",
+      "title": "shipped/1: refresh the log, and the checkpoint over it",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "f0632ab26a5c5a91bff8dc5dff0cfd22eadf949f"
+      },
+      "digest": "d914c6bb09e10352e13d0278e1275e1f40f78814904d6dc066654d20fc82781c"
+    },
     {
       "id": "ship/flashy-ledger/18b79bf7f49c",
       "repo": "repo/flashy-ledger",
