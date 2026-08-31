@@ -338,7 +338,35 @@ export function fromCommits(commits, options) {
  * misleading label. The package's `view()` grants partner to a *partner*, and
  * an unauthenticated fetch is not one.
  */
-export const publicView = (entries) => entries.filter((e) => e?.visibility === 'public')
+/**
+ * The public projection.
+ *
+ * `held` is applied here as well as at derivation, and that second application
+ * is the one that matters. Visibility is inside an entry's digest, so an entry
+ * that was sealed public stays sealed public — re-deriving it to change that is
+ * exactly the restatement append-only forbids. Which left the hold unable to do
+ * the one job it most urgently has: retract something already published.
+ *
+ * claimyour.gold found the case. An entry explaining the removal of a bootstrap
+ * credential quoted the token and the admin password verbatim, and was being
+ * served in plaintext among 746 public entries at a well-known URL — an
+ * exploitation route with a map. Adding it to held.json changed nothing,
+ * because it was already sealed.
+ *
+ * So the record keeps its seal and the projection honours the hold. The entry
+ * stays in the repository's own fragment, digest intact, counted; it simply
+ * stops being handed out. That is what "a repository publishes; an entry can
+ * still be held" has to mean if it is to mean anything after the fact.
+ *
+ * Holding is still not remediation. A credential that reached a public history
+ * stays burned until it is rotated.
+ */
+export const publicView = (entries, held = {}) =>
+  entries.filter((e) => {
+    if (e?.visibility !== 'public') return false
+    const sha = typeof e.sha === 'string' ? e.sha : String(e?.id ?? '').split('/').pop() ?? ''
+    return !(held[sha] || held[sha.slice(0, 12)])
+  })
 
 export function servedPaths(config, out) {
   const declared = config?.serve
@@ -487,7 +515,7 @@ function run(argv) {
   // publishes an empty log. That is the intended first state: publishing is a
   // decision somebody takes, not a side effect of running a script over a
   // decade of branch names.
-  const open = publicView(entries)
+  const open = publicView(entries, held)
   for (const path of servedPaths(config, out)) {
     mkdirSync(dirname(path), { recursive: true })
     writeFileSync(path, `${JSON.stringify(fragmentOf(config, open), null, 2)}\n`)
