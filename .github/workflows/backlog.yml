@@ -55,5 +55,5 @@ jobs:
           git config user.name "backlog"
           git config user.email "backlog@users.noreply.github.com"
           git add -A
-          git commit -m "backlog/1: refresh the fragment"
+          git commit -m "backlog/1: refresh the fragment [skip ci]"
           git push
