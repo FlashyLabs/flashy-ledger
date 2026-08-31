@@ -114,6 +114,39 @@
    "description": "An append-only, multi-asset settlement ledger, permissioned and offered as a service.",
    "platform": "infrastructure",
    "vertical": "flashy"
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "id": "src/flashy-ledger-backlog-1",
+   "kind": "Source",
+   "name": "backlog/1 — flashy-ledger",
+   "url": "https://flashy-ledger/.well-known/backlog.json",
+   "description": "The backlog/1 surface this organisation serves."
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "id": "src/flashy-ledger-checkpoint-1",
+   "kind": "Source",
+   "name": "checkpoint/1 — flashy-ledger",
+   "url": "https://flashy-ledger/.well-known/checkpoint.json",
+   "description": "The checkpoint/1 surface this organisation serves."
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "id": "src/flashy-ledger-shipped-1",
+   "kind": "Source",
+   "name": "shipped/1 — flashy-ledger",
+   "url": "https://flashy-ledger/.well-known/shiplog.json",
+   "description": "The shipped/1 surface this organisation serves."
   }
  ],
  "edges": [
@@ -257,6 +290,33 @@
    "assertedBy": "person/michael",
    "expires": "2027-08-28",
    "visibility": "public",
+   "type": "declares",
+   "from": "org/flashy-ledger",
+   "to": "src/flashy-ledger-backlog-1"
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "declares",
+   "from": "org/flashy-ledger",
+   "to": "src/flashy-ledger-checkpoint-1"
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "declares",
+   "from": "org/flashy-ledger",
+   "to": "src/flashy-ledger-shipped-1"
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
    "type": "operates",
    "from": "org/flashy-ledger",
    "to": "agent/flashy-ledger-ci",
@@ -286,6 +346,33 @@
     "shipped/1",
     "backlog/1"
    ]
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "cites",
+   "from": "src/flashy-ledger-backlog-1",
+   "to": "std/backlog-1"
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "cites",
+   "from": "src/flashy-ledger-checkpoint-1",
+   "to": "std/checkpoint-1"
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "cites",
+   "from": "src/flashy-ledger-shipped-1",
+   "to": "std/shipped-1"
   }
  ]
 }

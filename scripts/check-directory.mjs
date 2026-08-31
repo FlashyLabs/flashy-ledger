@@ -25,13 +25,29 @@ const KINDS = {
 const EDGES = new Set([
   'owns', 'holds', 'operates', 'accountableFor', 'declares', 'delegatedTo',
   'defines', 'cites', 'convenes', 'spokeAt', 'issued', 'settled', 'supersededBy',
-  'publishes',
+  'publishes', 'engaged',
 ])
 const ID = /^[a-z]+\/[a-z0-9][a-z0-9._-]*$/
 const DATE = /^\d{4}-\d{2}-\d{2}$/
 
 const argv = process.argv.slice(2)
 const externals = new Set()
+
+// Ids the emitter says it references and another repository defines.
+//
+// Read from `directory.externals.json` beside the fragment rather than passed
+// as `--external` flags. A flag list lives in a CI invocation and a package
+// script, and it stops covering a surface the day one is added — silently,
+// because an unresolved endpoint that nobody passes a flag for looks the same
+// as one somebody deliberately allowed. The emitter knows what it borrowed;
+// this reads what the emitter wrote.
+try {
+  const declared = JSON.parse(readFileSync(new URL('../directory.externals.json', import.meta.url), 'utf8'))
+  for (const id of declared.ids ?? []) externals.add(id)
+} catch {
+  // Absent is fine: a fragment that borrows nothing needs no file.
+}
+
 const positional = []
 for (let i = 0; i < argv.length; i++) {
   if (argv[i] === '--external') externals.add(argv[++i])
