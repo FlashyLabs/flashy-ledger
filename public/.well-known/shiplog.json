@@ -2,8 +2,77 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-31T17:20:09.404Z",
+  "generated": "2026-08-31T19:40:22.762Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/cd88bf3a235b",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T19:40:20Z",
+      "kind": "infra",
+      "title": "backlog/1: refresh the fragment [skip ci]",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "cd88bf3a235bcce184a58b00b27e592d1cd2394f"
+      },
+      "digest": "38e9158703b6aabf5e925cf1e504b0c790a229a04fca599aa39d7d88ab1c127c"
+    },
+    {
+      "id": "ship/flashy-ledger/59603a831b22",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T19:40:10Z",
+      "kind": "fix",
+      "title": "Re-vendor shiplog: the hold can now retract an already-published entry [vercel skip]",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Visibility is inside an entry's digest, so an entry sealed public stays sealed\npublic — re-deriving it to change that is the restatement append-only forbids.\nSo a hold added afterwards changed nothing here: the entry kept being handed\nout at the well-known URL.\n\nclaimyour.gold found the case. An entry explaining the removal of a bootstrap\ncredential quoted the token and the admin password verbatim, and was being\nserved among 746 public entries.\n\nThe fix applies the hold at projection as well as at derivation, so the record\nkeeps its seal and the served copy honours the hold: the entry stays in the\nfragment, digest intact, counted, and simply stops being handed out.\n\nIt existed in flashyos's own root copy and in no other repository. Twenty-eight\nvendored the version without it — including the one where the incident\nhappened. This is that copy, replaced.\n\nHolding is still not remediation. A credential that reached a public history\nstays burned until it is rotated.\n\nKind: fix",
+      "refs": {
+        "commit": "59603a831b22ddeff472227838278e450fe803de"
+      },
+      "digest": "de1bc553320fe8c640ef5c54671ffb2a83a996d6f81f5de78beaed3a82ce958b"
+    },
+    {
+      "id": "ship/flashy-ledger/0d982de658ef",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T17:20:12Z",
+      "kind": "infra",
+      "title": "backlog/1: refresh the fragment [skip ci]",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "0d982de658ef7ad1a05f756d6b53ca1f6d59f6a3"
+      },
+      "digest": "d1a9fe8b1ea0621508efcbe102af868a06fa4d60e996f61562d9fe2b59cdf225"
+    },
+    {
+      "id": "ship/flashy-ledger/3099c5476ffa",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T17:20:09Z",
+      "kind": "infra",
+      "title": "shipped/1: refresh the log, and the checkpoint over it [skip ci]",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "3099c5476ffafc86705835f931788e5aac5c224b"
+      },
+      "digest": "3dbfdbd9c889ae0445ed4c4bb54bf20d4133c566751737fb371c83dcab03c14d"
+    },
     {
       "id": "ship/flashy-ledger/2adae1699fa4",
       "repo": "repo/flashy-ledger",
