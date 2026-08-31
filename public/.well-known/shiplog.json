@@ -2,8 +2,97 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-30T22:07:07.401Z",
+  "generated": "2026-08-31T02:19:28.337Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/f28faeaa313d",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T02:19:17Z",
+      "kind": "other",
+      "title": "Re-vendor the backlog emitter: it can revise an item now",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "`file` has taken `--wants` since the beginning and nothing could add them\nafterwards, so every item filed across the estate — all of them filed without\nwants — was permanently invisible to the matcher, which refuses an item that\nnames no `capabilitiesWanted`. A format whose central field is\nwrite-once-at-creation is a format whose central field is empty.\n\n`revise` changes everything about an item except its visibility. Promotion\nstays a separate verb because it is a separate decision: it refuses anything\nbut a `person/` id, and folding it in would give a revision the power to\npublish. Unmentioned fields are left alone — `close` is a revision too, and\nclearing on absence would strip every want in the repository.\n\nCopied byte-identical from flashyos rather than edited here. A stale vendored\nfile does not break; it disagrees, silently, about exactly the field somebody\nhas just added.\n\nKind: chore",
+      "refs": {
+        "commit": "f28faeaa313d5a72d837e65ca2bb15677bee221a"
+      },
+      "digest": "fce7d2913bc9089e6fbd9b6a3aad84dd56b721a9a7a48a35cce5a8f8e320dacd"
+    },
+    {
+      "id": "ship/flashy-ledger/068e979081e1",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T01:00:02Z",
+      "kind": "feature",
+      "title": "Declare the machine that files this repository's intentions",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Two machines write this repository's record and only one was declared.\n`.shiplog/config.json` stamps `agent/<slug>-ci` on every sealed entry;\n`.backlog/config.json` stamps `agent/<slug>-bot` on every filed item. Both\nappear in published fragments. The second appeared in no declaration anywhere\nin the estate.\n\nIt survived the `-ci` rollout because the declaration looked complete:\n`recordEmitter` listed `backlog/1` among the record emitter's formats, so\neverything comparing formats saw it named and stopped, and nothing compared the\nsignature. A declaration naming the right format and the wrong machine is\ncomplete in every respect except the one that matters.\n\nThe record emitter's scope narrows to `shipped/1`, which is what it signs. The\nbacklog emitter is declared beside it with its own `operates` and its own\n`delegatedTo` from the accountable human, bounded to `backlog/1`.\n\nTwo machines is not an artefact of tooling. The tenses are shaped differently\non purpose — an item decays and is never sealed, an entry is sealed and never\ndecays — and different things write them at different times: the seal on a push\nto the default branch, the filing whenever somebody records an intention.\n\nBoth ids are read from the config that stamps them, never composed.\n\nKind: chore\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01BEaXzktRU5ZPe3R2NY7CKD",
+      "refs": {
+        "commit": "068e979081e15cee597b6071d4848d2926ee5634"
+      },
+      "digest": "9875bda0b5173a6408b149f3e7e0f893a2e0bf35464be86a8d86e496fbc4b25c"
+    },
+    {
+      "id": "ship/flashy-ledger/433c3a05a0bf",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T00:50:58Z",
+      "kind": "feature",
+      "title": "Declare the machine surfaces this property serves",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Every property in the estate serves the same handful of documents — a\nhandshake, a charter, backlog/1, shipped/1, checkpoint/1 — and said nothing\nabout them in its own record. That silence is most of why the estate measured\nas thirty graphs rather than one: a fragment describing only its own\norganisation has no reason to name anything another repository defines, so\nnothing crossed a boundary except one person's name on a commit.\n\nServing a format is a fact about this repository; the format belongs to\nflashyos. `cites` is the edge for referencing something somebody else\nauthored, so each of these is a real join rather than a manufactured one.\n\nDetected from disk, never listed. A hand-kept list keeps claiming a surface\nthe day somebody deletes the file, and a declared surface that cannot be\nfetched is worse than an undeclared one — a promise in the record with\nnothing behind it.\n\n`directory.externals.json` is emitted beside the fragment and names what this\nrepository borrows: the standards flashyos authors, and the person\ngord-holdings is the authority for. `check-directory.mjs` reads it instead of\ntaking `--external` flags, so the list cannot drift from the emitter.\n\nThe vendored checker was also one revision behind the canonical copy in\nflashyos and would have rejected an `engaged` edge. Re-vendored.\n\nKind: feature\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01FDosmV9fXV6oZ9NXe7PZ76",
+      "refs": {
+        "commit": "433c3a05a0bf70423dbe31d90473da8c055ad35c"
+      },
+      "digest": "3ca44478184ee411888ac150e7a228aa00d220256a6712b16dd2e7200a1cbd72"
+    },
+    {
+      "id": "ship/flashy-ledger/be907b281cc1",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T00:44:30Z",
+      "kind": "docs",
+      "title": "Say whose authority the record emitter signs under",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "`operates` says this organisation runs the machine that seals its record. It\ndoes not say who answers for what the machine signs, and that is the fact a\nsignature rests on: an agent acts *for* somebody, the somebody answers, and an\nagent with no stated bound is one nobody can say has exceeded anything.\n\n`delegatedTo` is that edge — person to agent, carrying the same scope the\nemitter operates under. It is the shape of a Flashy ID root grant, whose issuer\nis the accountable human and whose scope a chain may only ever narrow. The\nrecord states the delegation; the signed assertion that enforces it lives in\nFlashy ID, and no signature belongs here, because proof never moves into the\nrecord.\n\nThe edge type has been in the vocabulary since the vocabulary was written and\nno fragment in the estate had ever used one. Writing the first exposed two\nfaults in flashyos that are fixed there: the rule required `scopes` where the\nedge carries `scope`, so no delegation could have satisfied it, and the\nflat-to-embedded conversion discarded every relationship attribute but two, so\nan edge that stated what it owed was reported as missing it.\n\nKind: chore\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01BEaXzktRU5ZPe3R2NY7CKD",
+      "refs": {
+        "commit": "be907b281cc18e6d9617612a85d3ba7aa6758f55"
+      },
+      "digest": "d81c0b24f649418c888059297fca70e62e8c486c488e54c7e28b59b9e8cebc3b"
+    },
+    {
+      "id": "ship/flashy-ledger/e1e636fc9fd0",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-30T22:07:08Z",
+      "kind": "infra",
+      "title": "shipped/1: refresh the log, and the checkpoint over it",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "e1e636fc9fd0627e6a284f59b8a7ec48bdfe4f81"
+      },
+      "digest": "9107cd8d2aae2b814c4319dd6e8087958d603dcad3c61df0cf5baf00f6cc8f7e"
+    },
     {
       "id": "ship/flashy-ledger/bba4649eae9f",
       "repo": "repo/flashy-ledger",
