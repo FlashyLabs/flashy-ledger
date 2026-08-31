@@ -273,6 +273,19 @@
    "type": "accountableFor",
    "from": "person/michael",
    "to": "org/flashy-ledger"
+  },
+  {
+   "asserted": "2026-08-28",
+   "assertedBy": "person/michael",
+   "expires": "2027-08-28",
+   "visibility": "public",
+   "type": "delegatedTo",
+   "from": "person/michael",
+   "to": "agent/flashy-ledger-ci",
+   "scope": [
+    "shipped/1",
+    "backlog/1"
+   ]
   }
  ]
 }

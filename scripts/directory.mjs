@@ -76,6 +76,18 @@ const CI = node('Agent', 'agent', CI_ID.slice('agent/'.length), 'Record emitter'
 })
 edge('operates', ORG, CI, { scope: ['shipped/1', 'backlog/1'] })
 
+// And whose authority it acts on. `operates` says the organisation runs the
+// machine; it does not say who answers for what the machine does, and that is
+// the fact that makes a signature mean anything. An agent acts *for* somebody,
+// the somebody answers, and an agent with no stated bound is one nobody can say
+// has exceeded anything.
+//
+// Person → agent, carrying the same scope: the shape of a Flashy ID root grant,
+// whose issuer is the accountable human and whose scope a chain may only ever
+// narrow. The record states the delegation; the signed assertion that enforces
+// it lives in Flashy ID. Proof never moves into the record.
+edge('delegatedTo', BY, CI, { scope: ['shipped/1', 'backlog/1'] })
+
 for (const [domain, name] of PROPERTIES) {
   const prop = node('Property', 'prop', domain, name, {
     url: `https://${domain}`, tenure: 'freehold', platform: PLATFORM, vertical: VERTICAL,
