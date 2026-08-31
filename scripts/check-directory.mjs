@@ -25,7 +25,7 @@ const KINDS = {
 const EDGES = new Set([
   'owns', 'holds', 'operates', 'accountableFor', 'declares', 'delegatedTo',
   'defines', 'cites', 'convenes', 'spokeAt', 'issued', 'settled', 'supersededBy',
-  'publishes', 'engaged',
+  'publishes', 'engaged', 'controls',
 ])
 const ID = /^[a-z]+\/[a-z0-9][a-z0-9._-]*$/
 const DATE = /^\d{4}-\d{2}-\d{2}$/
@@ -116,6 +116,20 @@ for (const e of f.edges ?? []) {
     if (!e.instrument) bad('owns-no-instrument', at, 'owns requires an instrument')
     if (e.visibility === 'public')
       bad('owns-public', at, 'ownership is public — confirm this is deliberate')
+  }
+  if (e.type === 'controls') {
+    // The inverse of `owns` on every axis, which is the point of having both.
+    // `owns` is a quantum and defaults to private; this is a structural fact
+    // and is public by design, because a control relationship nobody outside
+    // can see is not a structure. A basis is required for the same reason
+    // `engaged` requires one: "controls" alone is an org chart drawn by
+    // whoever drew it.
+    if (!e.basis) bad('controls-no-basis', at, 'controls requires a basis — how the control arises')
+    if (!e.since) bad('controls-no-since', at, 'controls requires a start date')
+    if (e.pct !== undefined)
+      bad('controls-has-pct', at, 'controls never carries a percentage — a caller disclosing a quantum wants owns')
+    if (e.visibility !== 'public')
+      bad('controls-not-public', at, 'controls is public by design; a private control claim is an assertion nobody can check')
   }
   if (e.type === 'holds' && (typeof e.qty !== 'number' || !e.unit))
     bad('holds-no-qty', at, 'holds requires qty and unit')
