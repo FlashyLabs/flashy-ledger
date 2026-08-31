@@ -224,10 +224,16 @@ export function isMachineAddress(email) {
  * entries in flashy-ledger reading "shipped/1: refresh the log". A generated
  * file being regenerated is not work, and counting it inflates both the entry
  * count and the agent share — the two numbers this record exists to make
- * honest. Anchored to the exact subjects the emitted workflows commit under,
- * so a person writing about the format is not filtered out.
+ * honest. Anchored to the subjects the emitted workflows commit under, with
+ * room for the suffixes those subjects have since grown — ", and the
+ * checkpoint over it" when a checkpoint rides along, and the "[skip ci]"
+ * deploy-budget marker. The first version anchored on `$` exactly, and the
+ * day the checkpoint suffix appeared every refresh commit in the estate
+ * started sealing as a shipped entry under agent/unattributed. The lookahead
+ * keeps the old guarantee: a subject that merely continues the phrase
+ * ("refresh the logic") is a person's commit and is kept.
  */
-const BOOKKEEPING_RE = /^(shipped\/1: refresh the log|backlog\/1: refresh the fragment)$/
+const BOOKKEEPING_RE = /^(shipped\/1: refresh the log|backlog\/1: refresh the fragment)(?![a-z])/
 
 export const isOwnBookkeeping = (subject) => BOOKKEEPING_RE.test((subject ?? '').trim())
 
@@ -339,32 +345,26 @@ export function fromCommits(commits, options) {
  * an unauthenticated fetch is not one.
  */
 /**
- * The public projection.
+ * The public projection, with the hold applied a second time.
  *
- * `held` is applied here as well as at derivation, and that second application
- * is the one that matters. Visibility is inside an entry's digest, so an entry
- * that was sealed public stays sealed public — re-deriving it to change that is
- * exactly the restatement append-only forbids. Which left the hold unable to do
- * the one job it most urgently has: retract something already published.
+ * `visibility` is inside an entry's digest, so an entry sealed public stays
+ * sealed public — re-deriving it to change that is the restatement
+ * append-only forbids. Applying the hold only at derivation therefore left
+ * `.shiplog/held.json` unable to do the one job it most urgently has:
+ * retracting something already served. So it applies here as well, and the
+ * entry keeps its seal, its digest and its place in the record while simply
+ * ceasing to be handed out.
  *
- * claimyour.gold found the case. An entry explaining the removal of a bootstrap
- * credential quoted the token and the admin password verbatim, and was being
- * served in plaintext among 746 public entries at a well-known URL — an
- * exploitation route with a map. Adding it to held.json changed nothing,
- * because it was already sealed.
- *
- * So the record keeps its seal and the projection honours the hold. The entry
- * stays in the repository's own fragment, digest intact, counted; it simply
- * stops being handed out. That is what "a repository publishes; an entry can
- * still be held" has to mean if it is to mean anything after the fact.
- *
- * Holding is still not remediation. A credential that reached a public history
- * stays burned until it is rotated.
+ * The sha is read from the entry, or resolved from the id where an entry
+ * carries none — an id's last segment is the sha, and a hold that silently
+ * missed those entries would look exactly like a hold that worked.
  */
 export const publicView = (entries, held = {}) =>
   entries.filter((e) => {
     if (e?.visibility !== 'public') return false
-    const sha = typeof e.sha === 'string' ? e.sha : String(e?.id ?? '').split('/').pop() ?? ''
+    const sha = e.sha || String(e.id ?? '').split('/').pop() || ''
+    // Same rule as derivation, stated the same way: a full sha or the
+    // twelve-character form `held.json` is written in.
     return !(held[sha] || held[sha.slice(0, 12)])
   })
 
