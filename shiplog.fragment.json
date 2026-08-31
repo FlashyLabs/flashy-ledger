@@ -2,8 +2,25 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-31T02:19:28.335Z",
+  "generated": "2026-08-31T10:56:47.574Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/02f4f3123d68",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T02:19:28Z",
+      "kind": "infra",
+      "title": "shipped/1: refresh the log, and the checkpoint over it",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "02f4f3123d68fb3d191b4b07a486c5a0d3e3cff9"
+      },
+      "digest": "63ec43c104ab30a69202e06fa5a4b237a79e49fa9d4c87157ce0ec060c2ff6c6"
+    },
     {
       "id": "ship/flashy-ledger/f28faeaa313d",
       "repo": "repo/flashy-ledger",
