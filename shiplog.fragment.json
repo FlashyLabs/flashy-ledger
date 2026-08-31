@@ -2,8 +2,43 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-31T12:27:06.448Z",
+  "generated": "2026-08-31T12:43:33.080Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/18b79bf7f49c",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T12:43:22Z",
+      "kind": "fix",
+      "title": "Stop declaring surfaces at a hostname that does not exist",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "`SURFACE_HOST` fell back to the charter slug when a repository has no\nproperty, which manufactures a hostname out of a repository name. This\nrepository is a library with no website, so its published record declared four\nsurfaces at `https://flashy-ledger/.well-known/...` — a URL that resolves for\nnobody, in a document whose whole purpose is to tell a stranger where to look.\n\nNothing caught it because every check reads git: the files really are in\n`public/`, the fragment really validates, and only a fetch finds out. It took\na tool that fetches, and this was the first thing it reported.\n\nThe Source is emitted without a URL now. Serving these files is true; saying\nwhere somebody can GET them is not, and a declared surface that cannot be\nfetched is a promise in the record with nothing behind it — the rule three\ncomments above it in the same file.\n\nKind: fix",
+      "refs": {
+        "commit": "18b79bf7f49ce501170a1067c926f94ba43b54c6"
+      },
+      "digest": "43178f4e484d8f6d8906ed7d9c34a8a204ac6e4129b721cbecf12308ed749b62"
+    },
+    {
+      "id": "ship/flashy-ledger/7b9ed3a2ff96",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T12:27:06Z",
+      "kind": "infra",
+      "title": "shipped/1: refresh the log, and the checkpoint over it",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "7b9ed3a2ff965b6e8a2741fdc4a71ed6f612ce36"
+      },
+      "digest": "3bf8169b4a39712a06f2a17314490e232b6f7e74a13df6eeb38ac5795d796256"
+    },
     {
       "id": "ship/flashy-ledger/599853a32663",
       "repo": "repo/flashy-ledger",
