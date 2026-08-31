@@ -71,10 +71,10 @@ if (!CI_ID.startsWith('agent/'))
 const CI = node('Agent', 'agent', CI_ID.slice('agent/'.length), 'Record emitter', {
   description:
     `The workflow that derives and seals this repository's record. It emits ` +
-    `shipped/1 and backlog/1 on the default branch and signs each entry as ` +
+    `shipped/1 on the default branch and signs each entry as ` +
     `${CI_ID}.`,
 })
-edge('operates', ORG, CI, { scope: ['shipped/1', 'backlog/1'] })
+edge('operates', ORG, CI, { scope: ['shipped/1'] })
 
 // And whose authority it acts on. `operates` says the organisation runs the
 // machine; it does not say who answers for what the machine does, and that is
@@ -86,7 +86,27 @@ edge('operates', ORG, CI, { scope: ['shipped/1', 'backlog/1'] })
 // whose issuer is the accountable human and whose scope a chain may only ever
 // narrow. The record states the delegation; the signed assertion that enforces
 // it lives in Flashy ID. Proof never moves into the record.
-edge('delegatedTo', BY, CI, { scope: ['shipped/1', 'backlog/1'] })
+edge('delegatedTo', BY, CI, { scope: ['shipped/1'] })
+
+// The second machine. `.shiplog/config.json` stamps the seal; this one stamps
+// the filing, and they are different identities in published data. The estate
+// declared only the first for a week, because `recordEmitter` listed
+// `backlog/1` among the record emitter's formats — so everything comparing
+// formats saw it named and stopped, and nothing compared the signature.
+//
+// The tenses are shaped differently on purpose: an item decays and is never
+// sealed, an entry is sealed and never decays. Different things write them, at
+// different times.
+const BACKLOG_ID = JSON.parse(readFileSync(join(ROOT, '.backlog', 'config.json'), 'utf8')).agent
+if (!BACKLOG_ID?.startsWith('agent/'))
+  throw new Error(`.backlog/config.json agent must be an agent/<slug> id, got "${BACKLOG_ID}"`)
+const BACKLOG_BOT = node('Agent', 'agent', BACKLOG_ID.slice('agent/'.length), 'Backlog emitter', {
+  description:
+    `The tool that files and promotes this repository's intentions. It emits ` +
+    `backlog/1 and signs each item as ${BACKLOG_ID}.`,
+})
+edge('operates', ORG, BACKLOG_BOT, { scope: ['backlog/1'] })
+edge('delegatedTo', BY, BACKLOG_BOT, { scope: ['backlog/1'] })
 
 for (const [domain, name] of PROPERTIES) {
   const prop = node('Property', 'prop', domain, name, {
