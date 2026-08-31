@@ -19,6 +19,7 @@
 // merges two fragments that disagree.
 //
 //   node vendor-backlog.mjs file --id build-the-thing --kind task --title "Build the thing" [--owner person/x] [--wants a,b]
+//   node vendor-backlog.mjs revise <id> --by person/michael [--wants a,b|none] [--title ...] [--owner person/x|none]
 //   node vendor-backlog.mjs promote <id> --by person/michael [--to public] [--note "..."]
 //   node vendor-backlog.mjs close <id> --by person/michael [--dropped]
 //   node vendor-backlog.mjs emit
@@ -205,9 +206,28 @@ export function promoteItem(item, { by, to = 'partner', note, at = today() }) {
   return { ...item, rev: item.rev + 1, visibility: to, promoted }
 }
 
-export function reviseItem(item, { by, status, asserted = today() }) {
+export function reviseItem(item, { by, status, title, detail, owner, wants, asserted = today() }) {
   const next = { ...item, rev: item.rev + 1, assertedBy: by, asserted, expires: expiryFor(item.kind, asserted) }
   if (status) next.status = status
+  if (title) next.title = String(title).trim()
+  if (detail) next.detail = String(detail).trim()
+  // `--owner none` clears it. An item whose owner left is a different fact
+  // from one that never had an owner, and there has to be a way to say so.
+  if (owner === 'none') delete next.owner
+  else if (owner) next.owner = owner
+  // What the item wants, which is the only thing a matcher can act on.
+  //
+  // `file` has taken `--wants` since the beginning and nothing could add them
+  // afterwards, so the fifty-three items already filed across the estate could
+  // never become matchable — `toRoadmapItem` refuses an item with no
+  // `capabilitiesWanted`, and every one of them was filed without any. A
+  // format whose central field is write-once-at-creation is a format whose
+  // central field is empty.
+  if (wants !== undefined) {
+    const caps = normaliseCapabilities(wants)
+    if (caps) next.capabilitiesWanted = caps
+    else delete next.capabilitiesWanted
+  }
   return next
 }
 
@@ -275,6 +295,19 @@ function run(argv) {
     const next = promoteItem(find(argv[1]), { by: flag('by'), to: flag('to') ?? 'partner', note: flag('note') })
     replace(next)
     console.log(`promoted ${next.id} to ${next.visibility} by ${next.promoted.by}`)
+    return
+  }
+  if (command === 'revise') {
+    // Everything about an item except its visibility. Promotion is a separate
+    // verb because it is a separate decision — `promote` refuses anything but
+    // a `person/` id, and folding it in here would give a revision the power
+    // to publish.
+    const next = reviseItem(find(argv[1]), {
+      by: flag('by'), title: flag('title'), detail: flag('detail'), owner: flag('owner'),
+      wants: has('wants') ? (flag('wants') === 'none' ? [] : flag('wants').split(',').map((s) => s.trim())) : undefined,
+    })
+    replace(next)
+    console.log(`revised ${next.id} to rev ${next.rev}${next.capabilitiesWanted ? ` wanting ${next.capabilitiesWanted.join(', ')}` : ''}`)
     return
   }
   if (command === 'close') {
