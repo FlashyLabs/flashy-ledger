@@ -2,8 +2,43 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-31T10:56:47.574Z",
+  "generated": "2026-08-31T12:27:06.448Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/599853a32663",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T12:26:54Z",
+      "kind": "other",
+      "title": "Re-vendor the directory checker, which had drifted in twelve repositories",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "`scripts/check-directory.mjs` is a copy of\n`packages/directory/vendor-check-directory.mjs` in flashyos, under a different\nname — and `estate-hygiene` matched vendored copies by the `vendor-*` filename\npattern, so it never compared this one. Twelve repositories were running a\ncopy old enough not to read `directory.externals.json` at all, which is the\nfile that tells a borrowed id from a dangling one.\n\nNothing failed. That is how a vendored file fails: not by breaking, but by\ndisagreeing about exactly the field somebody has just started writing.\n\nKind: chore",
+      "refs": {
+        "commit": "599853a3266373e3a2153fda4093ded2676ba668"
+      },
+      "digest": "fe859d5b85846bf5168177fccc06e61f81aba1f3aa8c8a74549f60b31ba69e20"
+    },
+    {
+      "id": "ship/flashy-ledger/a0b982134b9f",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T10:56:47Z",
+      "kind": "infra",
+      "title": "shipped/1: refresh the log, and the checkpoint over it",
+      "by": [
+        "agent/unattributed"
+      ],
+      "asserted": "2026-08-31",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "a0b982134b9f8b0a81419152b0e663b48e2410a4"
+      },
+      "digest": "6cb78d8e64a4fe5eaa3753475da2112bba6044c232545cc520df49672e336e2f"
+    },
     {
       "id": "ship/flashy-ledger/02f4f3123d68",
       "repo": "repo/flashy-ledger",
