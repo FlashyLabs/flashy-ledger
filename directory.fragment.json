@@ -133,7 +133,6 @@
    "id": "src/flashy-ledger-backlog-1",
    "kind": "Source",
    "name": "backlog/1 — flashy-ledger",
-   "url": "https://flashy-ledger/.well-known/backlog.json",
    "description": "The backlog/1 surface this organisation serves."
   },
   {
@@ -144,7 +143,6 @@
    "id": "src/flashy-ledger-checkpoint-1",
    "kind": "Source",
    "name": "checkpoint/1 — flashy-ledger",
-   "url": "https://flashy-ledger/.well-known/checkpoint.json",
    "description": "The checkpoint/1 surface this organisation serves."
   },
   {
@@ -155,7 +153,6 @@
    "id": "src/flashy-ledger-shipped-1",
    "kind": "Source",
    "name": "shipped/1 — flashy-ledger",
-   "url": "https://flashy-ledger/.well-known/shiplog.json",
    "description": "The shipped/1 surface this organisation serves."
   }
  ],

@@ -139,13 +139,25 @@ const SURFACE_PATHS = [
   ['flashyos/1', 'flashyos.json', ['public/.well-known/flashyos.json', 'well-known/flashyos.json', 'src/app/.well-known/flashyos.json']],
   ['aao/0.1', 'flashyos-charter.json', ['public/.well-known/flashyos-charter.json', 'src/app/.well-known/flashyos-charter.json']],
 ]
-const SURFACE_HOST = PROPERTIES[0]?.[0] ?? PROPERTIES[0]?.domain ?? charter.slug
+// The host a reader would fetch these from — and there may not be one.
+//
+// This fell back to `charter.slug`, which manufactures a hostname out of a
+// repository name: this repository is a library with no website, so it
+// declared four surfaces at `https://flashy-ledger/...`, a URL that cannot
+// resolve for anybody. That is worse than declaring nothing, and it is the
+// rule already written three comments above — a declared surface that cannot
+// be fetched is a promise in the record with nothing behind it.
+//
+// With no property, the Source is emitted without a URL. The repository does
+// serve these files into `public/`, and saying so is true; saying where a
+// stranger can GET them is not.
+const SURFACE_HOST = PROPERTIES[0]?.[0] ?? PROPERTIES[0]?.domain ?? null
 const surfaceExternals = []
 for (const [profile, served, candidates] of SURFACE_PATHS) {
   if (!candidates.some((c) => existsSync(join(ROOT, c)))) continue
   const slug = profile.replace(/[^a-z0-9]+/g, '-')
   const src = node('Source', 'src', `${charter.slug}-${slug}`, `${profile} — ${charter.slug}`, {
-    url: `https://${SURFACE_HOST}/.well-known/${served}`,
+    ...(SURFACE_HOST ? { url: `https://${SURFACE_HOST}/.well-known/${served}` } : {}),
     description: `The ${profile} surface this organisation serves.`,
   })
   edge('declares', ORG, src)
