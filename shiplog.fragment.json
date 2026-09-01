@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-01T14:24:28.587Z",
+  "generated": "2026-09-01T14:35:51.631Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/e90755c3912b",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-01T14:33:33Z",
+      "kind": "fix",
+      "title": "Re-vendor check-directory.mjs: enforce what every edge type must carry",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-01",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "The vendored checker had hand-written blocks for three of the sixteen edge\ntypes and nothing for the other thirteen, so engaged without a basis,\ndelegatedTo without a scope and issued without a date all validated clean —\nin thirty identical copies that agreed with each other perfectly.\n\nIt reads a requires table now, mirroring EDGE_REQUIRES in\n@flashyos/directory, with one conditional: `declares` needs a role when it\nnames an agent and not when it names a machine surface. That split was\nmeasured, not decided — across the estate all 88 agent declarations carry a\nrole and none of the 43 surface declarations do.\n\nflashyos/tools/vendored-directory.test.mjs differentials this copy against\nthe package by verdict, and asserts every estate copy is byte-identical to\nit. This repository's fragment passes the stricter checker unchanged.\n\nKind: fix",
+      "refs": {
+        "commit": "e90755c3912b610d972d16c5e0ceb70c1071679c"
+      },
+      "digest": "ae8291692e0748ca410c7ecf35067633e5f5b74d605515e10fc0c0d03af86968"
+    },
     {
       "id": "ship/flashy-ledger/527194678dd0",
       "repo": "repo/flashy-ledger",
