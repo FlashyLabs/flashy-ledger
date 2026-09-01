@@ -206,7 +206,7 @@ export function parseGitLog(raw) {
 export const UNATTRIBUTED_AGENT = 'agent/unattributed'
 
 const MACHINE_LOCAL_PARTS = new Set([
-  'actions', 'github-actions', 'dependabot', 'renovate', 'shiplog', 'backlog',
+  'actions', 'github-actions', 'dependabot', 'renovate', 'shiplog', 'backlog', 'intent',
 ])
 
 export function isMachineAddress(email) {
@@ -244,6 +244,12 @@ const BOOKKEEPING_SUBJECTS = [
   'shipped/1: refresh the log',
   'backlog/1: refresh the fragment',
   'directory/1: refresh the fragment',
+  'delivery/1: what the fetch found',
+  // intent/1 is backlog/1 extracted into IntentMesh; its emitted workflow
+  // refreshes under this subject. Listed BEFORE any estate repository adopts
+  // it, because the last two entries here were added after their commits had
+  // already sealed as work.
+  'intent/1: refresh the fragment',
 ]
 // The lookahead keeps the old guarantee: a subject that merely CONTINUES the
 // phrase ("refresh the logic") is a person's commit and is kept. Anything the
