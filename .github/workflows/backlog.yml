@@ -50,24 +50,63 @@ jobs:
       # under the run, and for a derived artifact the honest retry is
       # regenerate on the new tip, not rebase.
       - name: Commit if it changed
+        id: commit
         run: |
+          # The branch is read per run. A literal here is the trap eleven
+          # repositories in this estate are already sitting in: their default
+          # is an agent branch, and a retry that resets to a hardcoded main
+          # would push one branch's content over another's.
+          BRANCH="${{ github.event.repository.default_branch }}"
           git config user.name "backlog"
           git config user.email "backlog@users.noreply.github.com"
           for attempt in 1 2 3 4 5; do
             if git diff --quiet; then
               echo "no change"
+              echo "pushed=false" >> "$GITHUB_OUTPUT"
               exit 0
             fi
             git add -A
             git commit -m "backlog/1: refresh the fragment [skip ci]"
             if git push; then
+              echo "pushed=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
-            echo "push rejected (attempt $attempt) — main moved; regenerating on the new tip"
-            git fetch origin main
-            git reset --hard origin/main
+            echo "push rejected (attempt $attempt) — $BRANCH moved; regenerating on the new tip"
+            git fetch origin "$BRANCH"
+            git reset --hard "origin/$BRANCH"
             node vendor-backlog.mjs emit
             node vendor-backlog.mjs check backlog.fragment.json
           done
-          echo "main outran five attempts; the next push's run will refresh the fragment"
+          echo "$BRANCH outran five attempts; the next push's run will refresh this"
           exit 1
+
+      # ── Tell the estate, so the graph does not wait for tomorrow ─────────────
+      #
+      # The merge in flashyos fetches every property's fragment over the network
+      # on a daily schedule. Without this a change here is invisible for up to
+      # 24 hours, and "the graph is a day behind" is indistinguishable from
+      # "this property has nothing new to say".
+      #
+      # Gated on the commit step having actually PUSHED. A dispatch per run
+      # rather than per change turns one daily merge into a merge per push
+      # across thirty repositories.
+      #
+      # Loud when the secret is missing, because a skipped step reports the run
+      # green — which is how flashy-academy pushed 34 times in five days and
+      # deployed zero.
+      - name: Notify the estate graph
+        if: steps.commit.outputs.pushed == 'true'
+        env:
+          TOKEN: ${{ secrets.ESTATE_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::warning title=Fan-out is not configured::The record changed and the estate graph was not told. The daily merge still finds it, so this is a delay of up to 24 hours rather than a loss. Set ESTATE_DISPATCH_TOKEN (an org secret with contents:write on FlashyLabs/flashyos) to close it."
+            exit 0
+          fi
+          code=$(curl -sS -o /tmp/dispatch.out -w '%{http_code}' -X POST -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $TOKEN" https://api.github.com/repos/FlashyLabs/flashyos/dispatches -d '{"event_type":"estate-fragment-updated"}')
+          if [ "$code" != "204" ]; then
+            echo "::error title=Fan-out failed::flashyos returned $code to the dispatch. The daily merge is the fallback."
+            cat /tmp/dispatch.out
+            exit 1
+          fi
+          echo "::notice::Estate graph notified."
