@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-08-31T19:40:22.762Z",
+  "generated": "2026-09-01T09:28:17.260Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/ea1d145dbb88",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-31T19:43:10Z",
+      "kind": "fix",
+      "title": "Re-vendor shiplog: the hold retracts, and bookkeeping stays filtered [vercel skip]",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-01",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Two fixes in one copy, and this repository had neither.\n\nThe hold is applied at projection as well as at derivation, so it can retract\nan entry already sealed public — the case claimyour.gold found, where an entry\nquoting a bootstrap credential was served among 746 public entries. Visibility\nis inside the digest, so re-deriving to change it is the restatement\nappend-only forbids; the entry now keeps its seal and stops being handed out.\n\nAnd the bookkeeping filter tolerates the suffixes those subjects have grown.\nIt anchored on $ exactly, so adding [skip ci] to every emitted commit would\nhave started sealing each refresh as a shipped entry under agent/unattributed.\n\nHolding is not remediation. A credential that reached a public history stays\nburned until it is rotated.\n\nKind: fix",
+      "refs": {
+        "commit": "ea1d145dbb8843541b87baa45e9f4f76c4dbed25"
+      },
+      "digest": "9b5cf5f967a9661b53e0117ae9016c2d6b572951bd06d0b7885801c9093a2374"
+    },
     {
       "id": "ship/flashy-ledger/cd88bf3a235b",
       "repo": "repo/flashy-ledger",
