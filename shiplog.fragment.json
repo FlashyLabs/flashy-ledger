@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-01T17:59:23.147Z",
+  "generated": "2026-09-01T21:10:02.596Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/68f31bb9937b",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-01T21:08:57Z",
+      "kind": "feature",
+      "title": "Tell the estate the moment this repository pushes a record",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-01",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "graph.yml in flashyos merges every property's fragment on a daily\nschedule, so without a dispatch a change here is invisible to the estate\nfor up to 24 hours — and \"the graph is a day behind\" is\nindistinguishable from \"this property has nothing new to say\".\n\nThe dispatch has been in the shiplog/backlog template since August and\nin no repository, because each vendored its workflow before the template\nhad it. This adds it, gated on the commit step having actually pushed: a\ndispatch per run rather than per change would turn one daily merge into\na merge per push across thirty repositories.\n\nThe commit step is replaced with one canonical form rather than patched,\nbecause the estate had two vintages of it — some repositories carry a\nfive-attempt push retry the template lacked, and re-emitting would have\ndeleted it. Both halves are here now.\n\nThe retry resolves the branch per run instead of resetting to a literal\norigin/main. Eleven repositories in this estate have an agent branch as\ntheir default, and there a rejected push would reset the checkout to a\ndifferent branch and push that over the deploy branch.\n\nUnset ESTATE_DISPATCH_TOKEN means a delay of up to 24 hours, never a\nloss — the daily merge is the floor, and the step says so loudly rather\nthan skipping green.\n\nKind: feature\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01FDosmV9fXV6oZ9NXe7PZ76",
+      "refs": {
+        "commit": "68f31bb9937b038d28730b2de474486fca4e6292"
+      },
+      "digest": "cbe34821c28114d680dc15121d003cd37d7b1e135e14eb67eaec42ab1aa915ad"
+    },
     {
       "id": "ship/flashy-ledger/4c502d2d27e3",
       "repo": "repo/flashy-ledger",
