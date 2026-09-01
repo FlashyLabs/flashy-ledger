@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-01T09:28:17.260Z",
+  "generated": "2026-09-01T14:24:28.590Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/527194678dd0",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-01T14:23:43Z",
+      "kind": "feature",
+      "title": "Open the LICENSE with the licence, so a scanner can see it",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-01",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "GitHub reports NOASSERTION on this repository despite a complete, genuine\nlicence file. So does SPDX, and so does every SBOM generator and licence\ncompliance tool that reads the same signal — which is what stalls an\nenterprise procurement review before a human opens the file.\n\nThe cause is that a copyright line and a sentence of description sat above the\ncanonical text, and a scanner reads the first bytes. Measured on 2026-09-01:\nall thirteen repositories in this estate that carry a LICENSE read NOASSERTION,\nnot the one that an outside review happened to notice — that one is simply the\nonly public repository, so nobody had ever looked at the rest.\n\nThe copyright is not dropped. A licence text naming nobody is a grant on\nbehalf of nobody, which this estate has already written up once. Both licences\ndesignate a place for it — Apache's APPENDIX, the AGPL's \"How to Apply\" — and\nit now sits there, which satisfies the scanner and the lawyer at the same time.\n\nNothing about the licence changed: same licence, same holder, same terms. The\nrule and the rewrite live once, in flashyos's tools/estate-licences.mjs, with\ntests.",
+      "refs": {
+        "commit": "527194678dd0b50cd56f2620bc00c20357defa8c"
+      },
+      "digest": "a8316c5e0bffe4c1b08037c0cd711ec172199969edfe1369f5fbd7da37cf237b"
+    },
     {
       "id": "ship/flashy-ledger/ea1d145dbb88",
       "repo": "repo/flashy-ledger",
