@@ -232,8 +232,25 @@ export function isMachineAddress(email) {
  * started sealing as a shipped entry under agent/unattributed. The lookahead
  * keeps the old guarantee: a subject that merely continues the phrase
  * ("refresh the logic") is a person's commit and is kept.
+ *
+ * Every format that emits a refresh commit is listed here, and adding one to
+ * the estate without adding it here is the mistake this has now made three
+ * times: the subject grew ", and the checkpoint over it", then the "[skip ci]"
+ * deploy-budget marker, and then `directory/1` gained a workflow of its own on
+ * 2026-09-01 whose refresh commits would have sealed as work in sixteen
+ * repositories. A list, so the omission is visible in a diff.
  */
-const BOOKKEEPING_RE = /^(shipped\/1: refresh the log|backlog\/1: refresh the fragment)(?![a-z])/
+const BOOKKEEPING_SUBJECTS = [
+  'shipped/1: refresh the log',
+  'backlog/1: refresh the fragment',
+  'directory/1: refresh the fragment',
+]
+// The lookahead keeps the old guarantee: a subject that merely CONTINUES the
+// phrase ("refresh the logic") is a person's commit and is kept. Anything the
+// subject grows AFTER a word boundary — a suffix, a marker — is bookkeeping.
+const BOOKKEEPING_RE = new RegExp(
+  `^(${BOOKKEEPING_SUBJECTS.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![a-z])`,
+)
 
 export const isOwnBookkeeping = (subject) => BOOKKEEPING_RE.test((subject ?? '').trim())
 
