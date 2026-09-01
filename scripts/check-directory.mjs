@@ -30,6 +30,51 @@ const EDGES = new Set([
 const ID = /^[a-z]+\/[a-z0-9][a-z0-9._-]*$/
 const DATE = /^\d{4}-\d{2}-\d{2}$/
 
+// What each edge type must carry beyond the provenance envelope. A mirror of
+// EDGE_REQUIRES in @flashyos/directory, which is where it is declared.
+//
+// It is a mirror rather than an import because this file has to run before
+// `npm install`, in repositories with no `package.json` at all. That is the
+// same trade the vendored charter checker makes, and it failed the same way:
+// eleven identical copies agreed with each other and disagreed with the spec,
+// silently, because nothing compared them. `tools/vendored-directory.test.mjs`
+// in flashyos runs both over the same fragments and fails on any disagreement
+// about the verdict.
+//
+// Until this table existed, three types had hand-written blocks and thirteen
+// had nothing. A census of the estate's 485 published edges found 48 that
+// would have failed it.
+const REQUIRES = {
+  owns: ['pct', 'instrument', 'since'],
+  engaged: ['basis', 'since'],
+  controls: ['basis', 'since'],
+  holds: [],
+  operates: [],
+  accountableFor: [],
+  declares: [],
+  delegatedTo: ['scope'],
+  defines: [],
+  cites: [],
+  convenes: [],
+  spokeAt: ['year'],
+  issued: ['date'],
+  settled: ['sealed'],
+  publishes: [],
+  supersededBy: ['reason'],
+}
+
+// Required only when the target carries this prefix. One entry, and the
+// estate's own data is what settled it: 88 `declares` edges name an agent and
+// every one carries a role; 43 name a machine surface and none do, because
+// "the role under which this org declares its backlog surface" is not a
+// sentence. Same treatment `owns.since` gets, for the same reason.
+const REQUIRED_WHEN_TO = { declares: { agent: ['role'] } }
+
+const missingRequired = (e) => [
+  ...(REQUIRES[e.type] ?? []),
+  ...(REQUIRED_WHEN_TO[e.type]?.[String(e.to ?? '').split('/')[0]] ?? []),
+].filter((k) => e[k] === undefined || e[k] === null || e[k] === '')
+
 const argv = process.argv.slice(2)
 const externals = new Set()
 
@@ -110,10 +155,11 @@ for (const e of f.edges ?? []) {
     defined.set(e.to, e.from)
   }
   if (e.type === 'accountableFor') accountable.add(e.to)
+  for (const k of missingRequired(e)) bad(`${e.type}-no-${k}`, at, `${e.type} requires ${k}`)
   if (e.type === 'owns') {
-    if (typeof e.pct !== 'number' || e.pct <= 0 || e.pct > 100)
-      bad('owns-no-pct', at, 'owns requires pct in (0,100]')
-    if (!e.instrument) bad('owns-no-instrument', at, 'owns requires an instrument')
+    // The table says pct must be present; only this says it is a percentage.
+    if (e.pct !== undefined && (typeof e.pct !== 'number' || e.pct <= 0 || e.pct > 100))
+      bad('owns-bad-pct', at, 'owns requires pct in (0,100]')
     if (e.visibility === 'public')
       bad('owns-public', at, 'ownership is public — confirm this is deliberate')
   }
@@ -124,15 +170,13 @@ for (const e of f.edges ?? []) {
     // can see is not a structure. A basis is required for the same reason
     // `engaged` requires one: "controls" alone is an org chart drawn by
     // whoever drew it.
-    if (!e.basis) bad('controls-no-basis', at, 'controls requires a basis — how the control arises')
-    if (!e.since) bad('controls-no-since', at, 'controls requires a start date')
     if (e.pct !== undefined)
       bad('controls-has-pct', at, 'controls never carries a percentage — a caller disclosing a quantum wants owns')
     if (e.visibility !== 'public')
       bad('controls-not-public', at, 'controls is public by design; a private control claim is an assertion nobody can check')
   }
   if (e.type === 'holds' && (typeof e.qty !== 'number' || !e.unit))
-    bad('holds-no-qty', at, 'holds requires qty and unit')
+    bad('holds-no-qty', at, 'holds requires qty and unit')  // shape, not presence
 }
 
 for (const n of f.nodes ?? [])
