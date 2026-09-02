@@ -250,6 +250,10 @@ const BOOKKEEPING_SUBJECTS = [
   // it, because the last two entries here were added after their commits had
   // already sealed as work.
   'intent/1: refresh the fragment',
+  // ritual/1's Daily Office. Listed BEFORE ritual.yml's first run, because the
+  // last three entries here were each added only after their commits had
+  // sealed as work under agent/unattributed.
+  'ritual/1: observe the office',
 ]
 // The lookahead keeps the old guarantee: a subject that merely CONTINUES the
 // phrase ("refresh the logic") is a person's commit and is kept. Anything the
