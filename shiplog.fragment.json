@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-02T08:50:31.746Z",
+  "generated": "2026-09-02T16:22:47.395Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/87b24b8ca85a",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-02T16:22:34Z",
+      "kind": "other",
+      "title": "Re-vendor: the ship log learns ritual/1 before its first commit",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-02",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "`vendor-shiplog.mjs` gained `ritual/1: observe the office` in\nBOOKKEEPING_SUBJECTS upstream, so every copy in this estate disagreed with\ncanon about whether that workflow's refresh commits are work. A stale\nvendored copy does not fail — it disagrees, silently, about exactly the\nfield somebody has just changed, and the last three entries on that list\nwere each added only after their commits had already sealed as work under\nagent/unattributed.\n\nReplaced by `node tools/estate-revendor.mjs --write` in flashyos, which\ncompares every copy byte-for-byte against the default branch rather than\nagainst whatever is checked out.\n\nKind: chore\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01BEaXzktRU5ZPe3R2NY7CKD",
+      "refs": {
+        "commit": "87b24b8ca85a67f9d0971ce4000c220ea72ad376"
+      },
+      "digest": "780d0f216907e530791afd1dd8972a24b5cf6671d984e4aef6a032a1bb51b81e"
+    },
     {
       "id": "ship/flashy-ledger/68f31bb9937b",
       "repo": "repo/flashy-ledger",
