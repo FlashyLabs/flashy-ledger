@@ -36,13 +36,13 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name != 'push' || github.ref_name == github.event.repository.default_branch
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # The whole history, because the log is derived from it. A shallow
           # clone silently produces a log that starts at the last twenty commits.
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
 
