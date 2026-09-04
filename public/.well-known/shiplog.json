@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-04T08:54:00.947Z",
+  "generated": "2026-09-04T17:26:46.625Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/35cb3b504cd3",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-04T17:25:00Z",
+      "kind": "other",
+      "title": "Re-vendor the directory checker for dependsOn",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-04",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "directory/1 gained an edge type: one published artifact requiring\nanother to run. Not folded into `cites`, which the vocabulary has always\ndocumented as being for sources — a dependency is a hard requirement a\npackage manager enforces, and giving one edge type two meanings is the\nfailure this vocabulary has recorded twice already.\n\nThis copy is byte-identical to packages/directory/vendor-check-directory.mjs\nin flashyos. Changing the source there does nothing here until the copy\nis replaced, and a stale copy does not fail — it disagrees, silently,\nabout exactly the field somebody has just changed.\n\nKind: chore\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01BEaXzktRU5ZPe3R2NY7CKD",
+      "refs": {
+        "commit": "35cb3b504cd333ec5feb7a8d6bb2d27dac3e2208"
+      },
+      "digest": "32b336afd9c25db1e6b1d3800bc317045bf42579c736f42fba15cfc5359c64f1"
+    },
     {
       "id": "ship/flashy-ledger/87b24b8ca85a",
       "repo": "repo/flashy-ledger",
