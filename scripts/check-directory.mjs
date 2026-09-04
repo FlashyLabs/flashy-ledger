@@ -25,7 +25,7 @@ const KINDS = {
 const EDGES = new Set([
   'owns', 'holds', 'operates', 'accountableFor', 'declares', 'delegatedTo',
   'defines', 'cites', 'convenes', 'spokeAt', 'issued', 'settled', 'supersededBy',
-  'publishes', 'engaged', 'controls',
+  'publishes', 'engaged', 'controls', 'dependsOn',
 ])
 const ID = /^[a-z]+\/[a-z0-9][a-z0-9._-]*$/
 const DATE = /^\d{4}-\d{2}-\d{2}$/
@@ -47,6 +47,8 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/
 const REQUIRES = {
   owns: ['pct', 'instrument', 'since'],
   engaged: ['basis', 'since'],
+  // The version range is the whole fact; see @flashyos/directory's EDGE_TYPES.
+  dependsOn: ['range'],
   controls: ['basis', 'since'],
   holds: [],
   operates: [],
