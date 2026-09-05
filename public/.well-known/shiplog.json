@@ -2,8 +2,44 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-05T08:24:23.479Z",
+  "generated": "2026-09-05T12:29:46.143Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/abdff36bc09b",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-05T12:29:31Z",
+      "kind": "fix",
+      "title": "0.7.0 did exist, and a test was pinning the claim that it did not",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-05",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Kind: fix\n\nRELEASES.md landed this morning with a measured release trail and a guard, and\nboth are the right idea. One of its findings is wrong, and it was wrong in the\nmost expensive way available: a test asserted the ledger must NOT contain a\n0.7.0 row, so recording the truth would have failed CI.\n\n`6af5ee1` is titled \"0.7.0 — declare the civilization commodities, and…\" and\nis the DIRECT PARENT of the 0.8.0 bump `e52704b`. Verified by reading\npackage.json at every commit in the repository rather than by trusting either\naccount: exactly two commits carry 0.7.0, and no path from 0.6.3 reaches 0.8.0\nwithout passing through it. The claim \"the version went 0.6.3 → 0.8.0\ndirectly\" is not true of any history in this repo.\n\nThe row is restored, the test now requires its presence, and the paragraph\nsays what happened rather than quietly dropping it — a file whose subject is a\nverifiable trail should record having been wrong about its own.\n\nA second guard is added, because this is the part that must not be lost:\n0.6.3 and 0.8.0 died on E401 and their rows must keep saying so. The workflow\ntags ONLY after a successful publish, so hand-creating v0.6.3 or v0.8.0 would\nassert two releases that exist on no registry — and would then make \"Refuse to\ndispatch-release an already-tagged version\" reject the real publish once\naccess is fixed, permanently blocking the fix it looks like.\n\nI had that wrong too. My own runbook told the operator to hand-tag v0.7.0 and\nv0.8.0, which would have done exactly that. RELEASES.md now says so directly.\n\nThe diagnosis this file makes is right and is the thing to act on: the trail\nis blocked on registry access, not on remembering to tag. GITHUB_TOKEN can\nread @flashylabs/ledger but cannot PUT to it, because the package was created\nby manual PAT publishes and the package's own Actions access list decides who\nmay publish.\n\n194 tests pass.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01BEaXzktRU5Z",
+      "refs": {
+        "commit": "abdff36bc09b06b16006f8ff4549225d8a619ca4"
+      },
+      "digest": "bf1f0e762f09a914949f2bf3f9f41325f37a7a43b9bd17ecb10fd297ea7dde11"
+    },
+    {
+      "id": "ship/flashy-ledger/d7a417a70dbb",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-05T11:39:16Z",
+      "kind": "release",
+      "title": "Release ledger: make the trail traceable, and stop a bump going unrecorded",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-05",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "The package declares 0.8.0 while the last tag is v0.6.0, which fails the\nfirst question a serious adopter asks. Read against the history and the\npublish workflow, the gap is not what the roadmap assumed: there was never a\n0.7.0 (0.6.3 went straight to 0.8.0), and 0.6.3/0.8.0 are untagged because\ntheir publishes died on E401, not because someone forgot to tag — the\nworkflow tags only after a successful publish, on purpose.\n\nSo the trail is blocked on registry access (the package's Actions access\nlist, or a PACKAGES_TOKEN), which is an operator action RELEASES.md spells\nout. What lands here is the record and the guard: RELEASES.md is the measured\nledger with honest publish-status caveats, and tests/releases.test.ts fails\nif package.json's version has no row — turning 'published a version nobody\nwrote down' from a silent gap into a red build. It also pins that no 0.7.0\nexists, so a reader acting on the roadmap's claim has to reckon with the line.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01X8LDnsexvNjSkqc2ihZR7U",
+      "refs": {
+        "commit": "d7a417a70dbb17d6efd5409a4a2b3f20255ca1f2"
+      },
+      "digest": "70eb5b3d2a6b51faf63374ff09db7005274081ccb24c7b8619eb8384ab786a52"
+    },
     {
       "id": "ship/flashy-ledger/35cb3b504cd3",
       "repo": "repo/flashy-ledger",
@@ -1051,6 +1087,24 @@
         "commit": "6af5ee1064e036fc960a3b71dfa51608626cf097"
       },
       "digest": "f747191b9bbd4b701ac26a2c91784c8c15bd2f67d6480d06b5586282b76d91ec"
+    },
+    {
+      "id": "ship/flashy-ledger/37319e039ce7",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-08-22T13:23:22Z",
+      "kind": "infra",
+      "title": "Point the disclosure route at the domain that serves it",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-05",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "SECURITY.md sent researchers to https://flashy.network/security/ and told them\ncorrected issues appear at /incidents/. Neither URL is on the property any more;\nflashynetwork.com is. A disclosure document is the wrong place to be stale —\nsomeone following it is by definition acting in good faith on a schedule, and a\ndead link is how a report goes to nobody.\n\nsecurity@flashy.network is left alone. Whether that mailbox exists at the new\ndomain is an operational fact rather than a branding one, and the failure mode\nof guessing wrong is silent.\n\nINVARIANTS.md's I-3 note updated for the same reason: it cites where the\nreconciliation invariant runs, and a citation nobody can follow is not one.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01X8LDnsexvNjSkqc2ihZR7U",
+      "refs": {
+        "commit": "37319e039ce7c7eeb22092630656af84fdbc083b"
+      },
+      "digest": "4b4bbc03490a3c44de36a7999eae2c16792fd4f56ec5633223c081925c29e9f9"
     },
     {
       "id": "ship/flashy-ledger/6aac70903b2d",
