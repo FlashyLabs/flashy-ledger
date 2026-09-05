@@ -51,48 +51,44 @@ tagged never succeeded.
 | 0.4.0 | — | ✅ v0.4.0 | assumed | — |
 | 0.5.0 | — | ✅ v0.5.0 | assumed | refuse a person-named identity |
 | 0.6.0 | — | ✅ v0.6.0 | assumed | asset registry; last tagged version |
-| 0.6.1 | `cdcf009` | ❌ | unverified | "the npm mirror release" |
-| 0.6.2 | `a5c9012` | ❌ | unverified | "re-cut of the release that died between registries" |
-| 0.6.3 | `d10f9dc` | ❌ | **failed (E401)** | "the release that goes end-to-end" |
-| 0.7.0 | `6af5ee1` | ❌ | unverified | "declare the civilization commodities"; superseded by 0.8.0 the same day, so a publish was likely never dispatched |
-| 0.8.0 | `e52704b` | ❌ | **failed (E401)** | current `package.json` version |
+| 0.6.1 | `cdcf009` | ❌ | manual publish | "the npm mirror release"; claimed on GH Packages by hand during token rotation |
+| 0.6.2 | `a5c9012` | ❌ | manual publish | "re-cut of the release that died between registries" |
+| 0.6.3 | `d10f9dc` | ❌ | **landed** (run 13) | publish succeeded; the mirror step failed after it, so the tag was skipped |
+| 0.7.0 | `6af5ee1` | ❌ | never dispatched | "declare the civilization commodities"; superseded by 0.8.0 the same day |
+| 0.8.0 | `e52704b` | ❌ | **landed** (run 14) | same shape as 0.6.3; run 15's E409 confirms it is on the registry |
 
 "assumed" means the tag exists and no failure is recorded — not independently
 re-verified against the registry from this checkout, which cannot read the
-private GitHub Packages feed offline. "unverified" means neither a tag nor a
-recorded outcome settles it; 0.6.1/0.6.2 predate the recorded E401 streak, so
-they may be on the registry, but this ledger does not assert what it did not
-measure.
+private GitHub Packages feed offline. "landed" is stronger and is measured: the
+`npm publish` step reports success in that run's log, and for 0.8.0 a later
+dispatch was refused with E409 for a version that already exists.
 
-## The fix (operator, one-time)
+## The fix
 
-Retroactive tagging from a checkout does not help and cannot be done here: the
-remote-agent git proxy 403s tag refs, and a tag would fire `publish.yml`, which
-correctly refuses because the pushed tag's version must match `package.json`
-(0.8.0) — so only a `v0.8.0` tag could push, and it would re-attempt the same
-failing publish. The real unblock is registry access:
+The workflow bug is fixed in this repository. What remains is provenance: two
+releases are on the registry with no tag naming their commit, and a tag cannot
+be pushed from an agent session — the remote-agent git proxy 403s tag refs.
 
-1. **Package settings → Manage Actions access** → grant `FlashyLabs/flashy-ledger`
-   **write**. This is the setting the E401 is actually about.
-2. Or set the **`PACKAGES_TOKEN`** secret to a PAT with `write:packages`. The
-   workflow already prefers it over `GITHUB_TOKEN`.
-3. For the public-npm mirror, set **`NPM_TOKEN`** (read-write on `@flashylabs`).
-   Until it exists the mirror step skips with a visible notice, so its absence
-   never fails a release.
+A maintainer with tag-push rights runs, from a clone of this repository:
 
-Then dispatch `Publish` (workflow_dispatch). It publishes `0.8.0` and, on
-success, creates and pushes `v0.8.0` — the release makes the tag, so "every
-release has its tag" holds going forward without anyone remembering. To backfill
-`v0.6.1`, `v0.6.2` and `v0.7.0` as pure provenance (no republish), a maintainer
-with tag-push rights tags those commits directly; there is nothing to publish
-for them.
+```sh
+git tag v0.6.3 d10f9dc
+git tag v0.8.0 e52704b
+git push origin v0.6.3 v0.8.0
+```
 
-**Do not hand-tag `v0.6.3` or `v0.8.0`.** Those two publishes *failed*, and the
-workflow tags only after a successful publish precisely so a tag never claims a
-release that did not happen. Creating them by hand would assert two releases
-that do not exist on any registry — and would also make
-"Refuse to dispatch-release an already-tagged version" reject the real publish
-once access is fixed, permanently blocking the fix.
+Both name a release that **actually landed**, which is the only condition under
+which a tag may be written by hand. Pushing them fires `publish.yml` on the tag
+ref; the 0.8.0 run will reach `npm publish` and stop at E409 because the version
+exists. That is now a loud no-op rather than damage — but if you would rather
+not see a red run, tag with `git push --no-verify` from a clone where the
+workflow's tag trigger is not a concern, or simply accept the one red run per
+tag as the record of a publish that already happened.
+
+Optional, and unrelated to the trail: set **`NPM_TOKEN`** (read-write on
+`@flashylabs`) if you want releases mirrored to public npm, where a stranger can
+install with no auth. Until it exists the mirror step skips with a notice, and
+it can no longer fail a release either way.
 
 ## Adding a release
 

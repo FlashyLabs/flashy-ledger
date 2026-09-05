@@ -95,18 +95,43 @@ jobs:
       # package grants this repo's Actions write access (package settings →
       # Manage Actions access), the PAT is the only token the registry
       # accepts for publish.
-      - run: npm publish
+      - name: Publish to GitHub Packages
+        id: publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
+        run: npm publish
 
       # The same version, mirrored to the PUBLIC npm registry so consumers
       # install with zero auth — GitHub Packages requires a token even for
-      # public packages, and the whole point of the open rules is a stranger
-      # can take them. publishConfig pins GH Packages and wins over CLI
-      # flags, so it's flipped for this step only (the checkout is discarded
-      # with the runner). Skips with a visible notice until the NPM_TOKEN
-      # secret exists, so wiring this never broke a release.
+      # public packages, and the whole point of the open rules is that a
+      # stranger can take them.
+      #
+      # THIS STEP HAD TWO BUGS AND THEY COST FOUR RELEASES.
+      #
+      # It wrote the npmjs token to `~/.npmrc`, while `setup-node` sets
+      # NPM_CONFIG_USERCONFIG to a temp file — so the credential landed in a
+      # file npm never read. And `npm pkg set publishConfig.registry` loses to
+      # the SCOPED `@flashylabs:registry` that setup-node wrote into that temp
+      # config: a scoped registry beats publishConfig. So the "mirror to
+      # npmjs" step re-published to GITHUB PACKAGES using an npmjs token, and
+      # died with E401 against a registry it was never meant to touch.
+      #
+      # Read the logs of runs 13 and 14 and the shape is unmistakable:
+      #   Run npm publish                   success   ← the release LANDED
+      #   Mirror to the public npm registry failure   ← this step
+      #   Tag the released version          skipped   ← collateral
+      #
+      # 0.6.3 and 0.8.0 are on GitHub Packages right now. They have no tag
+      # because this step failed after they succeeded, and a failed step skips
+      # every step after it. Three sessions read those runs as "the publish
+      # died on E401" and went looking at package access lists, because the
+      # only line anybody grepped for was the last error in the log.
+      #
+      # It now writes to the config npm actually reads, overrides the SCOPED
+      # registry, and cannot fail the job: a mirror that breaks a release it
+      # is only copying is worse than no mirror.
       - name: Mirror to the public npm registry
+        continue-on-error: true
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
@@ -114,15 +139,28 @@ jobs:
             echo "::notice::NPM_TOKEN secret not set — skipped the public-registry mirror. Add an npm token with read-write on @flashylabs to publish there too."
             exit 0
           fi
+          # The scoped entry, not publishConfig: `@scope:registry` wins over
+          # both `publishConfig.registry` and `--registry`.
+          {
+            echo "@flashylabs:registry=https://registry.npmjs.org"
+            echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}"
+          } >> "${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
           npm pkg set publishConfig.registry=https://registry.npmjs.org publishConfig.access=public
-          echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" >> ~/.npmrc
-          npm publish
+          npm publish --access public
           echo "::notice::Mirrored to registry.npmjs.org as public."
 
-      # Only after the publish succeeded, so a failed publish leaves no tag
-      # claiming a release that never happened.
+      # Only after the PUBLISH succeeded — which is `npm publish` above, and
+      # not the mirror. `steps.publish.conclusion` is checked explicitly
+      # rather than relying on the implicit `success()`, because the implicit
+      # form treats ANY earlier failure as reason to skip, and that is exactly
+      # how a working release ended up untagged twice: the mirror failed, this
+      # step skipped, and the tag that would have recorded a real publish was
+      # never written.
+      #
+      # The invariant is unchanged and is the one that matters: a tag is
+      # written only where a release actually landed.
       - name: Tag the released version (dispatch flow only)
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && steps.publish.conclusion == 'success'
         run: |
           PKG_VERSION="$(node -p "require('./package.json').version")"
           git tag "v${PKG_VERSION}" "$GITHUB_SHA"
