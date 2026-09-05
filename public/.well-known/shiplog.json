@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-05T14:19:46.341Z",
+  "generated": "2026-09-05T15:18:47.983Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/f7cda06cf09b",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-05T15:18:35Z",
+      "kind": "docs",
+      "title": "Confirmed from the registry: both releases were there all along",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-05",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Kind: docs\n\nv0.6.3 and v0.8.0 were pushed today. Both fired the tag flow, and both runs\nreached `npm publish` and stopped at E409 \"Cannot publish over existing\nversion\" — with GITHUB_TOKEN, on a clean runner.\n\nThat is the registry itself confirming both versions are present, which is\nthe strongest evidence available for the corrected diagnosis, and it settles\nthe access question in the other direction too: the token reaches the registry\nperfectly well. No package access list needed changing, and none was.\n\nEvery version this package has declared now has either a tag or a recorded\nreason for not having one.\n\nA GUARD I WROTE IN THE WRONG SHAPE\n\n`does not claim a tag for a publish that failed` asserted that the 0.6.3 and\n0.8.0 rows must show ❌ in Tagged. That was true when written and pinned to a\nsnapshot rather than to a rule, so it failed the moment those two were\ncorrectly tagged — and it rested on the belief that their publishes had\nfailed, which they had not.\n\nReplaced with the rule that does not go stale: a row may claim a tag only\nwhere the ledger records the publish as having reached the registry. Checked\nby flipping 0.7.0 to a bogus tag and confirming the suite goes red, because a\nguard that has never been seen to fail is not known to do anything.\n\n194 tests pass.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01BEaXzktRU5ZPe3R2NY7CKD",
+      "refs": {
+        "commit": "f7cda06cf09b40a94b323b844e586d8185122cef"
+      },
+      "digest": "2de513acd68fae08bf9838a02598edcf4a21450fb2972b61cef4b6f70d2329ce"
+    },
     {
       "id": "ship/flashy-ledger/8169783e25ed",
       "repo": "repo/flashy-ledger",
