@@ -72,6 +72,20 @@ jobs:
       # the new tip and push that.
       - name: Commit if it changed
         id: commit
+        # A pull_request checkout is a detached merge ref, so this step can only
+        # fail there: the push is rejected, the retry below reads that as "the
+        # branch moved", resets to origin/<default> and burns five attempts.
+        #
+        # Measured on shipping refs 2026-09-02: thirty workflows in the estate
+        # both push and trigger on pull_request, one of them guarded. Real runs
+        # rather than inference — gold-holdings 4 of 4 failures, flashy-ledger
+        # 3 of 3, back to 30 August, dependabot's updates among them.
+        #
+        # It is gated here rather than on the job because the rest of the job is
+        # worth running on a PR: emit and check still validate, and nothing
+        # pushes. adopt.ts promised exactly that in a comment for weeks while
+        # the file did the opposite.
+        if: github.event_name != 'pull_request'
         run: |
           # The branch is read per run. A literal here is the trap eleven
           # repositories in this estate are already sitting in: their default
@@ -94,7 +108,7 @@ jobs:
             fi
             echo "push rejected (attempt $attempt) — $BRANCH moved; regenerating on the new tip"
             git fetch origin "$BRANCH"
-            git reset --hard "origin/$BRANCH"
+            git checkout -B "$BRANCH" "origin/$BRANCH"
             node vendor-shiplog.mjs emit
             node vendor-shiplog.mjs verify shiplog.fragment.json
             if [ -f vendor-checkpoint.mjs ]; then
@@ -135,3 +149,4 @@ jobs:
             exit 1
           fi
           echo "::notice::Estate graph notified."
+      
