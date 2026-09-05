@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-05T12:29:46.143Z",
+  "generated": "2026-09-05T14:19:46.341Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/8169783e25ed",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-05T14:19:21Z",
+      "kind": "fix",
+      "title": "The publishes succeeded — a broken mirror step ate the tags",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-05",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Kind: fix\n\n0.6.3 and 0.8.0 are on GitHub Packages. They always were. Three sessions,\nthis one included, wrote them up as failed publishes blocked on a package\naccess list, and the reason is the same each time: everybody read the LAST\nerror in the run log and stopped there.\n\nRead the whole job and it is unmistakable — runs 13 and 14 have identical\nstep outcomes:\n\n    Run npm publish                     success   ← the release LANDED\n    Mirror to the public npm registry   failure   ← a different step\n    Tag the released version            skipped   ← collateral damage\n\nRun 14's log carries `+ @flashylabs/ledger@0.8.0` and only then fails. Run 15,\ndispatched later to retry with a PAT, was refused with E409 \"Cannot publish\nover existing version\" — the registry stating plainly that 0.8.0 is there.\n\nTHE MIRROR STEP HAD TWO BUGS\n\nIt wrote the npmjs token to `~/.npmrc` while `setup-node` had set\nNPM_CONFIG_USERCONFIG to a temp file, so the credential landed somewhere npm\nnever read. And `npm pkg set publishConfig.registry` loses to the scoped\n`@flashylabs:registry` that setup-node wrote into that same temp config — a\nscoped registry beats publishConfig and `--registry` both. So the step meant\nto mirror to npmjs re-published to GITHUB PACKAGES with an npmjs token and\ndied E401 against a registry it should never have touched.\n\nThen, because a failed step skips every step after it, a release that had\ngenuinely succeeded could not get its tag.\n\nFixed: the mirror writes to the config npm actually reads, sets the scoped\nregistry, and is `continue-on-error` — a mirror that breaks the release it is\nonly copying is worse than no mirror. The tag step keys on the publish step's\nown conclusion (`steps.publish.conclusion`) rather than the implicit\n`success()`, which is what silently swept it away.\n\nThe invariant is unchanged and is still the point: a tag is written only where\na release actually landed. What was broken is that a landed release could not\nget one.\n\nRELEASES.md is correct",
+      "refs": {
+        "commit": "8169783e25edaa64bf86759d1b1789bac13d9eaf"
+      },
+      "digest": "56220554a7e9116def43abbe247e9f8a7ef5ae309ee350a39526a92586ff57c7"
+    },
     {
       "id": "ship/flashy-ledger/abdff36bc09b",
       "repo": "repo/flashy-ledger",
