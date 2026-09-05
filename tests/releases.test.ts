@@ -42,9 +42,28 @@ describe('release ledger', () => {
     expect(seen).toEqual(sorted);
   });
 
-  it('does not invent a 0.7.0 — the trail went 0.6.3 → 0.8.0', () => {
-    // Pinned because the roadmap claimed a 0.7.0 that never existed; a future
-    // reader adding one on that belief should have to reckon with this line.
-    expect(ledgerVersions(releases)).not.toContain('0.7.0');
+  it('records 0.7.0, which did exist', () => {
+    // This test previously asserted the OPPOSITE — that the ledger must not
+    // contain a 0.7.0 row, on the belief that the trail went 0.6.3 → 0.8.0.
+    // That was wrong, and pinning it made the correct record fail CI, which is
+    // the worst shape a guard can take.
+    //
+    // `6af5ee1` is titled "0.7.0 — declare the civilization commodities" and is
+    // the DIRECT PARENT of the 0.8.0 bump `e52704b`. Checked by reading
+    // package.json at every commit in the repository: exactly two carry 0.7.0,
+    // and no path from 0.6.3 reaches 0.8.0 without passing through it.
+    expect(ledgerVersions(releases)).toContain('0.7.0');
+  });
+
+  it('does not claim a tag for a publish that failed', () => {
+    // 0.6.3 and 0.8.0 died on E401. The workflow tags only after a successful
+    // publish, so a tag for either would assert a release that never happened —
+    // and would make the dispatch flow refuse the real publish once registry
+    // access is fixed.
+    for (const v of ['0.6.3', '0.8.0']) {
+      const row = releases.split('\n').find((l) => l.startsWith(`| ${v} `));
+      expect(row, `${v} has no ledger row`).toBeDefined();
+      expect(row).toMatch(/\|\s*❌\s*\|/);
+    }
   });
 });
