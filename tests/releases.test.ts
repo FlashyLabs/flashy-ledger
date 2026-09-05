@@ -55,15 +55,28 @@ describe('release ledger', () => {
     expect(ledgerVersions(releases)).toContain('0.7.0');
   });
 
-  it('does not claim a tag for a publish that failed', () => {
-    // 0.6.3 and 0.8.0 died on E401. The workflow tags only after a successful
-    // publish, so a tag for either would assert a release that never happened —
-    // and would make the dispatch flow refuse the real publish once registry
-    // access is fixed.
-    for (const v of ['0.6.3', '0.8.0']) {
-      const row = releases.split('\n').find((l) => l.startsWith(`| ${v} `));
-      expect(row, `${v} has no ledger row`).toBeDefined();
-      expect(row).toMatch(/\|\s*❌\s*\|/);
+  it('claims a tag only where a publish actually landed', () => {
+    // The durable form of a guard I first wrote in the wrong shape.
+    //
+    // It originally asserted that 0.6.3 and 0.8.0 must show ❌ in Tagged —
+    // true at the time, but pinned to a snapshot rather than to a rule, so it
+    // failed the moment those two were correctly tagged. Worse, it was written
+    // on the belief that their publishes had FAILED. They had not.
+    //
+    // The rule that actually matters, and does not go stale: a tag may be
+    // claimed only for a version the ledger records as having reached the
+    // registry. A tag over a failed or never-attempted publish asserts a
+    // release that does not exist, which is the one thing this file is for.
+    const LANDED = /landed|manual publish|assumed/i;
+    for (const line of releases.split('\n')) {
+      const m = /^\|\s*(\d+\.\d+\.\d+)\s*\|([^|]*)\|([^|]*)\|([^|]*)\|/.exec(line);
+      if (!m) continue;
+      const [, version, , tagged = '', published = ''] = m;
+      if (!tagged.includes('✅')) continue;
+      expect(
+        LANDED.test(published),
+        `${version} claims a tag but its publish column reads "${published.trim()}"`,
+      ).toBe(true);
     }
   });
 });
