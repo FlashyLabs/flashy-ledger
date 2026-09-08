@@ -60,7 +60,7 @@ const REQUIRES = {
   convenes: [],
   spokeAt: ['year'],
   issued: ['date'],
-  settled: ['sealed'],
+  settled: ['sealed', 'capability'],
   publishes: [],
   supersededBy: ['reason'],
 }
