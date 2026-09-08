@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-08T08:55:24.448Z",
+  "generated": "2026-09-08T11:59:43.264Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/3d2d19c5fa29",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-08T11:59:29Z",
+      "kind": "other",
+      "title": "An index of every document and every runnable, generated from the tree",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-08",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "This repository held documents that nothing pointed at and scripts that\nnothing named. `tools/estate-findable.mjs` in flashyos measured the\nestate at 9 of 25 repositories with reachable documents and 0 of 16 with\nany index at all — nobody had built a door, so nobody had one to add a\ndocument to.\n\nGenerated, never maintained. Every title is read from the document's own\nfirst heading, every date from its last commit, and every runnable's line\nfrom that file's own first comment. A document added here is in the index\non the next run whether anybody remembered it or not, which is the one\nproperty a hand-written index does not have.\n\nBeing listed is not being used. `estate-findable` excludes a generated\nindex from vouching for anything, so writing this moves `docsIndexed` and\nleaves `docsReachable` exactly where it was. Three states, not two:\nunlisted, listed-and-unused, and reached by work.\n\nRegenerate with `node tools/estate-doc-index.mjs --write` from a flashyos\ncheckout beside this one; `--check` runs in `npm run estate` there.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01BjzD1kWqueq1ArT1m4mZsy",
+      "refs": {
+        "commit": "3d2d19c5fa291328d217e7a981337fd02170b346"
+      },
+      "digest": "817aa4f590b222bacff16c122e2afbaf3e80d80262957d4ed18dbc4524065aee"
+    },
     {
       "id": "ship/flashy-ledger/f7cda06cf09b",
       "repo": "repo/flashy-ledger",
