@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-08T11:59:43.261Z",
+  "generated": "2026-09-08T12:11:35.052Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/35148f1e9420",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-08T12:11:19Z",
+      "kind": "other",
+      "title": "The index describes the shipping ref, not this laptop",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-08",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "The first version generated from `git ls-files` — the working tree. On a\ncheckout six commits behind its remote that saw three documents where the\nref holds six, so it would have written an index naming half of them and\nreported the repository done. Across this machine 39 of 40 checkouts are\nbehind their remote, so almost every index written yesterday described a\ntree that ships nowhere.\n\nSay which tree you measured — this estate's first house rule, broken by\nthe tool written to make things findable, and the third tool here to\nbreak it. It reads `git ls-tree` and `git show` against the shipping ref\nnow, so a document committed on a laptop and pushed nowhere is\ndeliberately absent: a reader who follows a link to a file only one\nmachine has is a reader the index lied to.\n\nThe generator and the gate also disagreed about what a document IS —\n`SPEC.md` was an entry point to one and not the other — so the gate could\nask for an index in a repository the generator refused to write one for.\nThe population is imported now, one definition.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01BjzD1kWqueq1ArT1m4mZsy",
+      "refs": {
+        "commit": "35148f1e942019b37e108d8c342f93f0e76d544f"
+      },
+      "digest": "451873b563ad76361f273672ac3e88dc42b67c19f77635f3faaceecf19c55389"
+    },
     {
       "id": "ship/flashy-ledger/3d2d19c5fa29",
       "repo": "repo/flashy-ledger",
