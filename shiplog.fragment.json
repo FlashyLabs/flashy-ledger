@@ -2,8 +2,27 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-15T09:28:59.902Z",
+  "generated": "2026-09-16T09:21:20.830Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/a6e4735444b0",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-15T17:44:23-04:00",
+      "kind": "other",
+      "title": "Re-vendor check-directory.mjs from canon (#12)",
+      "by": [
+        "person/michael"
+      ],
+      "asserted": "2026-09-16",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Re-vendor check-directory.mjs from canon",
+      "refs": {
+        "commit": "a6e4735444b029fc03be6422c02d38cd112599f4",
+        "pr": "https://github.com/FlashyLabs/flashy-ledger/pull/12"
+      },
+      "digest": "cf49320240fddc206d86bb7d5d43f4d9dacacfa34d180459ac75644f3923386c"
+    },
     {
       "id": "ship/flashy-ledger/fac512346c3e",
       "repo": "repo/flashy-ledger",
