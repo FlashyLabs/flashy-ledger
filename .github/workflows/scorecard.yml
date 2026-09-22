@@ -1,0 +1,44 @@
+name: Scorecard
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 3' # weekly, Wednesday
+
+permissions: read-all
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          # See CONTRIBUTING.md: this org's Actions/OIDC setup does not hand
+          # back a signable token, so the public securityscorecards.dev badge
+          # publish step fails. Results still upload as SARIF to this repo's
+          # own code scanning tab below.
+          publish_results: false
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: SARIF file
+          path: results.sarif
+          retention-days: 5
+
+      - uses: github/codeql-action/upload-sarif@3ea06614dafe36dec890db3446326e0d40ce53d4 # v3.38.1
+        with:
+          sarif_file: results.sarif
