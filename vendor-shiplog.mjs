@@ -218,6 +218,7 @@ export const UNATTRIBUTED_AGENT = 'agent/unattributed'
 
 const MACHINE_LOCAL_PARTS = new Set([
   'actions', 'github-actions', 'dependabot', 'renovate', 'shiplog', 'backlog', 'intent', 'notary', 'liveness',
+  'pulse', 'delivery', 'directory', 'ritual',
 ])
 
 export function isMachineAddress(email) {
@@ -265,6 +266,21 @@ const BOOKKEEPING_SUBJECTS = [
   // last three entries here were each added only after their commits had
   // sealed as work under agent/unattributed.
   'ritual/1: observe the office',
+  // pulse/1's daily reading. Listed BEFORE pulse.yml's first run, for the same
+  // reason as the two entries above it — and this one would inflate exactly
+  // the numbers it exists to keep honest, since a condition series that seals
+  // its own collection as work reports the estate shipping every time it
+  // measures itself.
+  'pulse/1: read the estate',
+  // notary/1's fan-in. flashy-network's notary.yml folds every source's
+  // fragment into the served log a few times a day and commits the result.
+  // Listed here before the next fold rather than after — the same reason as
+  // the four entries above, and the same reason each of those had to be added
+  // late. Nothing in THIS repository commits it, which is why it belongs here
+  // and not in AUTOMATION_SUBJECTS: that list is pinned to flashyos's own
+  // workflows by an exact-set assertion, and `intent/1` is the precedent for a
+  // subject a sibling repository writes.
+  'notary/1: fold source fragments into the log',
 ]
 // The lookahead keeps the old guarantee: a subject that merely CONTINUES the
 // phrase ("refresh the logic") is a person's commit and is kept. Anything the
@@ -273,7 +289,33 @@ const BOOKKEEPING_RE = new RegExp(
   `^(${BOOKKEEPING_SUBJECTS.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![a-z])`,
 )
 
-export const isOwnBookkeeping = (subject) => BOOKKEEPING_RE.test((subject ?? '').trim())
+/**
+ * Dated subjects flashyos's own scheduled jobs commit under.
+ *
+ * A different shape from BOOKKEEPING_SUBJECTS — a prefix and a date rather
+ * than a format id, pinned to flashyos's own workflows by an exact-set
+ * assertion in tools/shiplog-attribution.test.mjs there. A vendored copy
+ * missing this filtered nothing for these five and let their scheduled
+ * refresh commits seal as shipped work under agent/unattributed, discovered
+ * while wiring up devlog/1 on 2026-09-22.
+ */
+const AUTOMATION_SUBJECTS = [
+  'Adoption signal: ', // adoption-signal.yml
+  'Registry: re-verified ', // registry.yml
+  'Estate graph: reassembled ', // graph.yml
+  'Estate record: merged ', // estate-record.yml
+  'scoreboard: the estate, read ', // scoreboard.yml
+]
+// Anchored on the date, so a person writing "Estate record: merged, finally"
+// is still a person. What identifies these is the prefix AND the stamp.
+const AUTOMATION_RE = new RegExp(
+  `^(${AUTOMATION_SUBJECTS.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})20\\d\\d-\\d\\d-\\d\\d\\b`,
+)
+
+export const isOwnBookkeeping = (subject) => {
+  const s = (subject ?? '').trim()
+  return BOOKKEEPING_RE.test(s) || AUTOMATION_RE.test(s)
+}
 
 export function fromCommits(commits, options) {
   const repoSlug = options.repo.replace(/^repo\//, '')

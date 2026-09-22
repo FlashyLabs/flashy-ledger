@@ -57,10 +57,17 @@ describe('devlog/1', () => {
     }
   });
 
-  it('the served copy under public/.well-known matches the emitted fragment exactly, per the config that owns it', () => {
+  it('the served copy under public/.well-known carries the same entries as the emitted fragment, per the config that owns it', () => {
     const config = json('.shiplog', 'config.json');
     expect(config.serveDevlog).toBe('public/.well-known/devlog.fragment.json');
-    expect(read('public', '.well-known', 'devlog.fragment.json')).toBe(read('devlog.fragment.json'));
+    const root = json('devlog.fragment.json');
+    const served = json('public', '.well-known', 'devlog.fragment.json');
+    // Not byte-identical: the emitter stamps each write with its own
+    // `new Date().toISOString()`, a few milliseconds apart.
+    expect(served.devlog).toBe(root.devlog);
+    expect(served.source).toBe(root.source);
+    expect(served.org).toBe(root.org);
+    expect(served.entries).toEqual(root.entries);
   });
 
   it('DEVLOG.md is the same document rendered for a person, not a second source of truth', () => {
