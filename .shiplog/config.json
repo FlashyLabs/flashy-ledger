@@ -15,5 +15,6 @@
   "visibility": "public",
   "lexicon": "imperative",
   "prBase": "https://github.com/FlashyLabs/flashy-ledger/pull/",
-  "serve": "public/.well-known/shiplog.json"
+  "serve": "public/.well-known/shiplog.json",
+  "serveDevlog": "public/.well-known/devlog.fragment.json"
 }

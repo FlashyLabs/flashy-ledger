@@ -20,11 +20,22 @@
 //     "authors": { "bot@example.com": "agent/my-bot" },
 //     "prBase": "https://github.com/me/my-repo/pull/",
 //     "branch": "main",
-//     "serve": "public/.well-known/shiplog.json"
+//     "serve": "public/.well-known/shiplog.json",
+//     "serveDevlog": "public/.well-known/devlog.fragment.json"
 //   }
 //
 // `branch` is the branch the *workflow* runs on. The log itself is always
 // derived from HEAD unless `rev` says otherwise — see revOf.
+//
+// Every `emit` also writes `DEVLOG.md` and `devlog.fragment.json` — a
+// human-readable changelog, derived from the same commits, filtered by its
+// own (stricter) rule. See devlog.ts / the `devlog/1` section of SPEC.md.
+// Unlike the ship log, a devlog has no `visibility` tier: it publishes by
+// default, because it exists only to be read. `commitBase` (or a `prBase`
+// shaped like a GitHub pull URL, from which one is derived for free) is
+// where each entry's `ref` points; `serveDevlog` is where the same
+// unfiltered fragment is also written, exactly like `serve` does for the
+// ship log.
 //
 // `serve` is the path the repository actually publishes from — the difference
 // between a fragment that is committed and a fragment that is *reachable*. The
@@ -206,7 +217,7 @@ export function parseGitLog(raw) {
 export const UNATTRIBUTED_AGENT = 'agent/unattributed'
 
 const MACHINE_LOCAL_PARTS = new Set([
-  'actions', 'github-actions', 'dependabot', 'renovate', 'shiplog', 'backlog', 'intent',
+  'actions', 'github-actions', 'dependabot', 'renovate', 'shiplog', 'backlog', 'intent', 'notary', 'liveness',
 ])
 
 export function isMachineAddress(email) {
@@ -356,6 +367,113 @@ export function fromCommits(commits, options) {
   return { entries, unmapped: [...unmapped].sort(), badKinds: [...badKinds] }
 }
 
+// ── devlog/1 — the human-readable half, alongside shipped/1 ─────────────────
+//
+// See src/devlog.ts for the full account. This must derive byte-identical
+// entries to that module — src/devlog.test.ts differentials this copy against
+// it the same way vendor.test.ts already differentials the ship derivation.
+//
+// "Devlog" and "changelog" name the same artifact here — see packages/shiplog/
+// SPEC.md's `devlog/1` section before building a second thing under the other
+// name.
+
+export const DEVLOG_VERSION = '1'
+export const DEVLOG_ENTRY_ID_RE = /^devlog\/[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*$/
+const SKIP_MARKER_RE = /\[(skip ci|vercel skip)\]/i
+const MAX_SUMMARY = 280
+
+// A devlog has no attribution field to file a machine's commit under, so —
+// unlike a ship entry, which keeps a bot's commit under agent/unattributed —
+// isDevlogWorthy drops it outright: a bot regenerating a fragment is not a
+// "notable shipped change" worth a prose line.
+export function isDevlogWorthy(commit) {
+  if (isIntegrationMerge(commit.subject)) return false
+  if (isOwnBookkeeping(commit.subject)) return false
+  if (SKIP_MARKER_RE.test(commit.subject ?? '')) return false
+  if (isMachineAddress(commit.authorEmail)) return false
+  return true
+}
+
+export function summaryFromSubject(subject) {
+  const { title } = parseSubject(subject)
+  const trimmed = (title || subject || '').trim()
+  if (!trimmed) return trimmed
+  const capitalised = trimmed[0].toUpperCase() + trimmed.slice(1)
+  return capitalised.length > MAX_SUMMARY ? capitalised.slice(0, MAX_SUMMARY) : capitalised
+}
+
+// `prBase` is already `https://github.com/<org>/<repo>/pull/` in every
+// .shiplog/config.json in the estate; swapping `pull` for `commit` gets a
+// devlog ref for free, with no new configuration, on a GitHub-hosted adopter.
+export function commitBaseFrom(config) {
+  if (config.commitBase) return config.commitBase
+  const match = /^(https:\/\/[^/]+\/[^/]+\/[^/]+)\/pull\/$/.exec(config.prBase ?? '')
+  return match ? `${match[1]}/commit/` : undefined
+}
+
+export function devlogEntriesFromCommits(commits, options) {
+  const repoSlug = options.repo.replace(/^repo\//, '')
+  const held = options.held ?? {}
+  return commits
+    .filter((c) => isDevlogWorthy(c) && !held[c.sha] && !held[c.sha.slice(0, 12)])
+    .map((commit) => {
+      const sha = commit.sha.toLowerCase()
+      const short = sha.slice(0, 12)
+      const ref = options.commitBase ? `${options.commitBase}${sha}` : `${options.repo}#${short}`
+      return {
+        id: `devlog/${repoSlug}/${short}`,
+        at: commit.at,
+        summary: summaryFromSubject(commit.subject),
+        commitSha: sha,
+        ref,
+      }
+    })
+    .filter((e) => e.summary.length > 0)
+}
+
+export const byDevlogRecency = (a, b) => (a.at === b.at ? (a.id < b.id ? -1 : 1) : a.at < b.at ? 1 : -1)
+
+// The same union rule as mergeEntries: an id already present is kept as it
+// stands, and only genuinely new ids are added.
+export function mergeDevlogEntries(existing, derived) {
+  const byId = new Map()
+  for (const entry of derived) byId.set(entry.id, entry)
+  for (const entry of existing) byId.set(entry.id, entry)
+  return [...byId.values()].sort(byDevlogRecency)
+}
+
+export const devlogFragmentOf = (config, entries, generated = new Date().toISOString()) => ({
+  devlog: DEVLOG_VERSION, source: config.source, org: config.org, generated, entries,
+})
+
+export function renderDevlogMarkdown(entries, options = {}) {
+  const title = options.title ?? 'Devlog'
+  const sorted = [...entries].sort(byDevlogRecency)
+  const lines = [
+    `# ${title}`,
+    '',
+    '_This is the changelog. "Devlog" and "changelog" name the same document here —_',
+    '_see `devlog/1` in `packages/shiplog/SPEC.md` if that reads like it needs reconciling._',
+    '',
+  ]
+  if (!sorted.length) {
+    lines.push('Nothing shipped yet.', '')
+    return lines.join('\n')
+  }
+  let day = ''
+  for (const entry of sorted) {
+    const d = entry.at.slice(0, 10)
+    if (d !== day) {
+      if (day) lines.push('') // a blank line between one day's list and the next heading
+      day = d
+      lines.push(`## ${day}`, '')
+    }
+    lines.push(`- ${entry.summary} ([\`${entry.commitSha.slice(0, 12)}\`](${entry.ref}))`)
+  }
+  lines.push('')
+  return lines.join('\n')
+}
+
 /**
  * Where else this fragment has to land to be reachable over https.
  *
@@ -395,14 +513,17 @@ export const publicView = (entries, held = {}) =>
     return !(held[sha] || held[sha.slice(0, 12)])
   })
 
-export function servedPaths(config, out) {
-  const declared = config?.serve
+export function servedPathsFor(declared, out) {
   if (!declared) return []
   const list = Array.isArray(declared) ? declared : [declared]
   return list
     .filter((p) => typeof p === 'string' && p.trim())
     .map((p) => p.trim())
     .filter((p) => join(p) !== join(out))
+}
+
+export function servedPaths(config, out) {
+  return servedPathsFor(config?.serve, out)
 }
 
 export const fragmentOf = (config, entries, generated = new Date().toISOString()) => ({
@@ -548,6 +669,39 @@ function run(argv) {
     writeFileSync(path, `${JSON.stringify(fragmentOf(config, open), null, 2)}\n`)
     console.log(`${' '.repeat(String(entries.length).length)}  → ${path} (served, ${open.length} public of ${entries.length})`)
   }
+  // devlog/1 — the human-readable half, derived from the SAME parsed commits
+  // (not the ship-filtered `shipped` list above: isDevlogWorthy applies its
+  // own, stricter rule — see devlogEntriesFromCommits). Unlike shipped/1, a
+  // devlog publishes by default: it exists only to be read on this
+  // property's own site, so there is no `visibility` tier to opt into. The
+  // one redaction it honours is the same `.shiplog/held.json` shipped/1
+  // already reads, so a commit held for naming a live credential is held out
+  // of both records at once.
+  const commitBase = commitBaseFrom(config)
+  const devlogDerived = devlogEntriesFromCommits(parseGitLog(raw), { repo: config.source, commitBase, held })
+  const devlogOut = flag('devlog-out') ?? 'devlog.fragment.json'
+  const devlogKept = !rederive && existsSync(devlogOut) ? (JSON.parse(readFileSync(devlogOut, 'utf8')).entries ?? []) : []
+  const devlogEntries = mergeDevlogEntries(devlogKept, devlogDerived)
+  const devlogAdded = devlogEntries.length - devlogKept.length
+
+  writeFileSync(devlogOut, `${JSON.stringify(devlogFragmentOf(config, devlogEntries), null, 2)}\n`)
+  const devlogHow = rederive ? ' (re-derived — previous entries discarded)' : devlogKept.length ? ` (${devlogAdded} new, ${devlogKept.length} kept)` : ''
+  console.log(`${devlogEntries.length} devlog entries → ${devlogOut}${devlogHow}`)
+
+  const devlogMdOut = flag('devlog-md-out') ?? 'DEVLOG.md'
+  writeFileSync(devlogMdOut, renderDevlogMarkdown(devlogEntries, { title: config.devlogTitle }))
+  console.log(`${' '.repeat(String(devlogEntries.length).length)}  → ${devlogMdOut}`)
+
+  // Served the same way shiplog.json is: a distinct config key, because a
+  // devlog and a ship log usually do not want to land at the same well-known
+  // path, and because a devlog has no private tier to filter on the way
+  // through — the served copy IS the full devlog.fragment.json.
+  for (const path of servedPathsFor(config.serveDevlog, devlogOut)) {
+    mkdirSync(dirname(path), { recursive: true })
+    writeFileSync(path, `${JSON.stringify(devlogFragmentOf(config, devlogEntries), null, 2)}\n`)
+    console.log(`${' '.repeat(String(devlogEntries.length).length)}  → ${path} (served, ${devlogEntries.length} of ${devlogEntries.length})`)
+  }
+
   if (badKinds?.length) {
     console.log(`\n${badKinds.length} recorded decision${badKinds.length === 1 ? '' : 's'} in ${KINDS} name${badKinds.length === 1 ? 's' : ''} a kind this format does not have:`)
     for (const [sha, kind] of badKinds) console.log(`  ${sha}  "${kind}"`)
