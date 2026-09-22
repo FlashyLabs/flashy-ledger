@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-22T13:48:58.219Z",
+  "generated": "2026-09-22T19:37:04.465Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/2ee1adf7189a",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-22T19:36:52Z",
+      "kind": "fix",
+      "title": "Fix CI: type the JSON.parse results in charter/devlog tests, patch js-yaml",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-22",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Both test files accessed properties on values typed `any` from a raw\nJSON.parse(), tripping @typescript-eslint/no-unsafe-member-access and\nno-unsafe-return (21 errors). charter-served.test.ts now types the\nparsed charter; devlog.test.ts casts json()'s return at each call site\ninstead of a single-use generic, which no-unnecessary-type-parameters\nalso flagged.\n\nnpm audit fix bumps the transitive dev dependency js-yaml 4.3.1 -> 4.3.2,\nclearing the CPU-DoS advisory (GHSA-2883-xcg3-v3hh).\n\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01CLZMfnkGGUXXzv9VA1td1c",
+      "refs": {
+        "commit": "2ee1adf7189ac88a227db91b66d8043f586c947a"
+      },
+      "digest": "c20ac3b52d6339ce0a29a9c8058b219d18e67e97242702228a8d96311521cbd0"
+    },
     {
       "id": "ship/flashy-ledger/560fd67532f5",
       "repo": "repo/flashy-ledger",
