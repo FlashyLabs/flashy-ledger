@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-22T19:37:04.465Z",
+  "generated": "2026-09-22T19:40:29.661Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/2ece35756fcc",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-22T19:40:06Z",
+      "kind": "infra",
+      "title": "Harden CI: pin actions to commit SHAs, add CodeQL and Scorecard",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-22",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Every actions/checkout and actions/setup-node call across the six\nworkflow files that use them was pinned to a tag (@v4), which can be\nretargeted upstream by the action's own maintainer or an attacker who\ncompromises their account. Repinned to actions/checkout@v7.0.1 and\nactions/setup-node@v7.0.0 by commit SHA, verified against\n`git ls-remote --tags`. secret-scan.yml's reusable workflow reference\nto FlashyLabs/flashy-infra@main is left as-is: an internal, org-owned\nworkflow doesn't carry the same retargeting risk a third-party action\ndoes.\n\nAdds CodeQL (javascript-typescript, weekly + on push/PR) and OpenSSF\nScorecard, both read-only static analysis. Scorecard's publish_results\nis false from the start: this org's GitHub Actions OIDC token endpoint\ndoesn't hand back a signable token (proven on wdk-policy-guard), so the\npublic securityscorecards.dev badge publish step fails; results still\nupload as SARIF to this repo's own code scanning tab.\n\ntests/workflow-pins.test.ts makes the SHA-pinning convention a real,\nfailing test rather than a habit someone could forget — matching the\npattern already in wdk-policy-guard, wdk-staking-kit and\nwdk-capability-audit. dependabot.yml already tracks github-actions\nweekly, so no change needed there.\n\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01CLZMfnkGGUXXzv9VA1td1c",
+      "refs": {
+        "commit": "2ece35756fcc4d94ab7e9104f89953e095899ec7"
+      },
+      "digest": "3474f023ccd59b7c580c00af729ed95afe1bd4d9ff59a263f4b5e7b579c4076a"
+    },
     {
       "id": "ship/flashy-ledger/2ee1adf7189a",
       "repo": "repo/flashy-ledger",
