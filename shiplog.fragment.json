@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-22T13:14:41.567Z",
+  "generated": "2026-09-22T13:16:11.617Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/b1cdbd4847ab",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-22T13:15:56Z",
+      "kind": "feature",
+      "title": "devlog/1: adopt the human-readable half of shipped/1",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-22",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Re-vendors vendor-shiplog.mjs from flashyos, whose emitter now also\nwrites DEVLOG.md and devlog.fragment.json alongside the existing ship\nlog, derived from the same commit history with no bespoke shaping.\n.shiplog/config.json gains one field (serveDevlog), matching how\nshiplog.json is already served from public/.well-known/ — the same\nmechanism, flipped on for one more file, not a new one.\n\nNo live deployment for this repository was confirmed while doing this\n(it publishes to GitHub Packages; no Vercel/Pages/deploy workflow\nexists here), so the served copy's actual reachability over https is\nunverified rather than assumed — the same is true of the shiplog.json\ncopy already sitting beside it. Noted in README.md and tests/devlog.test.ts\nrather than silently treated as settled.\n\ntests/devlog.test.ts asserts the fragment's shape, that the served copy\nmatches the emitted one exactly, and that DEVLOG.md matches both.\n\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01X8LDnsexvNjSkqc2ihZR7U",
+      "refs": {
+        "commit": "b1cdbd4847ab0485f38f4a9f8607dfd42e46c4c0"
+      },
+      "digest": "752245db1eb377e556399ae9529fd27e6b18ac46cdd5f94a403e59b956a73b27"
+    },
     {
       "id": "ship/flashy-ledger/a6e4735444b0",
       "repo": "repo/flashy-ledger",
