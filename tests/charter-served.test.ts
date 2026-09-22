@@ -20,6 +20,11 @@ import { describe, expect, it } from 'vitest';
  * that checks the fields somebody thought to list is a test that says nothing
  * about the field they add next week.
  */
+interface Charter {
+  slug?: string;
+  roles?: unknown[];
+}
+
 const root = join(__dirname, '..');
 const repo = readFileSync(join(root, 'flashyos.roles.json'), 'utf8');
 const served = readFileSync(join(root, 'public', '.well-known', 'flashyos-charter.json'), 'utf8');
@@ -30,7 +35,7 @@ describe('/.well-known/flashyos-charter.json', () => {
   });
 
   it('is a charter, not an empty file that happens to exist', () => {
-    const parsed = JSON.parse(served);
+    const parsed = JSON.parse(served) as Charter;
     expect(parsed.slug, 'a charter with no slug names no organisation').toBeTruthy();
     expect(Array.isArray(parsed.roles) && parsed.roles.length > 0,
       'a roster of zero roles reads to the network as an org that declares nothing').toBe(true);

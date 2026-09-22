@@ -19,7 +19,7 @@ import { describe, expect, it } from 'vitest';
  */
 const root = join(__dirname, '..');
 const read = (...p: string[]) => readFileSync(join(root, ...p), 'utf8');
-const json = (...p: string[]) => JSON.parse(read(...p));
+const json = (...p: string[]): unknown => JSON.parse(read(...p));
 const DEVLOG_ID_RE = /^devlog\/[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*$/;
 
 interface DevlogEntry {
@@ -28,6 +28,19 @@ interface DevlogEntry {
   summary: string;
   commitSha: string;
   ref: string;
+}
+
+interface DevlogFragment {
+  devlog: string;
+  source: string;
+  org: string;
+  entries: DevlogEntry[];
+}
+
+interface ShiplogConfig {
+  source: string;
+  org: string;
+  serveDevlog?: string;
 }
 
 describe('devlog/1', () => {
@@ -42,13 +55,13 @@ describe('devlog/1', () => {
 
   it('devlog.fragment.json is a well-formed devlog/1 fragment derived from this repository', () => {
     expect(existsSync(join(root, 'devlog.fragment.json'))).toBe(true);
-    const fragment = json('devlog.fragment.json');
-    const config = json('.shiplog', 'config.json');
+    const fragment = json('devlog.fragment.json') as DevlogFragment;
+    const config = json('.shiplog', 'config.json') as ShiplogConfig;
     expect(fragment.devlog).toBe('1');
     expect(fragment.source).toBe(config.source);
     expect(fragment.org).toBe(config.org);
     expect(Array.isArray(fragment.entries)).toBe(true);
-    for (const entry of fragment.entries as DevlogEntry[]) {
+    for (const entry of fragment.entries) {
       expect(entry.id).toMatch(DEVLOG_ID_RE);
       expect(entry.summary.length).toBeGreaterThan(0);
       expect(entry.commitSha).toMatch(/^[0-9a-f]{40}$/);
@@ -58,10 +71,10 @@ describe('devlog/1', () => {
   });
 
   it('the served copy under public/.well-known carries the same entries as the emitted fragment, per the config that owns it', () => {
-    const config = json('.shiplog', 'config.json');
+    const config = json('.shiplog', 'config.json') as ShiplogConfig;
     expect(config.serveDevlog).toBe('public/.well-known/devlog.fragment.json');
-    const root = json('devlog.fragment.json');
-    const served = json('public', '.well-known', 'devlog.fragment.json');
+    const root = json('devlog.fragment.json') as DevlogFragment;
+    const served = json('public', '.well-known', 'devlog.fragment.json') as DevlogFragment;
     // Not byte-identical: the emitter stamps each write with its own
     // `new Date().toISOString()`, a few milliseconds apart.
     expect(served.devlog).toBe(root.devlog);
@@ -72,9 +85,9 @@ describe('devlog/1', () => {
 
   it('DEVLOG.md is the same document rendered for a person, not a second source of truth', () => {
     const md = read('DEVLOG.md');
-    const fragment = json('devlog.fragment.json');
+    const fragment = json('devlog.fragment.json') as DevlogFragment;
     expect(md).toMatch(/^# Devlog/);
-    for (const entry of fragment.entries as DevlogEntry[]) {
+    for (const entry of fragment.entries) {
       expect(md.includes(entry.commitSha.slice(0, 12))).toBe(true);
     }
   });
