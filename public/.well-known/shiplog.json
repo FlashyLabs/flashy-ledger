@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-22T13:48:17.228Z",
+  "generated": "2026-09-22T13:48:58.222Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/560fd67532f5",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-22T13:48:45Z",
+      "kind": "other",
+      "title": "devlog/1: re-vendor vendor-shiplog.mjs, and de-flake the served-copy test",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-22",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "flashyos's own devlog/1 rollout found the canonical vendor-shiplog.mjs\nhad drifted from its TypeScript source: MACHINE_LOCAL_PARTS was\nmissing 'pulse', 'delivery', 'directory' and 'ritual', and\nBOOKKEEPING_SUBJECTS/isOwnBookkeeping was missing pulse/1, notary/1 and\nthe whole AUTOMATION_SUBJECTS mechanism. Re-vendored to pick up the\nfix; this repository derives no new or changed entries from it (0 new\non emit).\n\ntests/devlog.test.ts's served-copy assertion compared the root and\nserved devlog.fragment.json byte-for-byte, which only held because two\nseparate `new Date().toISOString()` calls happened to land in the same\nmillisecond on a fast local run — the same reason shiplog.json's own\n`generated` differs from its root fragment's. Compares devlog/source/\norg/entries instead, which is what the config actually promises.\n\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01X8LDnsexvNjSkqc2ihZR7U",
+      "refs": {
+        "commit": "560fd67532f51f7dd3bda6ccdffd26f1e563228e"
+      },
+      "digest": "4d600b074c778ce576d5689816ea38978f602725ea09f5fa4574d479794b6255"
+    },
     {
       "id": "ship/flashy-ledger/b1cdbd4847ab",
       "repo": "repo/flashy-ledger",
