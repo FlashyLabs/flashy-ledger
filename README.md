@@ -23,6 +23,25 @@ randomness. Everything that touches storage sits behind one interface, which is
 the entire reason this can move onto different infrastructure — including a
 chain — without its rules changing.
 
+### When to use alone
+
+- You need a battle-tested financial settlement layer
+- Your system must guarantee idempotent replay
+- You require audit-trail immutability
+- You're building multi-asset or cross-chain rails
+
+### In the Flashy ecosystem
+
+- Powered by [@flashylabs/rails](https://github.com/flashylabs/flashy-rails) (consent-gated settlement on ledger)
+- Adopted by [ClaimYour.Gold](https://claimyour.gold) (rewards settlement)
+- Foundation for the full integration example at [flashy-network](https://flashynetwork.com)
+
+### See also
+
+- [@flashylabs/rails](https://github.com/flashylabs/flashy-rails) — Consent layer on top of ledger
+- [Flashy Finance](https://flashy.financial) — Live financial rail (built on ledger + rails)
+- [flashy.tools](https://flashy.tools) — Full package catalog with discovery
+
 ## Install and check
 
 ```bash
