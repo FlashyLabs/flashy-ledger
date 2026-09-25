@@ -2,8 +2,25 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-25T09:39:57.822Z",
+  "generated": "2026-09-25T18:08:46.013Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/cf4d9bacae52",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-25T17:56:29Z",
+      "kind": "infra",
+      "title": "Bump to 1.0.0 for npm publication",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-25",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "cf4d9bacae52b5b59c99d4b689a1faced6322286"
+      },
+      "digest": "0c005303f7662f9f4578ef4f493083918acf9007ceccdd258081cd3259954dc1"
+    },
     {
       "id": "ship/flashy-ledger/2ece35756fcc",
       "repo": "repo/flashy-ledger",
