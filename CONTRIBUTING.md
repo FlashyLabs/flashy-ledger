@@ -16,14 +16,15 @@ These rules are enforced by tests; they're not decorative.
 
 ### Architecture
 - **Balance can't go negative** — `LedgerError` is thrown before any write (test: `tests/ledger.test.ts`)
-- **Replay is idempotent** — the same `idempotencyKey` settles exactly once, never twice (test: `tests/idempotency.test.ts`)
-- **The append-only log is immutable** — entries cannot be deleted or modified after written (test: `tests/immutability.test.ts`)
+- **Replay is idempotent** — the same `idempotencyKey` settles exactly once, never twice (test: `tests/conformance.test.ts`, run against every adapter)
+- **The append-only log is immutable** — entries cannot be deleted or modified after written (test: `tests/ledger.test.ts`, the tamper checks)
+- **The wire shapes match the code** — `schema/*.json` agree with the TypeScript unions (test: `tests/schema.test.mjs`)
 
 ### Before you push
 
 1. **Tests pass:** `npm test` (no mocks; real invariants only)
 2. **Lint passes:** `npm run lint` (house style)
-3. **Cross-linking validates:** `npm run test:cross-linking` (all "See also" links are reachable)
+3. **Standalone tests pass:** `npm run test:standalone` (wire schemas, and all "See also" links are well-formed)
 
 If a test fails, the fix belongs in this repository, not in the test.
 

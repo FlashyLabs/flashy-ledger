@@ -35,7 +35,11 @@ test('All links in "See also" section are valid URLs or relative paths', () => {
   const seeAlsoContent = seeAlsoMatch[1]
   const linkMatches = [...seeAlsoContent.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)]
 
-  const badLinks = linkMatches.filter(({ 1: url }) => {
+  // Index 2 is the URL; index 1 is the link text. This read index 1 for as
+  // long as nothing ran the file — no npm script did — so every https link
+  // in "See also" was judged by its label and the test failed on a correct
+  // README the first time `npm run test:standalone` executed it.
+  const badLinks = linkMatches.filter(({ 2: url }) => {
     // URLs must be https://, relative paths, or github.com links
     const isValidHttps = url.startsWith('https://')
     const isRelative = url.startsWith('./')

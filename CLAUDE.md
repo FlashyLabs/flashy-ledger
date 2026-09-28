@@ -1,11 +1,141 @@
-# flashy-ledger
+# flashy-ledger — `@flashylabs/ledger`
 
-<!-- What is this repository, what does it deploy to, and what must an agent
-     not break? Two or three sentences from somebody who knows is worth more
-     than everything below, which is only what is true everywhere. -->
+An append-only, multi-asset, storage-agnostic settlement ledger, published as
+a TypeScript library (ESM and CJS builds, no runtime dependencies; `mongodb`
+is an optional peer). Flashy Gold is the first asset on it, not the thing
+itself. Consumed by flashy-rails (consent-gated settlement on top of it) and
+ClaimYour.Gold (hash chains computed here, written through Prisma). There is
+no deployed website: what ships is a package, and as of 2026-09-28 it is
+**not yet on the public npm registry** (see Publishing).
 
-_Not yet described. The house rules below are estate-wide and were synced
-here; what makes this repository different is still to be written._
+## Commands
+
+```bash
+npm ci                     # installs and builds (prepare runs the build)
+npm run typecheck          # tsc --noEmit
+npm run lint               # eslint src tests (type-checked; .mjs untyped)
+npm test                   # vitest run — tests/**/*.test.ts
+npm run coverage           # the same, with the thresholds CI fails on
+npm run test:standalone    # node --test tests/*.test.mjs — no install needed
+npm run check              # typecheck + lint + coverage + standalone
+npm run build              # dist/ (ESM) + dist-cjs/ (CJS), both gitignored
+MONGO_URL=mongodb://localhost:27017/?directConnection=true \
+  npx vitest run tests/conformance.test.ts   # the Mongo adapter, on a replica set
+```
+
+CI (`ci.yml`) runs typecheck, lint, coverage, the standalone tests and the
+build on every push to `main` and every pull request, then the conformance
+suite against a single-node Mongo replica set started with `--replSet` — a
+`services:` container cannot take that flag, and the job ran a standalone
+for months while a comment said otherwise.
+
+## What makes this repository different
+
+**Append-only, as absence rather than policy.** `LedgerStore`
+(`src/ports/store.ts`) has no update and no delete. The only way to undo an
+entry is `reverse()`, which posts its mirror image. Each entry carries the
+hash of the one before it for that identity, so an edit or a removal breaks
+every hash after it and `verifyChain()` says so.
+
+**Multi-asset means an asset is a configuration record.** Nothing in the
+engine knows what gold is. `defineAsset` (`src/domain/registry.ts`) validates
+slug, symbol and decimals at module load; `materialize` adds the `id` and
+`tenantId` at the edge, and refuses an empty id because a slug in that field
+once made four payouts fail with no type error. `SKILL_XP` is deliberately not
+transferable: status settled with money's discipline, never convertible to it.
+
+**Storage-agnostic by construction.** `src/domain` is pure — no clock, no
+randomness, no I/O — and a lint rule fails the build if anything under it
+reaches for `Date` or `Math.random()`. `src/ports/store.ts` is the seam;
+`src/adapters/memory.ts` is the reference implementation *and* the executable
+specification, because `tests/conformance.test.ts` runs the same suite
+against it and against `MongoLedgerStore`. A backing store behaves
+identically or fails the build. The dependency rule is one-directional:
+adapters → ports → domain → nothing.
+
+**`Minor` is a branded integer and refuses to be anything else.**
+`src/domain/money.ts`: `minor()` throws `PrecisionError` on a non-integer or
+an unsafe integer; `fromDecimal(0.5, 0)` throws rather than rounds, because
+rounding somebody's holding is not a thing a ledger may do quietly; `add`
+refuses a sum outside the exact range. Never do money arithmetic with raw
+operators, and never a `bigint` literal — it throws the moment it meets a
+ledger amount. Proved by `ledger.test.ts` › *rejects precision the asset
+cannot hold rather than rounding it* and › *rejects non-finite and
+non-integer values*.
+
+**Idempotent replay.** A write carries a key derived from its source event
+(`quest:q_9:identity_1`, never a timestamp). A replay returns the original
+entry with `deduplicated: true` and writes nothing. The constraint is a unique
+index on `(tenantId, idempotencyKey)` — code runs once per process, an index
+runs on every write from every process forever.
+
+**Tenancy is a boundary, not a label.** There is no read without a
+`tenantId`, so a cross-tenant read does not compile. Two networks running
+similar mechanics generate colliding idempotency keys by construction; a
+global lookup would hand one tenant another's entry while reporting a
+successful deduplication. That is I-6, added in 0.2.0.
+
+**Identities are opaque.** `assertOpaqueIdentity()` runs inside `post()`,
+before anything is hashed, and refuses an email, a phone number, a wallet
+address or a public key — a natural key in an immutable, published record is
+a consent that can never be withdrawn.
+
+**The hash input is the format.** `hashEntry()` joins a fixed list of fields
+in a fixed order. Changing either invalidates every chain ever written. Treat
+it as a breaking migration with a re-hashing plan, never a refactor.
+`schema/entry.json` and `schema/asset.json` are the machine-readable wire
+shapes (JSON Schema 2020-12; amounts are integers; unknown keys refused
+unless `x-`), and `tests/schema.test.mjs` fails if their enums or patterns
+drift from the TypeScript source.
+
+## Rules the tests enforce — none decorative
+
+- `docs/INVARIANTS.md` numbers eight invariants, each citing a test by name;
+  `tests/invariants.test.ts` fails if a cited test no longer exists.
+- `tests/public-api.test.ts` lists every export by hand. Removing one is a
+  major version, and the list is deliberately not a generated snapshot.
+- `tests/workflow-pins.test.ts`: every third-party `uses:` in a workflow is
+  pinned to a 40-character commit SHA with a version comment.
+- `tests/releases.test.ts`: `package.json`'s version has a row in
+  `RELEASES.md`, a tag is claimed only where a publish landed, and the trail
+  is in ascending order.
+- `tests/schema.test.mjs`: the wire schemas match the code, and real
+  entries built through `post()` and `InMemoryLedgerStore` validate.
+- `tests/cross-linking.test.mjs`: the README's "See also" links resolve to
+  https or relative targets.
+- `vitest.config.ts`: 90 % lines/functions/statements, 85 % branches, over
+  `src/` minus the Mongo adapter, which the conformance job covers instead.
+- `tests/devlog.test.ts`: `DEVLOG.md` and the served fragment are derived by
+  the vendored emitter, never hand-written.
+
+## Publishing
+
+`publishConfig` targets `https://registry.npmjs.org/` with public access, and
+`.github/workflows/publish.yml` publishes there on a `v*` tag or a manual
+dispatch — **only** when the `NPM_TOKEN` secret is set; without it the job
+refuses before installing anything. GitHub Packages is no longer a target;
+versions up to 0.8.0 live there and stay there. `npm view @flashylabs/ledger`
+answered 404 on the public registry on 2026-09-28: the package is prepared
+for publication and not published. When the first publish lands, update
+README "Publishing" and add the row to `RELEASES.md` — the release ledger is
+hand-maintained by design.
+
+## Don't
+
+- Reach for `Date`, `Math.random()`, the network or a driver under
+  `src/domain`. The lint rule will catch the first two; the review must catch
+  the rest.
+- Add an update or delete to `LedgerStore`, or a store that skips
+  `tests/conformance.test.ts`.
+- Pass a raw `number` where a `Minor` goes, or round on the way in.
+- Change the fields `hashEntry` joins, or their order, without a migration.
+- Hand-edit `DEVLOG.md`, `*.fragment.json`, `public/.well-known/*`,
+  `dist/` or the lockfile. Regenerate the lockfile with npm 10.9.8 (Corepack;
+  `packageManager` is a declaration, not an enforcement).
+- Commit a credential, a `.env`, or a `MONGO_URL` with a password in it.
+- Decide the licence here — it is Apache-2.0 because flashyos's
+  `tools/estate-licences.mjs` says so, and that file is the only place to
+  change it.
 
 <!-- estate:house-rules -->
 <!-- Synced from flashyos/tools/estate-house-rules.mjs. Edit it there, not here.

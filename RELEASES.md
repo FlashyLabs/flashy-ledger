@@ -56,6 +56,7 @@ tagged never succeeded.
 | 0.6.3 | `d10f9dc` | ✅ v0.6.3 | **landed** (run 13) | publish succeeded; the mirror step failed after it, so the tag was skipped. Tagged 2026-09-05; run 17 then answered E409, confirming it is on the registry |
 | 0.7.0 | `6af5ee1` | ❌ | never dispatched | "declare the civilization commodities"; superseded by 0.8.0 the same day |
 | 0.8.0 | `e52704b` | ✅ v0.8.0 | **landed** (run 14) | same shape as 0.6.3. Tagged 2026-09-05; runs 15 and 16 both answered E409 |
+| 1.0.0 | `eac50d8` | ✅ v1.0.0 | assumed (GitHub Packages, unverified from this checkout); **not** on registry.npmjs.org — `npm view` answered 404 on 2026-09-28 | "Bump to 1.0.0 for npm publication". The bump commit forgot this row, so `releases.test.ts` was red. `origin`'s `v1.0.0` points at `1a8aba6`, a commit this checkout does not hold, while a local tag of the same name points at `eac50d8` — two tags, one name; read `git ls-remote --tags origin` before trusting either |
 
 **Confirmed 2026-09-05.** Pushing v0.6.3 and v0.8.0 fired the tag flow, and both
 runs reached `npm publish` and stopped at **E409 Cannot publish over existing
@@ -80,11 +81,12 @@ were pushed on 2026-09-05 and each names a release that actually landed.
 Every version this package has ever declared now has either a tag or a
 recorded reason for not having one. The next release tags itself.
 
-Optional, and unrelated to the trail: set **`NPM_TOKEN`** (read-write on
-`@flashylabs`) to mirror releases to public npm, where a stranger can install
-with no auth. GitHub Packages requires a token even for a public package.
-Until that secret exists the mirror step skips with a notice — and since the
-fix it cannot fail a release either way.
+**Since 2026-09-28 the public npm registry is the target, not a mirror.**
+`publishConfig` and `publish.yml` point at `registry.npmjs.org`; the workflow
+refuses to run without **`NPM_TOKEN`** (publish rights on `@flashylabs`)
+rather than landing anywhere else. GitHub Packages, which requires a token
+even for a public package, keeps the versions above and receives no new ones.
+Nothing is on the public registry yet — README, "Publishing".
 
 ## Adding a release
 
