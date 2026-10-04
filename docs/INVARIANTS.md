@@ -219,3 +219,28 @@ vacuously. The runtime half shows up as determinism:
 `ledger.test.ts` › *is pure: the same inputs always produce the same hash* and
 `merkle.test.ts` › *is deterministic regardless of input order*.
 
+## Coverage · the suite runs against every adapter, and that is derived
+
+Every invariant above that names `conformance.test.ts` is run *against every
+adapter* — the phrase does the work only if "every adapter" is a fact rather
+than a hand-kept list that quietly stopped matching the package. A guarantee
+proven against the in-memory reference and no one else is a guarantee about the
+reference, not about the Mongo store a network actually runs.
+
+So the population is **derived**. `tests/adapters.catalog.ts` declares every
+writable `LedgerStore` the package ships; `conformance.test.ts` builds its
+harnesses from that catalog (so the suite runs exactly those classes, Mongo
+skipped without a database but never dropped from the count); and
+`adapter-coverage.test.ts` checks the catalog against the package's real
+exports, recognising a writable store by structure — an `append` method — so
+the read-only `GoldLedgerReader` is excluded by the same fact that makes it
+read-only. A new writable adapter that is exported and not cataloged, or
+cataloged and not harnessed, fails the build rather than shipping with no
+conformance behind it. This is the `pulse.yml` lesson applied locally: a check
+is only as good as the population it is pointed at, and that population is the
+part nobody re-reads, so it is computed rather than trusted.
+
+**Proved by.** `conformance.test.ts` › *harnesses every writable store class the catalog declares, and no stranger*
+and `adapter-coverage.test.ts` › *catalogs exactly the writable stores the package exports — no more, no fewer*,
+› *excludes the read-only reader by structure, not by an allowlist*.
+
