@@ -181,3 +181,41 @@ guards the one consumer this package has. The surrogate is held to
 message would be wrong — and
 › *refuses a salt short enough to be brute-forced*.
 
+## I-9 · The domain is pure and storage-agnostic
+
+**Claim.** `src/domain/**` reads no database, calls no clock, and generates no
+randomness. Its only dependencies are other domain modules and `node:crypto`
+for hashing, which is deterministic. The dependency arrow points one way:
+`index` and `ports` and `adapters` may import the domain; the domain imports
+none of them.
+
+**Why.** This is the sentence the README and the roadmap rest the whole package
+on — it is *the entire reason the ledger can move onto a chain without its rules
+changing*, and why the rules can be tested exhaustively with no database in
+sight. Purity has two halves and they fail differently. A clock or a random
+source in the domain makes a hash non-replayable, so a verifier recomputing it
+later disagrees with the sealed value — the invariant that Phase 2 anchoring
+depends on. A dependency pointing the wrong way — a domain module importing an
+adapter or `node:fs` — is quieter still: it typechecks, it lints, it passes
+every behavioural test, and the seam that lets storage be swapped is gone with
+nothing red to say so.
+
+**Enforced by.** Two guards for the two halves. The runtime half is eslint on
+`src/domain/**`: `no-restricted-globals` bans `Date`, and `no-restricted-properties`
+bans `Date.now` and `Math.random`, each with the message that points at the
+fix (pass `occurredAt` in from the caller). The dependency half is
+`domain-purity.test.ts`, which reads the real import graph with the compiler's
+own `ts.preProcessFile` — never a regex, which would read an `import` inside a
+comment the same as a real one — and refuses any specifier that is not a domain
+sibling or `node:crypto`: an adapter, a port, an I/O builtin, or a third-party
+package. The two are complementary: lint catches a global *used*, the test
+catches a module *imported*, and neither alone is the invariant.
+
+**Proved by.** `domain-purity.test.ts` › *imports no adapter and no port, so storage never leaks upward*,
+› *imports no I/O builtin, only deterministic node:crypto*, and
+› *takes no third-party dependency* — the last two run over a set the suite
+first proves non-empty, so a walk that resolved nothing cannot pass them
+vacuously. The runtime half shows up as determinism:
+`ledger.test.ts` › *is pure: the same inputs always produce the same hash* and
+`merkle.test.ts` › *is deterministic regardless of input order*.
+
