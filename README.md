@@ -235,6 +235,18 @@ test that proves it: `docs/INVARIANTS.md`. The mapping is itself asserted —
 `tests/invariants.test.ts` fails the build if the document cites a test that no
 longer exists, so a rename cannot quietly hollow out the spec.
 
+## Shipping record
+
+`DEVLOG.md` is a plain-language changelog of this repository, derived from its
+own commit history by `vendor-shiplog.mjs` (`devlog/1`; see
+`packages/shiplog/SPEC.md` in flashyos). It regenerates on every push and is
+never hand-edited. `.shiplog/config.json` also serves it at
+`public/.well-known/devlog.fragment.json`, matching how `shiplog.json` is
+already served from the same directory — no live deployment for this
+repository was confirmed while wiring this up (it publishes to GitHub
+Packages; nothing here deploys a website), so treat that served copy's actual
+reachability as unverified rather than assumed.
+
 ## The npm version
 
 `packageManager` pins npm to 10.9.8, the version CI runs.

@@ -2,8 +2,134 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-09-08T12:11:35.052Z",
+  "generated": "2026-10-04T10:38:39.136Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/cf4d9bacae52",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-25T17:56:29Z",
+      "kind": "infra",
+      "title": "Bump to 1.0.0 for npm publication",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-25",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "refs": {
+        "commit": "cf4d9bacae52b5b59c99d4b689a1faced6322286"
+      },
+      "digest": "0c005303f7662f9f4578ef4f493083918acf9007ceccdd258081cd3259954dc1"
+    },
+    {
+      "id": "ship/flashy-ledger/2ece35756fcc",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-22T19:40:06Z",
+      "kind": "infra",
+      "title": "Harden CI: pin actions to commit SHAs, add CodeQL and Scorecard",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-22",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Every actions/checkout and actions/setup-node call across the six\nworkflow files that use them was pinned to a tag (@v4), which can be\nretargeted upstream by the action's own maintainer or an attacker who\ncompromises their account. Repinned to actions/checkout@v7.0.1 and\nactions/setup-node@v7.0.0 by commit SHA, verified against\n`git ls-remote --tags`. secret-scan.yml's reusable workflow reference\nto FlashyLabs/flashy-infra@main is left as-is: an internal, org-owned\nworkflow doesn't carry the same retargeting risk a third-party action\ndoes.\n\nAdds CodeQL (javascript-typescript, weekly + on push/PR) and OpenSSF\nScorecard, both read-only static analysis. Scorecard's publish_results\nis false from the start: this org's GitHub Actions OIDC token endpoint\ndoesn't hand back a signable token (proven on wdk-policy-guard), so the\npublic securityscorecards.dev badge publish step fails; results still\nupload as SARIF to this repo's own code scanning tab.\n\ntests/workflow-pins.test.ts makes the SHA-pinning convention a real,\nfailing test rather than a habit someone could forget — matching the\npattern already in wdk-policy-guard, wdk-staking-kit and\nwdk-capability-audit. dependabot.yml already tracks github-actions\nweekly, so no change needed there.\n\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01CLZMfnkGGUXXzv9VA1td1c",
+      "refs": {
+        "commit": "2ece35756fcc4d94ab7e9104f89953e095899ec7"
+      },
+      "digest": "3474f023ccd59b7c580c00af729ed95afe1bd4d9ff59a263f4b5e7b579c4076a"
+    },
+    {
+      "id": "ship/flashy-ledger/2ee1adf7189a",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-22T19:36:52Z",
+      "kind": "fix",
+      "title": "Fix CI: type the JSON.parse results in charter/devlog tests, patch js-yaml",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-22",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Both test files accessed properties on values typed `any` from a raw\nJSON.parse(), tripping @typescript-eslint/no-unsafe-member-access and\nno-unsafe-return (21 errors). charter-served.test.ts now types the\nparsed charter; devlog.test.ts casts json()'s return at each call site\ninstead of a single-use generic, which no-unnecessary-type-parameters\nalso flagged.\n\nnpm audit fix bumps the transitive dev dependency js-yaml 4.3.1 -> 4.3.2,\nclearing the CPU-DoS advisory (GHSA-2883-xcg3-v3hh).\n\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01CLZMfnkGGUXXzv9VA1td1c",
+      "refs": {
+        "commit": "2ee1adf7189ac88a227db91b66d8043f586c947a"
+      },
+      "digest": "c20ac3b52d6339ce0a29a9c8058b219d18e67e97242702228a8d96311521cbd0"
+    },
+    {
+      "id": "ship/flashy-ledger/560fd67532f5",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-22T13:48:45Z",
+      "kind": "other",
+      "title": "devlog/1: re-vendor vendor-shiplog.mjs, and de-flake the served-copy test",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-22",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "flashyos's own devlog/1 rollout found the canonical vendor-shiplog.mjs\nhad drifted from its TypeScript source: MACHINE_LOCAL_PARTS was\nmissing 'pulse', 'delivery', 'directory' and 'ritual', and\nBOOKKEEPING_SUBJECTS/isOwnBookkeeping was missing pulse/1, notary/1 and\nthe whole AUTOMATION_SUBJECTS mechanism. Re-vendored to pick up the\nfix; this repository derives no new or changed entries from it (0 new\non emit).\n\ntests/devlog.test.ts's served-copy assertion compared the root and\nserved devlog.fragment.json byte-for-byte, which only held because two\nseparate `new Date().toISOString()` calls happened to land in the same\nmillisecond on a fast local run — the same reason shiplog.json's own\n`generated` differs from its root fragment's. Compares devlog/source/\norg/entries instead, which is what the config actually promises.\n\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01X8LDnsexvNjSkqc2ihZR7U",
+      "refs": {
+        "commit": "560fd67532f51f7dd3bda6ccdffd26f1e563228e"
+      },
+      "digest": "4d600b074c778ce576d5689816ea38978f602725ea09f5fa4574d479794b6255"
+    },
+    {
+      "id": "ship/flashy-ledger/b1cdbd4847ab",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-22T13:15:56Z",
+      "kind": "feature",
+      "title": "devlog/1: adopt the human-readable half of shipped/1",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-22",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Re-vendors vendor-shiplog.mjs from flashyos, whose emitter now also\nwrites DEVLOG.md and devlog.fragment.json alongside the existing ship\nlog, derived from the same commit history with no bespoke shaping.\n.shiplog/config.json gains one field (serveDevlog), matching how\nshiplog.json is already served from public/.well-known/ — the same\nmechanism, flipped on for one more file, not a new one.\n\nNo live deployment for this repository was confirmed while doing this\n(it publishes to GitHub Packages; no Vercel/Pages/deploy workflow\nexists here), so the served copy's actual reachability over https is\nunverified rather than assumed — the same is true of the shiplog.json\ncopy already sitting beside it. Noted in README.md and tests/devlog.test.ts\nrather than silently treated as settled.\n\ntests/devlog.test.ts asserts the fragment's shape, that the served copy\nmatches the emitted one exactly, and that DEVLOG.md matches both.\n\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01X8LDnsexvNjSkqc2ihZR7U",
+      "refs": {
+        "commit": "b1cdbd4847ab0485f38f4a9f8607dfd42e46c4c0"
+      },
+      "digest": "752245db1eb377e556399ae9529fd27e6b18ac46cdd5f94a403e59b956a73b27"
+    },
+    {
+      "id": "ship/flashy-ledger/a6e4735444b0",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-15T17:44:23-04:00",
+      "kind": "other",
+      "title": "Re-vendor check-directory.mjs from canon (#12)",
+      "by": [
+        "person/michael"
+      ],
+      "asserted": "2026-09-16",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "Re-vendor check-directory.mjs from canon",
+      "refs": {
+        "commit": "a6e4735444b029fc03be6422c02d38cd112599f4",
+        "pr": "https://github.com/FlashyLabs/flashy-ledger/pull/12"
+      },
+      "digest": "cf49320240fddc206d86bb7d5d43f4d9dacacfa34d180459ac75644f3923386c"
+    },
+    {
+      "id": "ship/flashy-ledger/fac512346c3e",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-09-08T12:37:02Z",
+      "kind": "other",
+      "title": "Re-vendor check-directory.mjs: it never took dependsOn",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-09-08",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "`@flashyos/directory` added the `dependsOn` edge type — the only edge a\nstranger can check without asking us, since a version range is verifiable\nfrom a registry — and the vendored checker in flashyos was updated with\nit. This copy was not, so it would reject a valid `dependsOn` edge as an\nunknown type while the canonical validator accepts it.\n\nThat is how a vendored copy fails: not by breaking, but by disagreeing,\nsilently, about exactly the field somebody has just changed. Seventeen\nrepositories carried the older copy and the estate's `Vendored emitter\ncurrent` dimension read 15 of 34.\n\nByte-identical to `packages/directory/vendor-check-directory.mjs`;\n`tools/vendored-directory.test.mjs` in flashyos compares every copy and\nfails on any difference.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01BjzD1kWqueq1ArT1m4mZsy",
+      "refs": {
+        "commit": "fac512346c3e2a8c84713ee57078ea8d9e351252"
+      },
+      "digest": "5db909069089423010c5d58bb6ca7ef0cba641e2ac97e404c1c1effbe1430a7c"
+    },
     {
       "id": "ship/flashy-ledger/35148f1e9420",
       "repo": "repo/flashy-ledger",
