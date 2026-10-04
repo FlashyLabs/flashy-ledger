@@ -30,9 +30,10 @@ describe('/.well-known/flashyos-charter.json', () => {
   });
 
   it('is a charter, not an empty file that happens to exist', () => {
-    const parsed = JSON.parse(served);
+    const parsed = JSON.parse(served) as Record<string, unknown>;
     expect(parsed.slug, 'a charter with no slug names no organisation').toBeTruthy();
-    expect(Array.isArray(parsed.roles) && parsed.roles.length > 0,
+    const roles = parsed.roles;
+    expect(Array.isArray(roles) && roles.length > 0,
       'a roster of zero roles reads to the network as an org that declares nothing').toBe(true);
   });
 });
