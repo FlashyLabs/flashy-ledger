@@ -2,8 +2,26 @@
   "shipped": "1",
   "source": "repo/flashy-ledger",
   "org": "org/flashy-ledger",
-  "generated": "2026-10-10T05:33:53.906Z",
+  "generated": "2026-10-10T05:37:17.776Z",
   "entries": [
+    {
+      "id": "ship/flashy-ledger/4a72ebd7a4fa",
+      "repo": "repo/flashy-ledger",
+      "at": "2026-10-10T05:36:55Z",
+      "kind": "infra",
+      "title": "npm audit fix — brace-expansion and source-map-js advisories in the dev tree",
+      "by": [
+        "agent/claude"
+      ],
+      "asserted": "2026-10-10",
+      "assertedBy": "agent/flashy-ledger-ci",
+      "visibility": "public",
+      "detail": "CI's dependency audit job failed on main with two high advisories, both in\ndevelopment dependencies (typescript-eslint's brace-expansion, vite's\nsource-map-js). Lockfile regenerated with npm 10.9.8 as the manifest\ndeclares; 213 tests and lint unchanged.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KD3oquCLVnqZxYegHuZM6D",
+      "refs": {
+        "commit": "4a72ebd7a4fab38c3d35783c57f704885c64b740"
+      },
+      "digest": "378db7b80ecf5a8af7f1d827aa2a1f78c90f2b30e2b1a34b6500a337b51980e6"
+    },
     {
       "id": "ship/flashy-ledger/98890d318e4f",
       "repo": "repo/flashy-ledger",
