@@ -41,7 +41,9 @@ rather than rounding.
 **Proved by.** `ledger.test.ts` › *rejects precision the asset cannot hold rather than rounding it*,
 › *rejects non-finite and non-integer values*, and
 › *adds exactly where floating point would not* — the last being the case the
-predecessor failed in production.
+predecessor failed in production. The brand is a compile-time promise, so
+`post()` re-asserts it at runtime on the one path every entry takes:
+› *re-asserts the Minor brand at runtime, so a JSON body cannot hash a NaN, a fraction or a string into a chain*.
 
 ## I-3 · One sign convention
 
@@ -180,4 +182,33 @@ guards the one consumer this package has. The surrogate is held to
 › *produces something the guard accepts* — otherwise the advice in the error
 message would be wrong — and
 › *refuses a salt short enough to be brute-forced*.
+
+## I-9 · One head per chain
+
+**Claim.** Every entry chains onto the head of its `(tenantId, identityId,
+assetId)` chain as it stood when the entry was written. Two appends that both
+read the same head cannot both land; the second is refused and the caller
+re-reads state and retries.
+
+**Why.** Added in the 1.0.x line. Port contract §4 had promised this since the
+store interface was written, and the Mongo adapter kept it by a unique index on
+`(tenantId, identityId, assetId, previousHash)`. The in-memory reference
+implementation — the executable specification every adapter is measured against
+— did not: two interleaved debits of a whole balance both settled, the stored
+balance read zero, and the fold over the entries read minus the balance. A
+transfer from an identity to itself was the same fault reached a different way:
+both legs posted against one state, so the chain forked and the holder was
+credited the sum of both legs.
+
+**Enforced by.** `InMemoryLedgerStore.appendAll` computes the live head of each
+candidate's chain — including anything staged earlier in the same batch — and
+refuses a candidate whose `previousHash` is not that head, with the same error
+the Mongo path raises when its index refuses the insert. `postTransfer` refuses
+`from.identityId === to.identityId` outright, because no store can make two legs
+on one head mean anything.
+
+**Proved by.** `conformance.test.ts` › *refuses a second append on a head another append has already moved*
+and › *refuses a batch whose entries fork one chain, and lands neither*, both
+run against every adapter; and `ledger.test.ts`
+› *refuses a transfer from an identity to itself, which would fork its chain and mint the amount*.
 
