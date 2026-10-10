@@ -7,6 +7,14 @@ proves it. A guarantee with no test behind it is a preference.
 `tests/invariants.test.ts` asserts that this table and the code agree — every
 invariant below names a test that exists, and the count here matches the count
 there. The document cannot drift from the suite without failing the build.
+`vendor-invariants.mjs` at the root — a byte-identical copy of spec-kit's
+`invariants/1` harness, pinned to canon by `tests/vendor-invariants-drift.test.ts`
+and reported UNKNOWN when canon is absent — checks the same contract from the
+command line (`node vendor-invariants.mjs check .`) and is what
+`tests/invariants-harness.test.ts` drives: the invariants that are about *pairs*
+of writes, run under every schedule the harness knows and under seeded random
+command sequences, with the pre-fix reference store handed to the harness so a
+green run means the harness can see.
 
 ## I-1 · Append-only
 
@@ -75,7 +83,11 @@ process, an index runs on every write from every process forever.
 **Proved by.** `conformance.test.ts` › *returns the original entry when a key is replayed, and writes nothing*,
 run against every adapter, and
 › *still deduplicates a genuine replay within one tenant*, which guards the
-scoping change in I-6 from over-correcting into a lost deduplication.
+scoping change in I-6 from over-correcting into a lost deduplication. Under
+interleaving, `invariants-harness.test.ts`
+› *the same key appended twice, under every schedule: one entry on the record, both callers handed it, exactly one reported as new* —
+sequential, both orders, started together, a macrotask apart — with the
+mutation check › *refuses a store that forgot its key index: the replay lands twice on every schedule*.
 
 ## I-5 · Balances are derived
 
@@ -91,7 +103,11 @@ never the source.
 
 **Proved by.** `ledger.test.ts` › *derives a balance from entries alone*, and
 › *keeps assets separate on one identity*, so the fold is per asset rather than
-per identity.
+per identity. Under random sequences of `post`, `postTransfer`, `reverse`, a
+replay and a write against a stale head, `invariants-harness.test.ts`
+› *every stored balance is the fold over its entries, every chain verifies, every head is the last entry, and no balance goes negative except by a reversal* —
+the stored state is compared to the fold after every command, so a store
+whose projection can part from its entries fails the run.
 
 ## I-6 · Tenant isolation
 
@@ -211,4 +227,18 @@ on one head mean anything.
 and › *refuses a batch whose entries fork one chain, and lands neither*, both
 run against every adapter; and `ledger.test.ts`
 › *refuses a transfer from an identity to itself, which would fork its chain and mint the amount*.
+
+Those run the race in the order the test chose. Under interleaving,
+`invariants-harness.test.ts`
+› *two debits of the whole balance and a credit, every ordered pair, every schedule: exactly one of the debits lands, the chain verifies, and the stored state is the fold*
+(nine ordered pairs, forty-five schedules), and the mutation check hands the
+harness the reference store as it was before this invariant was enforced:
+› *refuses the pre-fix reference store, whose appendAll ignores the head, on exactly the two started-together schedules* —
+`a||b` and `b||a`, and no other: sequentially the second read sees the moved
+head and `post()` refuses, and a macrotask apart the first append has landed.
+That is the exact shape of the defect, a guarantee that held for one write at a
+time. The same store under random sequences is refused by
+› *refuses the pre-fix reference store under the same sequences — a write against a stale head lands, and shrinks to capture, write, stale write*,
+the port's §4 case — a caller that did not re-read state — reduced to three
+commands.
 
